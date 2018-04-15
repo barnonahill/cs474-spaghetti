@@ -1,0 +1,17 @@
+// import greeting from './greeting';
+// console.log(greeting);
+
+// _ will prefix any lodash imports, so we know where they come from.
+// lodash is HUGE (over 1MB), so don't be that guy who imports the entire module.
+import _join = require('lodash/join');
+
+function component() {
+	var div: HTMLDivElement = document.createElement('div');
+
+	// Uses lodash, currently included via a script tag.
+	div.innerHTML =  _join(['Hello', 'webpack!'], ' ');
+
+	return div;
+}
+
+document.body.appendChild(component());
