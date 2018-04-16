@@ -7,6 +7,11 @@ import java.sql.Statement;
 
 import javax.servlet.http.HttpServlet;
 
+/**
+ * @author Carl Clermont
+ * @version 4/15/18
+ */
+
 public abstract class SpgController extends HttpServlet{
 	
 	public static final String database = "jdbc:mysql://mysql.cs.jmu.edu";
