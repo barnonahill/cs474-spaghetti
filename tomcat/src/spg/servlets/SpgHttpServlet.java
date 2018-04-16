@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Abstract implementation of an HTTP Servlet. We don't care if Requests are GETs or POSTs.
- *
  */
 public abstract class SpgHttpServlet extends HttpServlet {
 	
@@ -42,5 +41,16 @@ public abstract class SpgHttpServlet extends HttpServlet {
 				out.close();
 			}
 		}
+	}
+	
+	/**
+	 * Converts the message of an exception to a JSON String and writes it as a response.
+	 * @param res
+	 * @param e
+	 * @throws IOException
+	 */
+	public void writeResponse(HttpServletResponse res, Exception e) throws IOException {
+		String msg = "{\"err\":\"" + e.getMessage() + "\"}";
+		writeResponse(res, msg);
 	}
 }
