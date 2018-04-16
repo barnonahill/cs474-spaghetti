@@ -41,7 +41,6 @@ public class CountryServlet extends SpgHttpServlet {
 		JSONArray countries = new JSONArray();
 		JSONObject country;
 		
-		
 		// TODO read countries into JSONArray
 		/* Example
 		 * country = new JSONObject();
