@@ -13,14 +13,30 @@ import javax.servlet.http.HttpServletResponse;
 public abstract class SpgHttpServlet extends HttpServlet {
 	
 	public final void doGet(HttpServletRequest req, HttpServletResponse res) {
-		handleRequest(req, res);
+		try {
+			handleRequest(req, res);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public final void doPost(HttpServletRequest req, HttpServletResponse res) {
-		handleRequest(req, res);
+		try {
+			handleRequest(req, res);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
-	public abstract void handleRequest(HttpServletRequest req, HttpServletResponse res);
+	public abstract void handleRequest(HttpServletRequest req, HttpServletResponse res) throws IOException;
+	
+	public String getAction(HttpServletRequest req) throws Exception {
+		String a = req.getParameter("action");
+		if (a == null || a.isEmpty()) {
+			throw new Exception("Missing action parameter.");
+		}
+		return a;
+	}
 	
 	/**
 	 * Writes a JSON String to response.
