@@ -2,6 +2,7 @@ package spg.servlets;
 
 import java.io.IOException;
 
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 
 import spg.models.Country;
 
+@WebServlet(name="CountryServices", urlPatterns= {"/country"})
 public class CountryServlet extends SpgHttpServlet {
 	// Actions
 	public static final String GET_COUNTRIES = "GetCountries";
