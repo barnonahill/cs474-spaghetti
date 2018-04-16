@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import spg.models.Country;
+
 public class CountryServlet extends SpgHttpServlet {
 	// Actions
 	public static final String GET_COUNTRIES = "GetCountries";
@@ -39,14 +41,12 @@ public class CountryServlet extends SpgHttpServlet {
 	
 	public String getCountries() {
 		JSONArray countries = new JSONArray();
-		JSONObject country;
+		Country country;
 		
 		// TODO read countries into JSONArray
 		/* Example
-		 * country = new JSONObject();
-		 * country.put("countryCode", "US");
-		 * country.put("country", "United States");
-		 * countries.put(country);
+		 * country = new Country("US", "United States");
+		 * countries.put(country.toJSON());
 		 */
 		
 		return countries.toString();
