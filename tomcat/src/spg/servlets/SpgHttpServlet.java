@@ -29,7 +29,7 @@ public abstract class SpgHttpServlet extends HttpServlet {
 	 * @param msg
 	 * @throws IOException could not get res writer
 	 */
-	public void wsriteResponse(HttpServletResponse res, String msg) throws IOException {
+	public void writeResponse(HttpServletResponse res, String msg) throws IOException {
 		PrintWriter out = null;
 		try {
 			res.setContentType("application/json");
