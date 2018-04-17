@@ -2,6 +2,12 @@ package spg.models;
 
 import org.json.JSONObject;
 
+/**
+ * Model for a Library.
+ * 
+ * @author Kyle Tran 
+ * @version 2018-04-16
+ */
 public class Library {
 	//TODO CHANGE THIS ALL TO LIBRARY.
 	private final String libSiglum;
