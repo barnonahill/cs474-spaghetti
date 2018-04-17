@@ -1,8 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import Jumbotron from './components/Jumbotron';
-import Header from './components/Header';
+import Jumbotron from '@src/components/Jumbotron.tsx';
+import Header from '@src/components/Header.tsx';
 // import Hello from './components/Hello';
 
 class App {

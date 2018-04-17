@@ -9,6 +9,10 @@ interface JumboProps {
 }
 
 export default class OurJumbotron extends React.Component<JumboProps, {}> {
+  constructor(props: JumboProps) {
+    super(props);
+  }
+  
   render() {
     return <div className="container">
       <Jumbotron>

@@ -13,7 +13,7 @@ const config = {
 	 * the final bundled JavaScript file and where to store this file.
 	 */
 	output: {
-		path: path.join(__dirname, 'bin'),
+		path: path.join(__dirname, '..', 'tomcat', 'WebContent', 'bin'),
 		filename: 'scripts.js'
 	},
 
@@ -61,6 +61,15 @@ const config = {
 	externals: {
 		"react": "React",
 		"react-dom": "ReactDOM"
+	},
+
+	/*
+	 * resolve is set to avoid relative path hell.
+	 */
+	resolve: {
+		alias: {
+			'@src': path.join(__dirname, 'src')
+		}
 	}
 };
 

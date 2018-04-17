@@ -15,6 +15,7 @@ import spg.models.Country;
 public class CountryServlet extends SpgHttpServlet {
 	// Actions
 	public static final String GET_COUNTRIES = "GetCountries";
+	public static final String GET_COUNTRY = "GetCountry";
 
 	public CountryServlet() {
 		// TODO Auto-generated constructor stub
@@ -24,9 +25,17 @@ public class CountryServlet extends SpgHttpServlet {
 	public void handleRequest(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		try {
 			String action = super.getAction(req);
-			String msg;
+			String msg = null;
+			
 			if (action.equalsIgnoreCase(GET_COUNTRIES)) {
 				msg = this.getCountries();
+			}
+			else if (action.equalsIgnoreCase(GET_COUNTRY)) {
+				String countryCode = req.getParameter("countryCode");
+				if (countryCode == null || countryCode.isEmpty()) {
+					throw new Exception("Missing countryCode parameter.");
+				}
+				msg = this.getCountry(countryCode);
 			}
 			else {
 				throw new Exception("Invalid action parameter.");
@@ -52,5 +61,23 @@ public class CountryServlet extends SpgHttpServlet {
 		 */
 		
 		return countries.toString();
+	}
+	
+	/**
+	 * Gets the JSON String of the country with the matching countryCode.
+	 * @param countryCode
+	 * @return
+	 */
+	public String getCountry(String countryCode) throws Exception {
+		Country c;
+		
+		// TODO get country
+		
+		if (c != null) {
+			return c.toString();
+		}
+		else {
+			throw new Exception("Could not find a country with countryCode " + countryCode);
+		}
 	}
 }
