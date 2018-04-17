@@ -7,7 +7,7 @@ import SpgModel from '@src/models/SpgModel';
 /**
  * Properties of a Century.
  */
-interface Properties {
+export interface Properties {
 	centuryID: string;
 	centuryName: string;
 }

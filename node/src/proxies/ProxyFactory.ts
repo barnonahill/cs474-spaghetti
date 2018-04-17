@@ -1,3 +1,4 @@
+import CenturyProxy from './CenturyProxy';
 import CountryProxy from './CountryProxy';
 import FeastProxy from './FeastProxy';
 import LibraryProxy from './LibraryProxy';
@@ -5,12 +6,13 @@ import MsTypeProxy from './MsTypeProxy';
 
 
 /**
- * ProxyFactory is a singleton for accessing the various data proxies as singletons.
+ * ProxyFactory is a factory-singleton for accessing the various data proxies as singletons.
  *
  * @author Paul Barnhill
  * @version 2018-04-16
  */
 class ProxyFactory {
+	private centuryProxy: CenturyProxy;
 	private countryProxy: CountryProxy;
 	private feastProxy: FeastProxy;
 	private libraryProxy: LibraryProxy;
@@ -18,6 +20,19 @@ class ProxyFactory {
 
 	constructor() {}
 
+	/**
+	 * Gets the centuryProxy singleton.
+	 */
+	getCenturyProxy(): CenturyProxy {
+		if (!this.centuryProxy) {
+			this.centuryProxy = new CenturyProxy();
+		}
+		return this.centuryProxy;
+	}
+
+	/**
+	 * Gets the countryProxy singleton.
+	 */
 	getCountryProxy(): CountryProxy {
 		if (!this.countryProxy) {
 			this.countryProxy = new CountryProxy();
@@ -25,6 +40,9 @@ class ProxyFactory {
 		return this.countryProxy;
 	}
 
+	/**
+	 * Gets the feastProxy singleton.
+	 */
 	getFeastProxy(): FeastProxy {
 		if (!this.feastProxy) {
 			this.feastProxy = new FeastProxy();
@@ -32,6 +50,9 @@ class ProxyFactory {
 		return this.feastProxy;
 	}
 
+	/**
+	 * Gets the libraryProxy singleton.
+	 */
 	getLibraryProxy(): LibraryProxy {
 		if (!this.libraryProxy) {
 			this.libraryProxy = new LibraryProxy();
@@ -39,6 +60,9 @@ class ProxyFactory {
 		return this.libraryProxy;
 	}
 
+	/**
+	 * Gets the msTypeProxy singleton.
+	 */
 	getMsTypeProxy(): MsTypeProxy {
 		if (!this.MsTypeProxy) {
 			this.MsTypeProxy = new MsTypeProxy();
@@ -47,5 +71,6 @@ class ProxyFactory {
 	}
 }
 
+// export a factory singleton
 const factory = new ProxyFactory();
 export default factory;

@@ -8,9 +8,6 @@ const BASE_SERVICES: string = "http://localhost:8080/tomcat";
  * @version 2018-04-16
  */
 export default abstract class SpgProxy {
-  static callbackError(arg0: any, arg1: any): any {
-    throw new Error("Method not implemented.");
-  }
 	/**
 	  * Sets the service to the full URL of the service.
 		* @param service relative uri for the service (e.g. 'country', 'library')

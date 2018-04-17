@@ -9,7 +9,7 @@ import SpgModel from '@src/models/SpgModel';
  */
 export interface Properties {
 	genreID: string;
-	genreName?: string;
+	genreDescription: string;
 }
 
 /**
@@ -17,7 +17,7 @@ export interface Properties {
  */
 export class Genre extends SpgModel implements Properties {
 	public readonly genreID: string;
-	public genreName: string;
+	public genreDescription: string;
 
 	constructor(props: Properties) {
 		super();
@@ -25,13 +25,13 @@ export class Genre extends SpgModel implements Properties {
 			throw Error('genreID cannot be empty');
 		}
 		this.genreID = props.genreID;
-		this.genreName = props.genreName || null;
+		this.genreDescription = props.genreDescription || null;
 	}
 
 	toProperties(): Properties {
 		return {
 			genreID: this.genreID,
-			genreName: this.genreName
+			genreDescription: this.genreDescription
 		};
 	}
 }
