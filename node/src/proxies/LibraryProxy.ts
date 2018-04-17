@@ -1,4 +1,5 @@
-import * as cty from '@src/models/century';
+import * as cnty from '@src/models/century';
+import * as ctry from '@src/models/country';
 import * as crs from '@src/models/cursus';
 import * as sc from '@src/models/sourceCompleteness';
 import * as prv from '@src/models/provenance';
@@ -17,7 +18,7 @@ export default class LibraryProxy extends SpgProxy {
 		super('library');
 	}
 
-	createCentury(props: cty.Properties, callback: (c: cty.Century, err?: string) => void) {
+	createCentury(props: cnty.Properties, callback: (c: cnty.Century, err?: string) => void) {
 		var params = {
 			action: 'CreateCentury',
 			century: props
@@ -28,12 +29,12 @@ export default class LibraryProxy extends SpgProxy {
 				callback(null, res.err);
 			}
 			else {
-				callback(new cty.Century(res as cty.Properties), null);
+				callback(new cnty.Century(res as cnty.Properties), null);
 			}
 		});
 	}
 
-	getCentury(centuryID: string, callback: (century: cty.Century, err?: string) => void) {
+	getCentury(centuryID: string, callback: (century: cnty.Century, err?: string) => void) {
 		var params = {
 			action: 'GetCentury',
 			centuryID: centuryID
@@ -44,12 +45,12 @@ export default class LibraryProxy extends SpgProxy {
 				SpgProxy.callbackError(callback, res.err);
 			}
 			else {
-				callback(new cty.Century(res as cty.Properties), null);
+				callback(new cnty.Century(res as cnty.Properties), null);
 			}
 		});
 	}
 
-	getCenturies(callback: (centuries: Array<cty.Century>, err?: string) => void) {
+	getCenturies(callback: (centuries: Array<cnty.Century>, err?: string) => void) {
 		var params = {
 			action: 'GetCenturies'
 		};
@@ -59,11 +60,58 @@ export default class LibraryProxy extends SpgProxy {
 				SpgProxy.callbackError(callback, res.err);
 			}
 			else if (res.constructor === Array) {
-				var centuries: Array<cty.Century> = [];
+				var centuries: Array<cnty.Century> = [];
 				for (let i = 0; i < res.length; i++) {
-					centuries.push(new cty.Century(res[i] as cty.Properties));
+					centuries.push(new cnty.Century(res[i] as cnty.Properties));
 				}
 				callback(centuries, null)
+			}
+			else {
+				SpgProxy.callbackError(callback, null);
+			}
+		});
+	}
+
+	/**
+	 * Fetches the country with countryID countryID from the back-end
+	 * @param countryID identifier for the country, cannot be null.
+	 * @param callback executed async when a response is received.
+	 */
+	getCountry(countryID: string, callback: (country: ctry.Country, err?: string) => void) {
+		var params = {
+			action: 'GetCountry',
+			countryID: countryID
+		};
+
+		super.doPost(params, (res: any) => {
+			if (res.err) {
+				SpgProxy.callbackError(callback, res.err);
+			}
+			else {
+				callback(new ctry.Country((res as ctry.Properties)), null);
+			}
+		});
+	}
+
+	/**
+	 * Fetches all countries from the back-end
+	 * @param callback executed async when a response is received
+	 */
+	getCountries(callback: (countries: Array<ctry.Country>, err?: string) => void) {
+		var params = {
+			action:'GetCountries'
+		};
+
+		super.doPost(params, (res: any) => {
+			if (res.err) {
+				SpgProxy.callbackError(callback, res.err);
+			}
+			else if (res.constructor === Array) {
+				var countries: Array<ctry.Country> = [];
+				for (let i = 0; i < res.length; i++) {
+					countries.push(new ctry.Country((res[i] as ctry.Properties)));
+				}
+				callback(countries, null);
 			}
 			else {
 				SpgProxy.callbackError(callback, null);
