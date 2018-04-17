@@ -70,14 +70,14 @@ public class CountryServlet extends SpgHttpServlet {
 	 */
 	public String getCountry(String countryCode) throws Exception {
 		Country c;
-		
+		return null;
 		// TODO get country
 		
-		if (c != null) {
-			return c.toString();
-		}
-		else {
-			throw new Exception("Could not find a country with countryCode " + countryCode);
-		}
+		//if (c != null) {
+		//	return c.toString();
+		//}
+		//else {
+		//	throw new Exception("Could not find a country with countryCode " + countryCode);
+		//}
 	}
 }
