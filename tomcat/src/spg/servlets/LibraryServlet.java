@@ -34,7 +34,6 @@ public class LibraryServlet extends SpgHttpServlet {
 	public static final String GET_CURSUSES	 	= "GetCursuses";
 	
 	
-
 	public LibraryServlet() {
 		// TODO Auto-generated constructor stub
 	}
@@ -48,17 +47,18 @@ public class LibraryServlet extends SpgHttpServlet {
 			
 			String msg = null;
 			
+			//Actions are in LibraryProxy.ts
 			switch (action) 
 			{
 				case GET_COUNTRIES:
 					msg = this.getCountries();
 					break;
 				case GET_COUNTRY:
-					String countryCode = req.getParameter("countryCode");
-					if (countryCode == null || countryCode.isEmpty()) {
+					String countryID = req.getParameter("countryID");
+					if (countryID == null || countryID.isEmpty()) {
 						throw new Exception("Missing countryCode parameter.");
 					}
-					msg = this.getCountry(countryCode);
+					msg = this.getCountry(countryID);
 					break;
 				case CREATE_LIBRARY:
 					// TODO
@@ -121,7 +121,7 @@ public class LibraryServlet extends SpgHttpServlet {
 	 * @param countryCode
 	 * @return
 	 */
-	public String getCountry(String countryCode) throws Exception {
+	public String getCountry(String countryID) throws Exception {
 		Country country;
 		return null;
 		// TODO get country
