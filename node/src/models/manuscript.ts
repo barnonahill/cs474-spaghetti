@@ -3,10 +3,10 @@
  * @version 2018-04-16
  */
 import { Library } from '@src/models/library';
-import { MsType } from '@src/models/msType';
-import SpgModel from '@src/models/SpgModel';
-import SpgProxy from '@src/proxies/SpgProxy'
-import proxyFactory from '@src/proxies/ProxyFactory';
+import { MsType } from '@src/models/msType.ts';
+import SpgModel from '@src/models/SpgModel.ts';
+import SpgProxy from '@src/proxies/SpgProxy.ts'
+import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
 /**
  * Properties of a Manuscript.
@@ -101,7 +101,7 @@ export class Manuscript extends SpgModel implements Properties {
 
 	getMsType(callback: (msType: MsType, err?: string) => void): void {
 		if (!this.manuscriptType) {
-			proxyFactory.getMsTypeProxy().getMsType(this.msType, (msType: MsType, err?: string) => {
+			proxyFactory.getManuscriptProxy().getMsType(this.msType, (msType: MsType, err?: string) => {
 				if (err) {
 					SpgProxy.callbackError(callback, err);
 				}

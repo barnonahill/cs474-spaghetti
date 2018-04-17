@@ -1,6 +1,6 @@
-import * as ms from '@src/models/manuscript';
-import * as mst from '@src/models/msType';
-import SpgProxy from '@src/proxies/SpgProxy';
+import * as ms from '@src/models/manuscript.ts';
+import * as mst from '@src/models/msType.ts';
+import SpgProxy from '@src/proxies/SpgProxy.ts';
 
 export default class ManuScriptProxy extends SpgProxy {
 	constructor() {

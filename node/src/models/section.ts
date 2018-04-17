@@ -3,16 +3,16 @@
  * @version 2018-04-16
  */
 import { Library } from '@src/models/library';
-import { Manuscript } from '@src/models/manuscript';
+import { Manuscript } from '@src/models/manuscript.ts';
 //import { Library } from '@src/models/Library';
 import { Notation } from '@src/models/notation';
 import { Century } from '@src/models/century';
 import { Cursus } from '@src/models/cursus';
 import { Provenance } from '@src/models/provenance';
 import { SourceCompleteness } from '@src/models/sourceCompleteness';
-import SpgModel from '@src/models/SpgModel';
-import SpgProxy from '@src/proxies/SpgProxy';
-import proxyFactory from '@src/proxies/ProxyFactory';
+import SpgModel from '@src/models/SpgModel.ts';
+import SpgProxy from '@src/proxies/SpgProxy.ts';
+import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
 /**
  * Properties of a Section.

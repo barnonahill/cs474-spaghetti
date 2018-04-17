@@ -1,8 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import Jumbotron from '@src/components/Jumbotron.tsx';
-import Header from '@src/components/Header.tsx';
+import LibraryForm from '@src/components/forms/Library.tsx'
 // import Hello from './components/Hello';
 
 class App {
@@ -13,14 +12,18 @@ class App {
    */
   render() {
     ReactDOM.render(
-      <Jumbotron name="Cantus" desc="She lives!" />,
+      <LibraryForm stack={[]} />,
       this.container
     );
-
-    ReactDOM.render(
-      <Header tag="h2" inner="Home" />,
-      this.container
-    );
+    // ReactDOM.render(
+    //   <Jumbotron name="Cantus" desc="She lives!" />,
+    //   this.container
+    // );
+    //
+    // ReactDOM.render(
+    //   <Header tag="h2" inner="Home" />,
+    //   this.container
+    // );
   }
 }
 

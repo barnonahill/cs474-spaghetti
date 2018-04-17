@@ -1,8 +1,5 @@
-import CenturyProxy from './CenturyProxy';
-import CountryProxy from './CountryProxy';
-import FeastProxy from './FeastProxy';
-import LibraryProxy from './LibraryProxy';
-import MsTypeProxy from './MsTypeProxy';
+import LibraryProxy from './LibraryProxy.ts';
+import ManuScriptProxy from './ManuscriptProxy.ts';
 
 
 /**
@@ -12,43 +9,10 @@ import MsTypeProxy from './MsTypeProxy';
  * @version 2018-04-16
  */
 class ProxyFactory {
-	private centuryProxy: CenturyProxy;
-	private countryProxy: CountryProxy;
-	private feastProxy: FeastProxy;
 	private libraryProxy: LibraryProxy;
-	private MsTypeProxy: MsTypeProxy;
+	private manuscriptProxy: ManuScriptProxy;
 
 	constructor() {}
-
-	/**
-	 * Gets the centuryProxy singleton.
-	 */
-	getCenturyProxy(): CenturyProxy {
-		if (!this.centuryProxy) {
-			this.centuryProxy = new CenturyProxy();
-		}
-		return this.centuryProxy;
-	}
-
-	/**
-	 * Gets the countryProxy singleton.
-	 */
-	getCountryProxy(): CountryProxy {
-		if (!this.countryProxy) {
-			this.countryProxy = new CountryProxy();
-		}
-		return this.countryProxy;
-	}
-
-	/**
-	 * Gets the feastProxy singleton.
-	 */
-	getFeastProxy(): FeastProxy {
-		if (!this.feastProxy) {
-			this.feastProxy = new FeastProxy();
-		}
-		return this.feastProxy;
-	}
 
 	/**
 	 * Gets the libraryProxy singleton.
@@ -61,13 +25,13 @@ class ProxyFactory {
 	}
 
 	/**
-	 * Gets the msTypeProxy singleton.
+	 * Gets the manuscriptProxy singleton.
 	 */
-	getMsTypeProxy(): MsTypeProxy {
-		if (!this.MsTypeProxy) {
-			this.MsTypeProxy = new MsTypeProxy();
+	getManuscriptProxy(): ManuScriptProxy {
+		if (!this.manuscriptProxy) {
+			this.manuscriptProxy = new ManuScriptProxy();
 		}
-		return this.MsTypeProxy;
+		return this.manuscriptProxy;
 	}
 }
 

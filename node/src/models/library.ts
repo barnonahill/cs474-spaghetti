@@ -3,9 +3,9 @@
  * @version 2018-04-16
  */
 import { Country } from '@src/models/country';
-import SpgModel from '@src/models/SpgModel';
-import SpgProxy from '@src/proxies/SpgProxy';
-import proxyFactory from '@src/proxies/ProxyFactory';
+import SpgModel from '@src/models/SpgModel.ts';
+import SpgProxy from '@src/proxies/SpgProxy.ts';
+import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
 /**
  * Properties of a Library.
@@ -72,7 +72,7 @@ export class Library extends SpgModel implements Properties {
 
 	getCountry(callback: (country: Country, err?: string) => void): void {
 		if (!this.country) {
-			proxyFactory.getCountryProxy().getCountry(this.countryID, (country: Country, err?: string) => {
+			proxyFactory.getLibraryProxy().getCountry(this.countryID, (country: Country, err?: string) => {
 				if (err) {
 					SpgProxy.callbackError(callback, err);
 				}

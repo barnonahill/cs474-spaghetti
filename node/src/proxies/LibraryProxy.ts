@@ -1,11 +1,11 @@
-import * as cnty from '@src/models/century';
-import * as ctry from '@src/models/country';
-import * as crs from '@src/models/cursus';
-import * as sc from '@src/models/sourceCompleteness';
-import * as prv from '@src/models/provenance';
-import * as ntn from '@src/models/notation';
-import * as lib from '@src/models/Library';
-import SpgProxy from '@src/proxies/SpgProxy';
+import * as cnty from '@src/models/century.ts';
+import * as ctry from '@src/models/country.ts';
+import * as crs from '@src/models/cursus.ts';
+import * as sc from '@src/models/sourceCompleteness.ts';
+import * as prv from '@src/models/provenance.ts';
+import * as ntn from '@src/models/notation.ts';
+import * as lib from '@src/models/Library.ts';
+import SpgProxy from '@src/proxies/SpgProxy.ts';
 
 /**
  * Proxy for communicating with the Library Service.

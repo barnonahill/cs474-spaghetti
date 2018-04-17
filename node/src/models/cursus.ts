@@ -2,7 +2,7 @@
  * @author Paul Barnhill
  * @version 2018-04-16
  */
-import SpgModel from '@src/models/SpgModel';
+import SpgModel from '@src/models/SpgModel.ts';
 
 /**
  * Properties of a cursus.

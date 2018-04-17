@@ -1,5 +1,5 @@
 import * as fst from '@src/models/feast';
-import SpgProxy from '@src/proxies/SpgProxy';
+import SpgProxy from '@src/proxies/SpgProxy.ts';
 
 /**
  * Proxy for communicating with the Feast Service.
