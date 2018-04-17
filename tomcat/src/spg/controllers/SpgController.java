@@ -25,7 +25,7 @@ public abstract class SpgController extends HttpServlet{
 	 * @return - the resultSet of the sql command.
 	 * @throws Exception - if it cant connect to the server.
 	 */
-	public final ResultSet getResultSet(String queryString) throws Exception {
+	static final ResultSet getResultSet(String queryString) throws Exception {
 		Connection connection;
 		Statement statement;
 		try {
