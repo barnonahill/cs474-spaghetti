@@ -12,14 +12,15 @@ public class Library {
 	private final String address2;
 	private final String postCode;
 	
-	public Library(String libSiglum, String countryID) {
+	public Library(String libSiglum, String countryID, String city, String library,
+			String address1, String address2, String postCode) {
 		this.libSiglum = libSiglum;
 		this.countryID = countryID;
-		this.city = null;
-		this.library = null;
-		this.address1 = null;
-		this.address2 = null;
-		this.postCode = null;
+		this.city = city;
+		this.library = library;
+		this.address1 = address1;
+		this.address2 = address2;
+		this.postCode = postCode;
 	}
 	
 	public String getCountryCode() {

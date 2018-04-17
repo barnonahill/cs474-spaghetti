@@ -9,16 +9,16 @@ import org.json.JSONObject;
  * @version 2018-04-15
  */
 public class Country {
-	private final String countryCode;
+	private final String countryID;
 	private final String country;
 	
 	public Country(String countryCode, String country) {
-		this.countryCode = countryCode;
+		this.countryID = countryCode;
 		this.country = country;
 	}
 	
 	public String getCountryCode() {
-		return this.countryCode;
+		return this.countryID;
 	}
 	
 	public String getCountryName() {
@@ -30,7 +30,7 @@ public class Country {
 	 */
 	public JSONObject toJSON() {
 		JSONObject j = new JSONObject();
-		j.put("countryCode", this.countryCode);
+		j.put("countryCode", this.countryID);
 		j.put("country", this.country);
 		return j;
 	}
