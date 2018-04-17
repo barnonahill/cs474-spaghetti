@@ -7,3 +7,5 @@ Group Project for CS 474
   - [Tomcat](https://tomcat.apache.org/download-80.cgi#8.5.30) - 8.5.30
   - [Node.js](https://nodejs.org/en/) - 8.11.1 LTS
   - [Dive Deep Typescript](https://basarat.gitbooks.io/typescript/)
+  - [Webpack - Getting Started](https://webpack.js.org/guides/getting-started/)
+  - [DevDocs](https://devdocs.io/)
