@@ -122,6 +122,7 @@ export default class LibraryPage extends React.Component<Properties, State> {
 							country={this.state.country}
 							libraries={this.state.libraries}
 							onClick={this.onTableClick}
+							onBack={() => this.changeView(View.INIT,null)}
 						/>
 					</div>)
 				];
@@ -214,7 +215,7 @@ class CountrySelectForm extends React.Component<CSFProps, CSFState> {
 							disabled={this.state.loadDisabled}
 							>Load
 						</Button>
-						<Button className="ml15">Cancel</Button>
+						<Button className="ml15">Back</Button>
 					</Col>
 				</FormGroup>
 			</Form>)

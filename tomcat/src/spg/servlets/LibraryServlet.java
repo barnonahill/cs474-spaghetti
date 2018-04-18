@@ -109,43 +109,30 @@ public class LibraryServlet extends SpgHttpServlet {
 	/**
 	 * getCountries - handles getting and returning countries.
 	 * @return - A JSONArray filled with countries. (Should it be countries or countries.toString()?)
+	 * @throws Exception 
 	 */
-	public String getCountries() {
+	public String getCountries() throws Exception {
 		JSONArray countries = new JSONArray();
 		ArrayList<Country> results = LibraryController.getCountries();
 		
 		for(Country c : results) {
-			countries.put(c);
+			countries.put(c.toJSON());
 		}
 
 		return countries.toString();
 	}
 	
-	
-	public String getLibrary(String countryID) {
-		//Careful with params. watch for sql injections.
-		JSONArray libraries = new JSONArray();
-		Library library;
-		
-		// TODO read libraries from DB
-		
-		// Dummy code for front-end. TODO replace with code that connects to DB
-		library = new Library("US-Cn", "US", "Chicago", "Newberry Library", null, null, null);
-		libraries.put(library.toJSON());
-				
-		return libraries.toString();
-	}
-	
 	/**
 	 * getLibraries - handles getting and returning Libraries.
 	 * @return A JSONArray filled with libraries.
+	 * @throws Exception 
 	 */
-	public String getLibraries() {
+	public String getLibraries(String countryID) throws Exception {
 		JSONArray libraries = new JSONArray();
-		ArrayList<Library> results = LibraryController.getLibraries();
+		ArrayList<Library> results = LibraryController.getLibraries(countryID);
 		
 		for(Library l : results) {
-			libraries.put(l);
+			libraries.put(l.toJSON());
 		}
 				
 		return libraries.toString();

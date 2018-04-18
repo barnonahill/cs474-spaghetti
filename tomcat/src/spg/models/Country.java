@@ -10,11 +10,11 @@ import org.json.JSONObject;
  */
 public class Country {
 	private final String countryID;
-	private final String country;
+	private final String countryName;
 	
-	public Country(String countryCode, String country) {
+	public Country(String countryCode, String countryName) {
 		this.countryID = countryCode;
-		this.country = country;
+		this.countryName = countryName;
 	}
 	
 	public String getCountryCode() {
@@ -22,7 +22,7 @@ public class Country {
 	}
 	
 	public String getCountryName() {
-		return this.country;
+		return this.countryName;
 	}
 	
 	/**
@@ -31,7 +31,7 @@ public class Country {
 	public JSONObject toJSON() {
 		JSONObject j = new JSONObject();
 		j.put("countryID", this.countryID);
-		j.put("country", this.country);
+		j.put("country", this.countryName);
 		return j;
 	}
 	

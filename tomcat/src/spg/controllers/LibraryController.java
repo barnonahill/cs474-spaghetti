@@ -33,7 +33,7 @@ public class LibraryController{
 		
 		while (resultSet.next()) {
 			c = new Country(resultSet.getString("countryID"),
-							resultSet.getString("country"));
+							resultSet.getString("countryName"));
 			countries.add(c);
 		}
 		
@@ -45,8 +45,8 @@ public class LibraryController{
 	 * @return - Arraylist of Library objects.
 	 * @throws Exception - any exception. 
 	 */
-	public static ArrayList<Library> getLibraries() throws Exception{
-		String query = "SELECT * FROM Library;";
+	public static ArrayList<Library> getLibraries(String countryID) throws Exception{
+		String query = "SELECT * FROM Library WHERE countryID='" + countryID + "';";
 		ResultSet resultSet;
 		resultSet = SpgController.getResultSet(query);
 		
@@ -60,7 +60,7 @@ public class LibraryController{
 							resultSet.getString("library"),
 							resultSet.getString("address1"),
 							resultSet.getString("address2"),
-							resultSet.getString("postCoe")
+							resultSet.getString("postCode")
 							);
 			libraries.add(l);
 		}

@@ -37027,7 +37027,7 @@ var LibraryPage = (function (_super) {
                         "Libraries - ",
                         this.state.country.country),
                     (React.createElement("div", { key: "panel", className: "panel panel-default pt15 pb15" },
-                        React.createElement(LibraryTable_tsx_1.default, { key: "grid", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick })))
+                        React.createElement(LibraryTable_tsx_1.default, { key: "grid", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick, onBack: function () { return _this.changeView(View.INIT, null); } })))
                 ];
             case View.ENTITY:
                 return [
@@ -37088,7 +37088,7 @@ var CountrySelectForm = (function (_super) {
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
                     React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit", disabled: this.state.loadDisabled }, "Load"),
-                        React.createElement(react_bootstrap_1.Button, { className: "ml15" }, "Cancel")))))
+                        React.createElement(react_bootstrap_1.Button, { className: "ml15" }, "Back")))))
         ];
     };
     return CountrySelectForm;
@@ -37185,12 +37185,13 @@ var LibraryTable = (function (_super) {
         return React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", key: l.libSiglum + t, onClick: this.props.onClick.bind(this, l, t) }, "Delete");
     };
     LibraryTable.prototype.render = function () {
-        return (React.createElement(react_virtualized_1.Table, { height: this.state.tabHeight, width: this.state.tabWidth, headerHeight: 40, rowHeight: 40, rowCount: this.props.libraries.length, rowGetter: this.state.rowGetter },
-            React.createElement(react_virtualized_1.Column, { label: "Library", dataKey: "library", width: this.state.columnWidth }),
-            React.createElement(react_virtualized_1.Column, { label: "City", dataKey: "city", width: this.state.columnWidth }),
-            React.createElement(react_virtualized_1.Column, { label: "View", dataKey: "", width: this.state.columnWidth, cellRenderer: this.viewBtnRenderer }),
-            React.createElement(react_virtualized_1.Column, { label: "Edit", dataKey: "", width: this.state.columnWidth, cellRenderer: this.editBtnRenderer }),
-            React.createElement(react_virtualized_1.Column, { label: "Delete", dataKey: "", width: this.state.columnWidth, cellRenderer: this.deleteBtnRenderer })));
+        return [(React.createElement(react_virtualized_1.Table, { key: "table", height: this.state.tabHeight, width: this.state.tabWidth, headerHeight: 40, rowHeight: 40, rowCount: this.props.libraries.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_virtualized_1.Column, { label: "Library", dataKey: "library", width: this.state.columnWidth }),
+                React.createElement(react_virtualized_1.Column, { label: "City", dataKey: "city", width: this.state.columnWidth }),
+                React.createElement(react_virtualized_1.Column, { label: "View", dataKey: "", width: this.state.columnWidth, cellRenderer: this.viewBtnRenderer }),
+                React.createElement(react_virtualized_1.Column, { label: "Edit", dataKey: "", width: this.state.columnWidth, cellRenderer: this.editBtnRenderer }),
+                React.createElement(react_virtualized_1.Column, { label: "Delete", dataKey: "", width: this.state.columnWidth, cellRenderer: this.deleteBtnRenderer }))),
+            (React.createElement(react_bootstrap_1.Button, { bsStyle: "default", className: "ml15", onClick: this.props.onBack }, "Back"))];
     };
     return LibraryTable;
 }(React.Component));

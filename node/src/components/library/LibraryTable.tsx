@@ -31,6 +31,7 @@ interface Properties {
 	country: Country
 	libraries: Array<Library>
 	onClick: (l:Library,t:ButtonType) => void
+	onBack: () => void
 }
 
 interface State {
@@ -118,7 +119,7 @@ export default class LibraryTable extends React.Component<Properties, State> {
 	}
 
 	render() {
-		return (<Table
+		return [(<Table key="table"
 			height={this.state.tabHeight}
 			width={this.state.tabWidth}
 			headerHeight={40}
@@ -154,6 +155,11 @@ export default class LibraryTable extends React.Component<Properties, State> {
 				width={this.state.columnWidth}
 				cellRenderer={this.deleteBtnRenderer}
 			/>
-		</Table>);
+		</Table>),
+		(<Button
+			bsStyle="default"
+			className="ml15"
+			onClick={this.props.onBack}
+			>Back</Button>)];
 	}
 }
