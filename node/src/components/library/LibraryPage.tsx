@@ -15,7 +15,11 @@ import {
 } from 'react-select';
 
 import Header from '@src/components/Header.tsx';
-import LibraryGrid from '@src/components/library/LibraryGrid.tsx';
+import {
+	default as Table,
+	ButtonType as TButtonType
+} from '@src/components/library/LibraryTable.tsx';
+import EntityForm from '@src/components/library/LibraryEntityView.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
@@ -24,7 +28,8 @@ import proxyFactory from '@src/proxies/ProxyFactory.ts';
 enum View {
 	INIT = 0,
 	TABLE = 1,
-	EDIT = 2
+	ENTITY = 2,
+	EDIT = 3,
 }
 
 interface Properties {
@@ -49,6 +54,7 @@ export default class LibraryPage extends React.Component<Properties, State> {
 		};
 
 		this.onCountrySelect = this.onCountrySelect.bind(this);
+		this.onTableClick = this.onTableClick.bind(this);
 	}
 
 	onCountrySelect(c: Country) {
@@ -66,12 +72,30 @@ export default class LibraryPage extends React.Component<Properties, State> {
 		});
 	}
 
-	changeView(v:View, stateOpts:any) {
+	onTableClick(l:Library, t:TButtonType) {
+		switch (t) {
+			case TButtonType.VIEW:
+			default:
+				this.changeView(View.ENTITY,{library:l});
+				break;
+			case TButtonType.EDIT:
+				this.changeView(View.EDIT,{library:l});
+				break;
+			case TButtonType.DEL:
+				// delete confirmation
+				break;
+		}
+	}
+
+	changeView(v:View, stateOpts:Partial<State>) {
 		this.setState((s:State) => {
 			s.view = v;
-			for (let k in stateOpts) {
-				s[k] = stateOpts[k];
+			if (stateOpts) {
+				for (let k in stateOpts) {
+					s[k] = stateOpts[k];
+				}
 			}
+			return s;
 		});
 	}
 
@@ -93,10 +117,22 @@ export default class LibraryPage extends React.Component<Properties, State> {
 				return [
 					<Header key="header">Libraries - {this.state.country.country}</Header>,
 					(<div key="panel" className="panel panel-default pt15 pb15">
-						<LibraryGrid
+						<Table
 							key="grid"
 							country={this.state.country}
 							libraries={this.state.libraries}
+							onClick={this.onTableClick}
+						/>
+					</div>)
+				];
+			case View.ENTITY:
+				return [
+					<Header key="header">{this.state.library.library}</Header>,
+					(<div key="panel" className="panel panel-default pt15 pb15">
+						<EntityForm
+							country={this.state.country}
+							library={this.state.library}
+							onBack={() => this.changeView(View.TABLE,null)}
 						/>
 					</div>)
 				];

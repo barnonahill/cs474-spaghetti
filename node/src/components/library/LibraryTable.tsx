@@ -4,7 +4,8 @@ import {
 	Table,
 	Column,
 	TableCellProps,
-	Index
+	Index,
+	TableCellDataGetterParams
 } from 'react-virtualized';
 
 import 'react-virtualized/styles.css'
@@ -20,9 +21,16 @@ enum DataKey {
 	DELETE = 'delete'
 }
 
+export enum ButtonType {
+	VIEW=0,
+	EDIT=1,
+	DEL=2
+}
+
 interface Properties {
 	country: Country
 	libraries: Array<Library>
+	onClick: (l:Library,t:ButtonType) => void
 }
 
 interface State {
@@ -73,29 +81,38 @@ export default class LibraryTable extends React.Component<Properties, State> {
 	}
 
 	viewBtnRenderer(props: TableCellProps) {
+		const l: Library = props.rowData;
+		const t = ButtonType.VIEW;
 		// props.rowData: Library
 		return <Button
 			bsStyle="primary"
 			bsSize="small"
-			key={'r' + props.rowIndex + 'v'}
+			key={l.libSiglum + t}
+			onClick={this.props.onClick.bind(this,l,t)}
 			>View
 		</Button>;
 	}
 
 	editBtnRenderer(props: TableCellProps) {
+		const l: Library = props.rowData;
+		const t = ButtonType.EDIT;
 		return <Button
 			bsStyle="primary"
 			bsSize="small"
-			key={'r' + props.rowIndex + 'e'}
+			key={l.libSiglum + t}
+			onClick={this.props.onClick.bind(this,l,t)}
 			>Edit
 		</Button>;
 	}
 
 	deleteBtnRenderer(props: TableCellProps) {
+		const l: Library = props.rowData;
+		const t = ButtonType.DEL;
 		return <Button
 			bsStyle="danger"
 			bsSize="small"
-			key={'r' + props.rowIndex + 'd'}
+			key={l.libSiglum + t}
+			onClick={this.props.onClick.bind(this,l,t)}
 			>Delete
 		</Button>;
 	}
@@ -121,19 +138,19 @@ export default class LibraryTable extends React.Component<Properties, State> {
 			/>
 			<Column
 				label="View"
-				dataKey="view"
+				dataKey=""
 				width={this.state.columnWidth}
 				cellRenderer={this.viewBtnRenderer}
 			/>
 			<Column
 				label="Edit"
-				dataKey="edit"
+				dataKey=""
 				width={this.state.columnWidth}
 				cellRenderer={this.editBtnRenderer}
 			/>
 			<Column
 				label="Delete"
-				dataKey="delete"
+				dataKey=""
 				width={this.state.columnWidth}
 				cellRenderer={this.deleteBtnRenderer}
 			/>
