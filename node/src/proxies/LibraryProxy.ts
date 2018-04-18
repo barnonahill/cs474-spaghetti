@@ -73,27 +73,6 @@ export default class LibraryProxy extends SpgProxy {
 	}
 
 	/**
-	 * Fetches the country with countryID countryID from the back-end
-	 * @param countryID identifier for the country, cannot be null.
-	 * @param callback executed async when a response is received.
-	 */
-	getCountry(countryID: string, callback: (country: ctry.Country, err?: string) => void) {
-		var params = {
-			action: 'GetCountry',
-			countryID: countryID
-		};
-
-		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
-			}
-			else {
-				callback(new ctry.Country((res as ctry.Properties)), null);
-			}
-		});
-	}
-
-	/**
 	 * Fetches all countries from the back-end
 	 * @param callback executed async when a response is received
 	 */
@@ -105,12 +84,14 @@ export default class LibraryProxy extends SpgProxy {
 		super.doPost(params, (res: any) => {
 			if (res.err) {
 				SpgProxy.callbackError(callback, res.err);
+				return;
 			}
-			else if (res.constructor === Array) {
-				var countries: Array<ctry.Country> = [];
-				for (let i = 0; i < res.length; i++) {
-					countries.push(new ctry.Country((res[i] as ctry.Properties)));
-				}
+
+			var data = res.data;
+			if (data.constructor === Array) {
+				var countries: Array<ctry.Country> = data.map((props: ctry.Properties) => {
+					return new ctry.Country(props);
+				});
 				callback(countries, null);
 			}
 			else {
@@ -175,10 +156,10 @@ export default class LibraryProxy extends SpgProxy {
 	 * @param props Attributes of new library
 	 * @param callback executed when a response is received.
 	 */
-	createLibrary(library: lib.Library, callback: (library: lib.Library, err?: string) => void) {
+	createLibrary(props: lib.Properties, callback: (library: lib.Library, err?: string) => void) {
 		var params = {
 			action: 'CreateLibrary',
-			library: library.toProperties()
+			library: props
 		};
 
 		super.doPost(params, (res: any) => {
@@ -219,7 +200,9 @@ export default class LibraryProxy extends SpgProxy {
 	 * @param callback executed async when a response is received.
 	 * @return
 	 */
-	getLibrary(libSiglum: string, callback: (library: lib.Library, err?: string) => void) {
+	getLibrary(libSiglum: string, countryID: string,
+		callback: (library: lib.Library, err?: string) => void)
+	{
 		var params = {
 			action: 'GetLibrary',
 			libSiglum: libSiglum
@@ -250,12 +233,14 @@ export default class LibraryProxy extends SpgProxy {
 		super.doPost(params, (res: any) => {
 			if (res.err) {
 				SpgProxy.callbackError(callback, res.err);
+				return;
 			}
-			else if (res.constructor === Array) {
-				var libraries: Array<lib.Library> = [];
-				for (let i = 0; i < res.length; i++) {
-					libraries.push(new lib.Library(res[i]));
-				}
+
+			var data = res.data;
+			if (data.constructor === Array) {
+				var libraries: Array<lib.Library> = data.map((props: lib.Properties) => {
+					return new lib.Library(props);
+				});
 				callback(libraries, null);
 			}
 			else {

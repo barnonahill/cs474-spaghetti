@@ -1,6 +1,19 @@
 const path = require('path');
+const webpack = require('webpack');
 
 const config = {
+	/*
+	 * Mode: 'production', 'development', or 'none'
+	 * Basically prod. will compress our output file while dev. will not.
+	 */
+	mode: 'development',
+
+	/*
+	 * Use source maps. They're only loaded if devtools is open, so they won't slow down end-users.
+	 */
+	devtool: 'source-map',
+	// devtool: 'nosources-source-map'
+
 	/*
 	 * index.ts represents the entry point to your web application. Webpack will
 	 * recursively go through every "require" statement in index.ts and
@@ -17,17 +30,13 @@ const config = {
 		filename: 'scripts.js'
 	},
 
-	/*
-	 * Mode: 'production', 'development', or 'none'
-	 * Basically prod. will compress our output file while dev. will not.
-	 * Since Norton is not concerned with our front-end code, we will use prod for submission.
-	 */
-	mode: 'development',
-
-	/*
-	 * Use source maps
-	 */
-	devtool: 'inline-source-maps',
+	plugins: [
+		new webpack.DefinePlugin({
+			'process.env': {
+				'NODE_ENV': JSON.stringify('production')
+			}
+		})
+	],
 
 	/*
 	 * resolve lets Webpack now in advance what file extensions you plan on
@@ -35,7 +44,7 @@ const config = {
 	 * in your code.
 	 */
 	resolve: {
-		extensions: [".ts", ".tsx", ".js", ".jsx"]
+		extensions: [".ts", ".tsx", ".js", ".jsx", ".css"]
 	},
 
 	module: {
@@ -50,6 +59,9 @@ const config = {
 			test: /\.tsx?$/,
 			loader: 'ts-loader',
 			exclude: /node_modules/
+		}, {
+			test:/\.css$/,
+			use: ['style-loader', 'css-loader']
 		}]
 	},
 

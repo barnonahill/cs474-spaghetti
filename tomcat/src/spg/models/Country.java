@@ -6,7 +6,7 @@ import org.json.JSONObject;
  * Model for a Country.
  * 
  * @author Paul Barnhill 
- * @version 2018-04-15
+ * @version 2018-04-18
  */
 public class Country {
 	private final String countryID;
@@ -30,7 +30,7 @@ public class Country {
 	 */
 	public JSONObject toJSON() {
 		JSONObject j = new JSONObject();
-		j.put("countryCode", this.countryID);
+		j.put("countryID", this.countryID);
 		j.put("country", this.country);
 		return j;
 	}

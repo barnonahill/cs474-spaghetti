@@ -66,60 +66,16 @@ export class Section extends SpgModel implements Properties {
 	public sourceCompletenessID: string;
 	[x: string]: any;
 
-	private library: Library;
-	private manuscript: Manuscript;
-	//private sectionType: SectionType;
-	private notation: Notation;
-	private century: Century;
-	private cursus: Cursus;
-	private provenance: Provenance;
-	private sourceCompleteness: SourceCompleteness;
-
 	constructor(props: Properties) {
 		super();
 		for (let k in props) {
-			if (k === 'libSiglum') {
+			if (k === 'libSiglum' || k === 'msSiglum' || k === 'notationID' || k === 'centuryID' ||
+				k === 'cursusID' || k === 'provenanceID' || k === 'sourceCompletenessID')
+			{
 				if (!(props && props[k].length)) {
-					throw Error('libSiglum cannot be empty.');
+					throw Error(k + ' cannot be empty.');
 				}
-				this.libSiglum = props[k];
-			}
-			else if (k === 'msSiglum') {
-				if (!(props && props[k].length)) {
-					throw Error('msSiglum cannot be empty.');
-				}
-				this.msSiglum = props[k];
-			}
-			// else if (k === 'sectionType')
-			else if (k === 'notationID') {
-				if (!(props && props[k].length)) {
-					throw Error('notationID cannot be empty.');
-				}
-				this.notationID = props[k];
-			}
-			else if (k === 'centuryID') {
-				if (!(props && props[k].length)) {
-					throw Error('centuryID cannot be empty.');
-				}
-				this.centuryID = props[k];
-			}
-			else if (k === 'cursusID') {
-				if (!(props && props[k].length)) {
-					throw Error('cursusID cannot be empty.');
-				}
-				this.cursusID = props[k];
-			}
-			else if (k === 'provenanceID') {
-				if (!(props && props[k].length)) {
-					throw Error('provenanceID cannot be empty.');
-				}
-				this.provenanceID = props[k];
-			}
-			else if (k === 'sourceCompletenessID') {
-				if (!(props && props[k].length)) {
-					throw Error('sourceCompletenessID cannot be empty.');
-				}
-				this.sourceCompletenessID = props[k];
+				this[k] = props[k];
 			}
 			else {
 				this[k] = props[k] || null;
@@ -149,78 +105,5 @@ export class Section extends SpgModel implements Properties {
 			colophon: this.colophon,
 			sourceCompletenessID: this.sourceCompletenessID
 		};
-	}
-
-	getLibrary(callback: (library: Library, err?: string) => void): void {
-		if (!this.library) {
-			proxyFactory.getLibraryProxy().getLibrary(this.libSiglum, (library: Library, err?: string) => {
-				if (err) {
-					SpgProxy.callbackError(callback, err);
-				}
-				else {
-					this.library = library;
-					callback(library, null);
-				}
-			});
-		}
-		else {
-			callback(this.library, null);
-		}
-	}
-
-	getManuscript(callback: (ms: Manuscript, err?: string) => void): void {
-		if (!this.manuscript) {
-			// TODO get manuscript
-		}
-		else {
-			callback(this.manuscript, null);
-		}
-	}
-
-	// getSectionType
-
-	getNotation(callback: (notation: Notation, err?: string) => void): void {
-		if (!this.notation) {
-			// TODO get notation
-		}
-		else {
-			callback(this.notation, null);
-		}
-	}
-
-	getCentury(callback: (century: Century, err?: string) => void): void {
-		if (!this.century) {
-			// TODO get century
-		}
-		else {
-			callback(this.century, null);
-		}
-	}
-
-	getCursus(callback: (cursus: Cursus, err?: string) => void): void {
-		if (!this.cursus) {
-			// TODO get cursus
-		}
-		else {
-			callback(this.cursus, null);
-		}
-	}
-
-	getProvenance(callback: (provenance: Provenance, err?: string) => void): void {
-		if (!this.provenance) {
-			// TODO get provenance
-		}
-		else {
-			callback(this.provenance, null);
-		}
-	}
-
-	getSourceCompleteness(callback: (sc: SourceCompleteness, err?: string) => void): void {
-		if (!this.sourceCompleteness) {
-			// TODO get sourceCompleteness
-		}
-		else {
-			callback(this.sourceCompleteness, null);
-		}
 	}
 }

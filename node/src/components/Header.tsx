@@ -1,7 +1,6 @@
 import * as React from 'react';
 
 interface HeaderProps {
-  inner: string;
   tag?: string; // Optional param
 }
 
@@ -16,7 +15,7 @@ export default class Header extends React.Component<HeaderProps, {}> {
   render() {
     return (
       <header className="page-header">
-        <this.tag>{this.props.inner}</this.tag>
+        <this.tag>{this.props.children}</this.tag>
       </header>
     );
   }

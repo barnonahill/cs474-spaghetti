@@ -1,31 +1,37 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import LibraryForm from '@src/components/forms/Library.tsx'
-// import Hello from './components/Hello';
+import LibraryPage from '@src/components/library/LibraryPage.tsx';
+
+import { Country } from '@src/models/country.ts';
+import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
 class App {
-  constructor(private container: HTMLDivElement) {}
+	private stack: Array<any>;
+	private pageContainer: HTMLElement;
 
-  /**
-   * Render our React application to the DOM.
-   */
-  render() {
-    ReactDOM.render(
-      <LibraryForm stack={[]} />,
-      this.container
-    );
-    // ReactDOM.render(
-    //   <Jumbotron name="Cantus" desc="She lives!" />,
-    //   this.container
-    // );
-    //
-    // ReactDOM.render(
-    //   <Header tag="h2" inner="Home" />,
-    //   this.container
-    // );
-  }
+	constructor(private container: HTMLElement) {
+		this.stack = [];
+		this.pageContainer = document.getElementById('page');
+	}
+
+	renderLibrary() {
+		proxyFactory.getLibraryProxy().getCountries((countries:Array<Country>, e?:string) => {
+			if (e) {
+				alert(e);
+				return;
+			}
+
+			ReactDOM.render(
+				(<LibraryPage
+					stack={this.stack}
+					countries={countries}
+				/>),
+				this.pageContainer
+			);
+		});
+	}
 }
 
-const app: App = new App((document.getElementById('app') as HTMLDivElement));
-app.render();
+const app: App = new App((document.getElementById('app')));
+app.renderLibrary();

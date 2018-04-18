@@ -1,14 +1,24 @@
 package spg.servlets;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
+
 /**
  * Abstract implementation of an HTTP Servlet. We don't care if Requests are GETs or POSTs.
+ * 
+ * @author Paul Barnhill
+ * @version 2018-04-18
  */
 public abstract class SpgHttpServlet extends HttpServlet {
 	
@@ -30,12 +40,55 @@ public abstract class SpgHttpServlet extends HttpServlet {
 	
 	public abstract void handleRequest(HttpServletRequest req, HttpServletResponse res) throws IOException;
 	
-	public String getAction(HttpServletRequest req) throws Exception {
-		String a = req.getParameter("action");
-		if (a == null || a.isEmpty()) {
-			throw new Exception("Missing action parameter.");
+	/**
+	 * Map the parameters from a JSON post or a browser GET request.
+	 *
+	 * @throws IOException content-type is JSON and the request BufferedReader threw an exception.
+	 */
+	public Map<String, String> getParameters(HttpServletRequest req) throws IOException {
+		String contentType = req.getHeader("content-type");
+		Map<String, String> map = new HashMap<String, String>();
+		
+		if (contentType != null && contentType.indexOf("application/json") >= 0) {
+			StringBuilder sb = new StringBuilder();
+			String s;
+			BufferedReader br = req.getReader();
+			while ((s = br.readLine()) != null) {
+				sb.append(s);
+			}
+			
+			JSONObject j = new JSONObject(sb.toString());
+			Set<String> keys = j.keySet();
+			for (String k : keys) {
+				map.put(k, j.getString(k));
+			}
 		}
-		return a;
+		else {
+			Enumeration<String> keys = req.getParameterNames();
+			String k;
+			while (keys.hasMoreElements()) {
+				k = keys.nextElement();
+				map.put(k, req.getParameter(k));
+			}
+		}
+		
+		return map;	
+	}
+	
+	/**
+	 * Gets parameter p from map m, or throws an Exception for the front-end.
+	 * 
+	 * @param m map of parameters
+	 * @param p parameter to get
+	 * @return value of parameter
+	 * @throws Exception the parameter is not in the map.
+	 */
+	public String getParameter(Map<String, String> m, String p) throws Exception {
+		String s = m.get(p);
+		if (s == null || s.isEmpty()) {
+			throw new Exception("Missing " + p + " parameter.");
+		}
+		return s;
 	}
 	
 	/**

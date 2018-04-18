@@ -1,5 +1,5 @@
-import LibraryProxy from './LibraryProxy.ts';
-import ManuScriptProxy from './ManuscriptProxy.ts';
+import LibraryProxy from '@src/proxies/LibraryProxy.ts';
+import ManuScriptProxy from '@src/proxies/ManuscriptProxy.ts';
 
 
 /**

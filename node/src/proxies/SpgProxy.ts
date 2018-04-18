@@ -46,7 +46,7 @@ export default abstract class SpgProxy {
 	 * @param onSuccess async callback to be executed when a response is received.
 	 */
 	doPost(params: any, onSuccess: (res: any) => void) {
-		axios.post(this.service, {params:params})
+		axios.post(this.service, params)
 			.then(onSuccess)
 			.catch((e: Error) => {
 				SpgProxy.handleResponseError(e);

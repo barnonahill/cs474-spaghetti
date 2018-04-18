@@ -5,11 +5,10 @@ import org.json.JSONObject;
 /**
  * Model for a Library.
  * 
- * @author Kyle Tran 
- * @version 2018-04-16
+ * @author Paul Barnhill, Kyle Tran 
+ * @version 2018-04-18
  */
 public class Library {
-	//TODO CHANGE THIS ALL TO LIBRARY.
 	private final String libSiglum;
 	private final String countryID;
 	private final String city;
@@ -42,8 +41,13 @@ public class Library {
 	 */
 	public JSONObject toJSON() {
 		JSONObject j = new JSONObject();
-		j.put("countryCode", this.libSiglum);
-		j.put("country", this.countryID);
+		j.put("libSiglum", this.libSiglum);
+		j.put("countryID", this.countryID);
+		j.put("city", this.city);
+		j.put("library", this.library);
+		j.put("address1", this.address1);
+		j.put("address2", this.address2);
+		j.put("postCode", this.postCode);
 		return j;
 	}
 	

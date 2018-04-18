@@ -17,6 +17,17 @@ export default abstract class SpgModel {
 	}
 
 	/**
+	 * Calls destroy on each SpgModel in arr, then nulls arr.
+	 * @param arr array of SpgModels to destroy.
+	 */
+	static destroyArray(arr: Array<SpgModel>) {
+		for (let i = 0; i < arr.length; i++) {
+			arr[i].destroy();
+		}
+		arr = null;
+	}
+
+	/**
 	 * Creates a JSON representation of this data model.
 	 * @return
 	 */

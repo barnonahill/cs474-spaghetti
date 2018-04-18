@@ -12,12 +12,12 @@ import proxyFactory from '@src/proxies/ProxyFactory.ts';
  */
 export interface Properties {
 	libSiglum: string;
-	city?: string;
-	library?: string;
-	address1?: string;
-	address2?: string;
-	postCode?: string;
-	countryID?: string;
+	countryID: string;
+	city: string;
+	library: string;
+	address1: string;
+	address2: string;
+	postCode: string;
 	// Index signature to allow iteration over properties in Typescript
 	[x: string]: any;
 }
@@ -27,27 +27,25 @@ export interface Properties {
  */
 export class Library extends SpgModel implements Properties {
 	public readonly libSiglum: string;
+	public countryID: string;
 	public city: string;
 	public library: string;
 	public address1: string;
 	public address2: string;
 	public postCode: string;
-	public countryID: string;
+
 	// Index signature to allow iteration over properties in Typescript
 	[x: string]: any;
-
-	private country: Country;
 
 	constructor(props: Properties) {
 		super();
 
 		for (let k in props) {
-			if (k === 'libSiglum') {
-				if (!props[k].length) {
-					throw Error('libSiglum cannot be empty.');
+			if (k === 'libSiglum' || k === 'countryID' || k === 'city' || k === 'library') {
+				if (!(props[k] && props[k].length)) {
+					throw Error(k + ' cannot be empty');
 				}
-
-				this.libSiglum = props[k];
+				this[k] = props[k];
 			}
 			else {
 				this[k] = props[k] || null;
@@ -68,29 +66,5 @@ export class Library extends SpgModel implements Properties {
 			postCode: this.postCode,
 			countryID: this.countryID
 		};
-	}
-
-	getCountry(callback: (country: Country, err?: string) => void): void {
-		if (!this.country) {
-			proxyFactory.getLibraryProxy().getCountry(this.countryID, (country: Country, err?: string) => {
-				if (err) {
-					SpgProxy.callbackError(callback, err);
-				}
-				else {
-					this.country = country;
-					callback(country, null);
-				}
-			});
-		}
-		else {
-			callback(this.country, null);
-		}
-	}
-
-	/**
-	 * Returns a JSON representation of this Library.
-	 */
-	toString(): string {
-		return JSON.stringify(this.toProperties());
 	}
 }

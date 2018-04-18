@@ -1,29 +1,36 @@
 package spg.servlets;
 
 import java.io.IOException;
+import java.util.Map;
 
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import spg.models.Country;
+import spg.models.Library;
 
 /**
- * @author Carl Clermont
- * @version 2018-04-16
+ * Library-related services.
+ * 
+ * @author Paul Barnhill, Carl Clermont
+ * @version 2018-04-18
  */
+@WebServlet(name="LibraryServices", urlPatterns= {"/library"})
 public class LibraryServlet extends SpgHttpServlet {
-
+	private static final long serialVersionUID = 1L;
+	
 	//From the Country table.
-	public static final String GET_COUNTRIES 	= "GetCountries";
-	public static final String GET_COUNTRY 		= "GetCountry";
+	public static final String GET_COUNTRIES 	= "getcountries";
 	
 	//From the Library table.
 	public static final String CREATE_LIBRARY 	= "CreateLibrary";
 	public static final String UPDATE_LIBRARY 	= "UpdateLibrary";
-	public static final String GET_LIBRARY 		= "GetLibrary";
-	public static final String GET_LIBRARIES 	= "GetLibraries";
+	public static final String GET_LIBRARY 		= "getlibrary";
+	public static final String GET_LIBRARIES 	= "getlibraries";
 	
 	public static final String CREATE_CENTURY 	= "CreateCentury";
 	public static final String GET_CENTURY 		= "GetCentury";
@@ -42,23 +49,15 @@ public class LibraryServlet extends SpgHttpServlet {
 	public void handleRequest(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		try 
 		{
-			String action = super.getAction(req);
-			action.toLowerCase();
-			
+			Map<String, String> params = super.getParameters(req);
+			String action = super.getParameter(params, "action").toLowerCase();
 			String msg = null;
 			
-			//Actions are in LibraryProxy.ts
+			// Actions are in node/src/proxies/LibraryProxy.ts
 			switch (action) 
 			{
 				case GET_COUNTRIES:
 					msg = this.getCountries();
-					break;
-				case GET_COUNTRY:
-					String countryID = req.getParameter("countryID");
-					if (countryID == null || countryID.isEmpty()) {
-						throw new Exception("Missing countryCode parameter.");
-					}
-					msg = this.getCountry(countryID);
 					break;
 				case CREATE_LIBRARY:
 					// TODO
@@ -71,6 +70,8 @@ public class LibraryServlet extends SpgHttpServlet {
 					break;
 				case GET_LIBRARIES:
 					// TODO
+					String countryID = super.getParameter(params, "countryID");
+					msg = this.getLibraries(countryID);
 					break;
 				case CREATE_CENTURY:
 					// TODO
@@ -113,25 +114,23 @@ public class LibraryServlet extends SpgHttpServlet {
 		 * countries.put(country.toJSON());
 		 */
 		
+		// Dummy code for front-end. TODO replace with code that connects to DB
+		country = new Country("US", "United States");
+		countries.put(country.toJSON());
+		
 		return countries.toString();
 	}
 	
-	/**
-	 * Gets the JSON String of the country with the matching countryCode.
-	 * @param countryCode
-	 * @return
-	 */
-	public String getCountry(String countryID) throws Exception {
-		Country country;
-		return null;
-		// TODO get country
+	public String getLibraries(String countryID) {
+		JSONArray libraries = new JSONArray();
+		Library library;
 		
-		//if (c != null) {
-		//	return c.toString();
-		//}
-		//else {
-		//	throw new Exception("Could not find a country with countryCode " + countryCode);
-		//}
+		// TODO read libraries from DB
+		
+		// Dummy code for front-end. TODO replace with code that connects to DB
+		library = new Library("US-Cn", "US", "Chicago", "Newberry Library", null, null, null);
+		libraries.put(library.toJSON());
+				
+		return libraries.toString();
 	}
-	
 }
