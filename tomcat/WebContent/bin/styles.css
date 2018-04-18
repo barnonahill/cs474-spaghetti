@@ -21,3 +21,16 @@
 .mr15p {
   margin-right: 15%;
 }
+
+.pt15 {
+  padding-top: 15px;
+}
+
+.pb15 {
+  padding-bottom: 15px;
+}
+
+.panel {
+  background-color: #f4f4f4;
+  border-color: #e8e8e8;
+}

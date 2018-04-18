@@ -81,20 +81,24 @@ export default class LibraryPage extends React.Component<Properties, State> {
 			default:
 				return [
 					<Header key="header">Libraries</Header>,
-					(<CountrySelectForm
-						countries={this.props.countries}
-						onExit={this.onCountrySelect}
-						key="panel"
-					/>)
+					(<div key="panel" className="panel panel-default pt15 pb15">
+						<CountrySelectForm
+							countries={this.props.countries}
+							onExit={this.onCountrySelect}
+							key="panel"
+						/>
+					</div>)
 				];
 			case View.TABLE:
 				return [
 					<Header key="header">Libraries - {this.state.country.country}</Header>,
-					(<LibraryGrid
-						key="grid"
-						country={this.state.country}
-						libraries={this.state.libraries}
-					/>)
+					(<div key="panel" className="panel panel-default pt15 pb15">
+						<LibraryGrid
+							key="grid"
+							country={this.state.country}
+							libraries={this.state.libraries}
+						/>
+					</div>)
 				];
 			case View.EDIT:
 				return null;

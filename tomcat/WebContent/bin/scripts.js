@@ -36976,14 +36976,16 @@ var LibraryPage = (function (_super) {
             default:
                 return [
                     React.createElement(Header_tsx_1.default, { key: "header" }, "Libraries"),
-                    (React.createElement(CountrySelectForm, { countries: this.props.countries, onExit: this.onCountrySelect, key: "panel" }))
+                    (React.createElement("div", { key: "panel", className: "panel panel-default pt15 pb15" },
+                        React.createElement(CountrySelectForm, { countries: this.props.countries, onExit: this.onCountrySelect, key: "panel" })))
                 ];
             case View.TABLE:
                 return [
                     React.createElement(Header_tsx_1.default, { key: "header" },
                         "Libraries - ",
                         this.state.country.country),
-                    (React.createElement(LibraryGrid_tsx_1.default, { key: "grid", country: this.state.country, libraries: this.state.libraries }))
+                    (React.createElement("div", { key: "panel", className: "panel panel-default pt15 pb15" },
+                        React.createElement(LibraryGrid_tsx_1.default, { key: "grid", country: this.state.country, libraries: this.state.libraries })))
                 ];
             case View.EDIT:
                 return null;
