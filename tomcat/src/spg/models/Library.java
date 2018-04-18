@@ -5,7 +5,7 @@ import org.json.JSONObject;
 /**
  * Model for a Library.
  * 
- * @author Paul Barnhill, Kyle Tran 
+ * @author Paul Barnhill, Kyle Tran, Carl Clermont
  * @version 2018-04-18
  */
 public class Library {
@@ -28,12 +28,32 @@ public class Library {
 		this.postCode = postCode;
 	}
 	
-	public String getCountryCode() {
+	public String getlibSiglum() {
 		return this.libSiglum;
 	}
 	
-	public String getCountryName() {
+	public String getCountryID() {
 		return this.countryID;
+	}
+	
+	public String getCity() {
+		return this.city;
+	}
+	
+	public String getLibrary() {
+		return this.library;
+	}
+	
+	public String getAddress1() {
+		return this.address1;
+	}
+	
+	public String getAddress2() {
+		return this.address2;
+	}
+	
+	public String getPostCode() {
+		return this.postCode;
 	}
 	
 	/**

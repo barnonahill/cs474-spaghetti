@@ -1,6 +1,7 @@
 package spg.servlets;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
 import javax.servlet.annotation.WebServlet;
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import spg.controllers.LibraryController;
 import spg.models.Country;
 import spg.models.Library;
 
@@ -104,24 +106,24 @@ public class LibraryServlet extends SpgHttpServlet {
 		}
 	}
 	
+	/**
+	 * getCountries - handles getting and returning countries.
+	 * @return - A JSONArray filled with countries. (Should it be countries or countries.toString()?)
+	 */
 	public String getCountries() {
 		JSONArray countries = new JSONArray();
-		Country country;
+		ArrayList<Country> results = LibraryController.getCountries();
 		
-		// TODO read countries into JSONArray
-		/* Example
-		 * country = new Country("US", "United States");
-		 * countries.put(country.toJSON());
-		 */
-		
-		// Dummy code for front-end. TODO replace with code that connects to DB
-		country = new Country("US", "United States");
-		countries.put(country.toJSON());
-		
+		for(Country c : results) {
+			countries.put(c);
+		}
+
 		return countries.toString();
 	}
 	
-	public String getLibraries(String countryID) {
+	
+	public String getLibrary(String countryID) {
+		//Careful with params. watch for sql injections.
 		JSONArray libraries = new JSONArray();
 		Library library;
 		
@@ -130,6 +132,21 @@ public class LibraryServlet extends SpgHttpServlet {
 		// Dummy code for front-end. TODO replace with code that connects to DB
 		library = new Library("US-Cn", "US", "Chicago", "Newberry Library", null, null, null);
 		libraries.put(library.toJSON());
+				
+		return libraries.toString();
+	}
+	
+	/**
+	 * getLibraries - handles getting and returning Libraries.
+	 * @return A JSONArray filled with libraries.
+	 */
+	public String getLibraries() {
+		JSONArray libraries = new JSONArray();
+		ArrayList<Library> results = LibraryController.getLibraries();
+		
+		for(Library l : results) {
+			libraries.put(l);
+		}
 				
 		return libraries.toString();
 	}
