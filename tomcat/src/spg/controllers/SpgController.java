@@ -33,6 +33,7 @@ public abstract class SpgController extends HttpServlet{
 	static final ResultSet getResultSet(String queryString) throws Exception {
 		Connection connection;
 		Statement statement;
+		ResultSet resultSet;
 		try {
 			//Properties p = new Properties();
 			//p.setProperty("user", "root");
@@ -42,11 +43,38 @@ public abstract class SpgController extends HttpServlet{
 			connection = DriverManager.getConnection(DATABASE_ADDR, USER, DB_PASS);
 			statement = connection.createStatement();
 			statement.executeQuery("USE "+ DATABASE_NAME + ";");
-			return statement.executeQuery(queryString);
+			resultSet = statement.executeQuery(queryString);
+			connection.close();
+			return resultSet; 
 		} catch (Exception e) {
 	        e.printStackTrace();
 	        throw new Exception("Could not connect to database");
 		}
 	}
+	
+	
+//	// DONT UNCOMMENT TILL YOU CHECK FOR STRINGS VS INTS AND STUFF. (USE PAUL's FIX)
+//	/**
+//	 * buildSelectQuery - handles creating the strings for select queries.
+//	 * @param tableName - the table to select from.
+//	 * @param filterName - the variable to filter by.
+//	 * @param filterValue - the value to filter by.
+//	 * 
+//	 * @return The string to use for the SELECT query based on the input.
+//	 */
+//	static final String buildSelectQuery(String tableName, String filterName, String filterValue) {
+//		StringBuilder query = new StringBuilder("SELECT * FROM ");
+//		query.append(tableName);
+//		
+//		if(!(filterName == null || filterName.equals("") || filterValue == null || filterValue.equals(""))) {
+//			query.append(" WHERE ");
+//			query.append(filterName);
+//			query.append(" = ");
+//			query.append(filterValue);
+//			query.append("");
+//		}
+//		query.append(";");
+//		return query.toString();
+//	}
 	
 }

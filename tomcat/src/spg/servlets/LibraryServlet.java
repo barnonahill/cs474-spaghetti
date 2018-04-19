@@ -29,18 +29,18 @@ public class LibraryServlet extends SpgHttpServlet {
 	public static final String GET_COUNTRIES 	= "getcountries";
 	
 	//From the Library table.
-	public static final String CREATE_LIBRARY 	= "CreateLibrary";
-	public static final String UPDATE_LIBRARY 	= "UpdateLibrary";
+	public static final String CREATE_LIBRARY 	= "createlibrary";
+	public static final String UPDATE_LIBRARY 	= "updatelibrary";
 	public static final String GET_LIBRARY 		= "getlibrary";
 	public static final String GET_LIBRARIES 	= "getlibraries";
 	
-	public static final String CREATE_CENTURY 	= "CreateCentury";
-	public static final String GET_CENTURY 		= "GetCentury";
-	public static final String GET_CENTURIES 	= "GetCenturies";
+	public static final String CREATE_CENTURY 	= "createcentury";
+	public static final String GET_CENTURY 		= "getcentury";
+	public static final String GET_CENTURIES 	= "getcenturies";
 	
-	public static final String CREATE_CURSUS 	= "CreateCursus";
-	public static final String GET_CURSUS 		= "GetCursus";
-	public static final String GET_CURSUSES	 	= "GetCursuses";
+	public static final String CREATE_CURSUS 	= "createcursus";
+	public static final String GET_CURSUS 		= "getcursus";
+	public static final String GET_CURSUSES	 	= "getcursuses";
 	
 	
 	public LibraryServlet() {
@@ -75,6 +75,8 @@ public class LibraryServlet extends SpgHttpServlet {
 					break;
 				case UPDATE_LIBRARY:
 					// TODO
+					
+					
 					break;
 				case GET_LIBRARY:
 					// TODO
@@ -141,6 +143,17 @@ public class LibraryServlet extends SpgHttpServlet {
 		Library lib = LibraryController.createLibrary(libSiglum, countryID, city, library, address1, address2, postCode);
 		return lib.toJSON().toString();
 	}
+	
+	/**
+	 * 
+	 * @param columnName
+	 * @param newValue
+	 * @return
+	 */
+	public String updateLibrary(String columnName, String newValue /*, ,*/) {
+		return null;
+	}
+	
 	
 	/**
 	 * getLibraries - handles getting and returning Libraries.

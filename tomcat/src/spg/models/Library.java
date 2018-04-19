@@ -1,5 +1,8 @@
 package spg.models;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.json.JSONObject;
 
 /**
@@ -26,6 +29,16 @@ public class Library {
 		this.address1 = address1;
 		this.address2 = address2;
 		this.postCode = postCode;
+	}
+	
+	public Library(ResultSet resultSet) throws SQLException {
+		this.libSiglum = resultSet.getString("libSiglum");
+		this.countryID = resultSet.getString("countryID");
+		this.city = resultSet.getString("city");
+		this.library = resultSet.getString("library");
+		this.address1 = resultSet.getString("address1");
+		this.address2 = resultSet.getString("address2");
+		this.postCode = resultSet.getString("postCode");
 	}
 	
 	public String getlibSiglum() {
