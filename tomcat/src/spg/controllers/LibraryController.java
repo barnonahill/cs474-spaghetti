@@ -7,7 +7,7 @@ import spg.models.Country;
 import spg.models.Library;
 
 /**
- * 
+ * LibraryController - Static methods used for handling Library and Country sql commands.
  * @author Carl Clermont
  *
  */
@@ -39,6 +39,47 @@ public class LibraryController{
 		
 		return countries;
 	}
+	
+	/**
+	 * createLibrary - currently assumes no null values. CAREFUL!!!
+	 * @params - condensed - (im lazy) the columns of the Library table.
+	 * @return - A Library object. (the one made from what was passed in.)
+	 * @throws Exception - anything.
+	 */
+	public static Library createLibrary(String libSiglum, String countryID, String city,
+			String library, String address1, String address2, String postCode) throws Exception{
+		ResultSet resultSet;
+		String query;
+		//Should I check these for null or empty values??
+		StringBuilder stringBuilder = new StringBuilder("INSERT INTO Library VALUES ( ");
+		stringBuilder.append("'"+ libSiglum +"',");
+		stringBuilder.append("'"+ countryID +"',");
+		stringBuilder.append("'"+ city +"',");
+		stringBuilder.append("'"+ library +"',");
+		stringBuilder.append("'"+ address1 +"',");
+		stringBuilder.append("'"+ address2 +"',");
+		stringBuilder.append("'"+ postCode +"',");
+		stringBuilder.append(");");
+		
+		query = stringBuilder.toString();
+		resultSet = SpgController.getResultSet(query);
+		
+		//Should I build the Library manually??
+		//since the result set may just confirm the Library was inserted. 
+		//(or I could use getLibrary(libSiglum) when that is finished)!!
+		resultSet.next();
+		Library lib = new Library(resultSet.getString("libSiglum"),
+				resultSet.getString("countryID"),
+				resultSet.getString("city"),
+				resultSet.getString("library"),
+				resultSet.getString("address1"),
+				resultSet.getString("address2"),
+				resultSet.getString("postCode")
+				);
+		
+		return lib;
+	}
+	
 	
 	/**
 	 * getLibraries - gets an array list of all the Libraries.

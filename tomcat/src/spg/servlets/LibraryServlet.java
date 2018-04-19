@@ -62,7 +62,16 @@ public class LibraryServlet extends SpgHttpServlet {
 					msg = this.getCountries();
 					break;
 				case CREATE_LIBRARY:
-					// TODO
+					//None of these are checked for null. Not sure if that needs to be done.
+					String createLibSiglum = params.get("libSiglum");
+					String createCountryID = params.get("countryID");
+					String createCity = params.get("city");
+					String createLibrary = params.get("library");
+					String createAddress1 = params.get("address1");
+					String createAddress2 = params.get("address2");
+					String createPostCode = params.get("postCode");
+					msg = this.createLibrary(createLibSiglum, createCountryID, createCity, createLibrary,
+							createAddress1, createAddress2, createPostCode);
 					break;
 				case UPDATE_LIBRARY:
 					// TODO
@@ -71,7 +80,6 @@ public class LibraryServlet extends SpgHttpServlet {
 					// TODO
 					break;
 				case GET_LIBRARIES:
-					// TODO
 					String countryID = super.getParameter(params, "countryID");
 					msg = this.getLibraries(countryID);
 					break;
@@ -108,7 +116,7 @@ public class LibraryServlet extends SpgHttpServlet {
 	
 	/**
 	 * getCountries - handles getting and returning countries.
-	 * @return - A JSONArray filled with countries. (Should it be countries or countries.toString()?)
+	 * @return - A JSONArray filled with countries. 
 	 * @throws Exception 
 	 */
 	public String getCountries() throws Exception {
@@ -120,6 +128,18 @@ public class LibraryServlet extends SpgHttpServlet {
 		}
 
 		return countries.toString();
+	}
+	
+	/**
+	 * createLibrary - library creation handler.
+	 * @params - condensed - (im lazy) the columns of the Library table.
+	 * @return - a string representation of a JSON representation of the Library made.
+	 * @throws Exception - anything.
+	 */
+	public String createLibrary(String libSiglum, String countryID, String city,
+			String library, String address1, String address2, String postCode) throws Exception {
+		Library lib = LibraryController.createLibrary(libSiglum, countryID, city, library, address1, address2, postCode);
+		return lib.toJSON().toString();
 	}
 	
 	/**
