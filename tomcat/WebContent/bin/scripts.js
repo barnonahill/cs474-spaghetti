@@ -36815,10 +36815,156 @@ exports.default = Header;
 
 /***/ }),
 
-/***/ "./src/components/library/LibraryEntityView.tsx":
-/*!******************************************************!*\
-  !*** ./src/components/library/LibraryEntityView.tsx ***!
-  \******************************************************/
+/***/ "./src/components/library/LibraryApp.tsx":
+/*!***********************************************!*\
+  !*** ./src/components/library/LibraryApp.tsx ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/Header.tsx */ "./src/components/Header.tsx");
+var LibraryCountryPanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryCountryPanel.tsx */ "./src/components/library/LibraryCountryPanel.tsx");
+var LibraryEntityPanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryEntityPanel.tsx */ "./src/components/library/LibraryEntityPanel.tsx");
+var LibraryEditPanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryEditPanel.tsx */ "./src/components/library/LibraryEditPanel.tsx");
+var LibraryTablePanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryTablePanel.tsx */ "./src/components/library/LibraryTablePanel.tsx");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var View;
+(function (View) {
+    View[View["INIT"] = 0] = "INIT";
+    View[View["TABLE"] = 1] = "TABLE";
+    View[View["ENTITY"] = 2] = "ENTITY";
+    View[View["EDIT"] = 3] = "EDIT";
+})(View || (View = {}));
+var LibraryApp = (function (_super) {
+    __extends(LibraryApp, _super);
+    function LibraryApp(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {
+            libraries: null,
+            view: View.INIT
+        };
+        _this.onCountrySelect = _this.onCountrySelect.bind(_this);
+        _this.onTableClick = _this.onTableClick.bind(_this);
+        _this.onEditSubmit = _this.onEditSubmit.bind(_this);
+        return _this;
+    }
+    LibraryApp.prototype.onCountrySelect = function (c) {
+        var _this = this;
+        ProxyFactory_ts_1.default.getLibraryProxy().getLibraries(c.countryID, function (libs, e) {
+            if (e) {
+                alert(e);
+            }
+            _this.setState(function (s) {
+                s.view = View.TABLE;
+                s.country = c;
+                s.libraries = libs;
+                return s;
+            });
+        });
+    };
+    LibraryApp.prototype.onTableClick = function (l, t) {
+        switch (t) {
+            case LibraryTablePanel_tsx_1.ButtonType.VIEW:
+            default:
+                this.changeView(View.ENTITY, { library: l });
+                break;
+            case LibraryTablePanel_tsx_1.ButtonType.EDIT:
+                this.changeView(View.EDIT, { library: l });
+                break;
+            case LibraryTablePanel_tsx_1.ButtonType.DEL:
+                break;
+        }
+    };
+    LibraryApp.prototype.onEditSubmit = function (p, isNew) {
+        var _this = this;
+        if (isNew) {
+            ProxyFactory_ts_1.default.getLibraryProxy().createLibrary(p, function (l, e) {
+                if (e) {
+                    alert(e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        s.libraries.push(l);
+                        s.view = View.TABLE;
+                        return s;
+                    });
+                }
+            });
+        }
+        else {
+        }
+    };
+    LibraryApp.prototype.changeView = function (v, stateOpts) {
+        this.setState(function (s) {
+            s.view = v;
+            if (stateOpts) {
+                for (var k in stateOpts) {
+                    s[k] = stateOpts[k];
+                }
+            }
+            return s;
+        });
+    };
+    LibraryApp.prototype.render = function () {
+        var _this = this;
+        switch (this.state.view) {
+            case View.INIT:
+            default:
+                return [
+                    React.createElement(Header_tsx_1.default, { key: "header" }, "Libraries"),
+                    (React.createElement(LibraryCountryPanel_tsx_1.default, { countries: this.props.countries, onSubmit: this.onCountrySelect, key: "panel" }))
+                ];
+            case View.TABLE:
+                return [
+                    React.createElement(Header_tsx_1.default, { key: "header" },
+                        "Libraries - ",
+                        this.state.country.country),
+                    (React.createElement(LibraryTablePanel_tsx_1.default, { key: "grid", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick, onBack: function () { return _this.changeView(View.INIT, null); } }))
+                ];
+            case View.ENTITY:
+                return [
+                    React.createElement(Header_tsx_1.default, { key: "header" }, this.state.library.library),
+                    (React.createElement(LibraryEntityPanel_tsx_1.default, { key: "EntityPanel", country: this.state.country, library: this.state.library, onBack: function () { return _this.changeView(View.TABLE, null); } }))
+                ];
+            case View.EDIT:
+                var header;
+                if (this.state.library) {
+                    header = this.state.library.library;
+                }
+                else {
+                    header = this.state.country.country + ' - Create a lib.Library';
+                }
+                return [
+                    React.createElement(Header_tsx_1.default, { key: "header" }, header),
+                    (React.createElement(LibraryEditPanel_tsx_1.default, { key: "EditPanel", library: this.state.library || null, country: this.state.country, onSubmit: this.onEditSubmit, onBack: function () { return _this.changeView(View.TABLE, null); } }))
+                ];
+        }
+    };
+    return LibraryApp;
+}(React.Component));
+exports.default = LibraryApp;
+
+
+/***/ }),
+
+/***/ "./src/components/library/LibraryCountryPanel.tsx":
+/*!********************************************************!*\
+  !*** ./src/components/library/LibraryCountryPanel.tsx ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36837,9 +36983,207 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
-var LibraryEntityView = (function (_super) {
-    __extends(LibraryEntityView, _super);
-    function LibraryEntityView(p) {
+var react_select_1 = __webpack_require__(/*! react-select */ "./node_modules/react-select/dist/react-select.es.js");
+var LibraryCountryPanel = (function (_super) {
+    __extends(LibraryCountryPanel, _super);
+    function LibraryCountryPanel(props) {
+        var _this = _super.call(this, props) || this;
+        var options = props.countries.map(function (c) {
+            return {
+                label: c.country,
+                value: c.countryID
+            };
+        });
+        _this.state = {
+            options: options,
+            option: null,
+            loadDisabled: true
+        };
+        _this.onChange = _this.onChange.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
+        return _this;
+    }
+    LibraryCountryPanel.prototype.onChange = function (option) {
+        this.setState(function (state) {
+            state.option = option;
+            state.loadDisabled = option === null;
+            return state;
+        });
+    };
+    LibraryCountryPanel.prototype.onSubmit = function (e) {
+        var _this = this;
+        e.preventDefault();
+        var country = this.props.countries.find(function (c) {
+            return _this.state.option.value === c.countryID;
+        });
+        this.props.onSubmit(country);
+    };
+    LibraryCountryPanel.prototype.render = function () {
+        return [
+            (React.createElement(react_bootstrap_1.Alert, { bsStyle: "info", className: "mb20 mr15p ml15p text-center", key: "alert" },
+                React.createElement("strong", null, "Select a country to view libraries."))),
+            (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form", onSubmit: this.onSubmit },
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_select_1.default, { name: "countryID", value: this.state.option, options: this.state.options, onChange: this.onChange }))),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
+                    React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit", disabled: this.state.loadDisabled }, "Load"),
+                        React.createElement(react_bootstrap_1.Button, { className: "ml15" }, "Back")))))
+        ];
+    };
+    return LibraryCountryPanel;
+}(React.Component));
+exports.default = LibraryCountryPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/library/LibraryEditPanel.tsx":
+/*!*****************************************************!*\
+  !*** ./src/components/library/LibraryEditPanel.tsx ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var LibraryEditPanel = (function (_super) {
+    __extends(LibraryEditPanel, _super);
+    function LibraryEditPanel(p) {
+        var _this = _super.call(this, p) || this;
+        var state;
+        if (p.library) {
+            var l = p.library;
+            state = {
+                isNew: false,
+                props: l.toProperties()
+            };
+        }
+        else {
+            state = {
+                isNew: true,
+                props: {
+                    libSiglum: '',
+                    countryID: p.country.countryID,
+                    city: '',
+                    library: '',
+                    address1: '',
+                    address2: '',
+                    postCode: ''
+                }
+            };
+        }
+        _this.state = state;
+        _this.onInputChange = _this.onInputChange.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
+        return _this;
+    }
+    LibraryEditPanel.prototype.onInputChange = function (e) {
+        var target = e.target;
+        var k = target.id;
+        var v = target.value;
+        this.setState(function (s) {
+            s.props[k] = v;
+            return s;
+        });
+    };
+    LibraryEditPanel.prototype.onSubmit = function (e) {
+        e.preventDefault();
+        var props = this.state.props;
+        var isNew = this.state.isNew;
+        if (isNew && props.libSiglum.indexOf(props.countryID + '-') !== 0) {
+            props.libSiglum = props.countryID + '-' + props.libSiglum;
+        }
+        this.props.onSubmit(props, isNew);
+    };
+    LibraryEditPanel.prototype.render = function () {
+        var _this = this;
+        return (React.createElement(react_bootstrap_1.Form, { horizontal: true, onSubmit: this.onSubmit },
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "libSiglum" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:"),
+                this.state.isNew
+                    ? (React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.InputGroup, null,
+                            React.createElement(react_bootstrap_1.InputGroup.Addon, null,
+                                this.props.country.countryID,
+                                "-"),
+                            React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.libSiglum, onChange: this.onInputChange, className: "dib" }))))
+                    : React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl26" }, this.state.props.libSiglum)),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl26" }, this.props.country.country)),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "library" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Name:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.library, onChange: this.onInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "city" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "City:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.city, onChange: this.onInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "address1" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.address1, onChange: this.onInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "address2" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address 2:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.address2, onChange: this.onInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "postCode" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Post Code:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.postCode, onChange: this.onInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
+                React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit" }, "Save"),
+                    React.createElement(react_bootstrap_1.Button, { className: "ml15", onClick: function () { return _this.props.onBack(); } }, "Back")))));
+    };
+    return LibraryEditPanel;
+}(React.Component));
+exports.default = LibraryEditPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/library/LibraryEntityPanel.tsx":
+/*!*******************************************************!*\
+  !*** ./src/components/library/LibraryEntityPanel.tsx ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var LibraryEntityPanel = (function (_super) {
+    __extends(LibraryEntityPanel, _super);
+    function LibraryEntityPanel(p) {
         var _this = _super.call(this, p) || this;
         _this.state = {
             address: _this.formatAddress(),
@@ -36847,7 +37191,7 @@ var LibraryEntityView = (function (_super) {
         };
         return _this;
     }
-    LibraryEntityView.prototype.getGoogleMapsUrl = function () {
+    LibraryEntityPanel.prototype.getGoogleMapsUrl = function () {
         var c = this.props.country;
         var l = this.props.library;
         var getUpdatedUrl = function (a, r, last) {
@@ -36871,7 +37215,7 @@ var LibraryEntityView = (function (_super) {
         u = getUpdatedUrl(u, c.country, true);
         return u;
     };
-    LibraryEntityView.prototype.formatAddress = function () {
+    LibraryEntityPanel.prototype.formatAddress = function () {
         var c = this.props.country;
         var l = this.props.library;
         var a = 'NULL';
@@ -36888,219 +37232,49 @@ var LibraryEntityView = (function (_super) {
         }
         return a;
     };
-    LibraryEntityView.prototype.renderMultiLine = function (s) {
+    LibraryEntityPanel.prototype.renderMultiLine = function (s) {
         return s.split("\n").map(function (l, i) {
             return React.createElement("span", { key: i },
                 l,
                 React.createElement("br", null));
         });
     };
-    LibraryEntityView.prototype.render = function () {
+    LibraryEntityPanel.prototype.render = function () {
         var c = this.props.country;
         var l = this.props.library;
         return (React.createElement(react_bootstrap_1.Form, { horizontal: true },
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl0" }, l.libSiglum)),
+                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.libSiglum)),
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Name:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl0" }, l.library)),
+                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.library)),
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "City:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl0" }, l.city)),
+                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.city)),
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl0" }, c.country)),
+                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, c.country)),
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl0" }, this.renderMultiLine(this.state.address))),
+                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.renderMultiLine(this.state.address))),
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.Col, { smOffset: 3 },
                     React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
                     React.createElement("a", { href: this.state.google, target: "_blank" },
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "info", className: "ml15" }, "Google Maps"))))));
     };
-    return LibraryEntityView;
+    return LibraryEntityPanel;
 }(React.Component));
-exports.default = LibraryEntityView;
+exports.default = LibraryEntityPanel;
 
 
 /***/ }),
 
-/***/ "./src/components/library/LibraryPage.tsx":
-/*!************************************************!*\
-  !*** ./src/components/library/LibraryPage.tsx ***!
-  \************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __webpack_require__(/*! react */ "react");
-var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
-var react_select_1 = __webpack_require__(/*! react-select */ "./node_modules/react-select/dist/react-select.es.js");
-var Header_tsx_1 = __webpack_require__(/*! @src/components/Header.tsx */ "./src/components/Header.tsx");
-var LibraryTable_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryTable.tsx */ "./src/components/library/LibraryTable.tsx");
-var LibraryEntityView_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryEntityView.tsx */ "./src/components/library/LibraryEntityView.tsx");
-var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
-var View;
-(function (View) {
-    View[View["INIT"] = 0] = "INIT";
-    View[View["TABLE"] = 1] = "TABLE";
-    View[View["ENTITY"] = 2] = "ENTITY";
-    View[View["EDIT"] = 3] = "EDIT";
-})(View || (View = {}));
-var LibraryPage = (function (_super) {
-    __extends(LibraryPage, _super);
-    function LibraryPage(props) {
-        var _this = _super.call(this, props) || this;
-        _this.state = {
-            libraries: null,
-            view: View.INIT
-        };
-        _this.onCountrySelect = _this.onCountrySelect.bind(_this);
-        _this.onTableClick = _this.onTableClick.bind(_this);
-        return _this;
-    }
-    LibraryPage.prototype.onCountrySelect = function (c) {
-        var _this = this;
-        ProxyFactory_ts_1.default.getLibraryProxy().getLibraries(c.countryID, function (libs, e) {
-            if (e) {
-                alert(e);
-            }
-            _this.setState(function (s) {
-                s.view = View.TABLE;
-                s.country = c;
-                s.libraries = libs;
-                return s;
-            });
-        });
-    };
-    LibraryPage.prototype.onTableClick = function (l, t) {
-        switch (t) {
-            case LibraryTable_tsx_1.ButtonType.VIEW:
-            default:
-                this.changeView(View.ENTITY, { library: l });
-                break;
-            case LibraryTable_tsx_1.ButtonType.EDIT:
-                this.changeView(View.EDIT, { library: l });
-                break;
-            case LibraryTable_tsx_1.ButtonType.DEL:
-                break;
-        }
-    };
-    LibraryPage.prototype.changeView = function (v, stateOpts) {
-        this.setState(function (s) {
-            s.view = v;
-            if (stateOpts) {
-                for (var k in stateOpts) {
-                    s[k] = stateOpts[k];
-                }
-            }
-            return s;
-        });
-    };
-    LibraryPage.prototype.render = function () {
-        var _this = this;
-        switch (this.state.view) {
-            case View.INIT:
-            default:
-                return [
-                    React.createElement(Header_tsx_1.default, { key: "header" }, "Libraries"),
-                    (React.createElement("div", { key: "panel", className: "panel panel-default pt15 pb15" },
-                        React.createElement(CountrySelectForm, { countries: this.props.countries, onExit: this.onCountrySelect, key: "panel" })))
-                ];
-            case View.TABLE:
-                return [
-                    React.createElement(Header_tsx_1.default, { key: "header" },
-                        "Libraries - ",
-                        this.state.country.country),
-                    (React.createElement("div", { key: "panel", className: "panel panel-default pt15 pb15" },
-                        React.createElement(LibraryTable_tsx_1.default, { key: "grid", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick, onBack: function () { return _this.changeView(View.INIT, null); } })))
-                ];
-            case View.ENTITY:
-                return [
-                    React.createElement(Header_tsx_1.default, { key: "header" }, this.state.library.library),
-                    (React.createElement("div", { key: "panel", className: "panel panel-default pt15 pb15" },
-                        React.createElement(LibraryEntityView_tsx_1.default, { country: this.state.country, library: this.state.library, onBack: function () { return _this.changeView(View.TABLE, null); } })))
-                ];
-            case View.EDIT:
-                return null;
-        }
-    };
-    return LibraryPage;
-}(React.Component));
-exports.default = LibraryPage;
-var CountrySelectForm = (function (_super) {
-    __extends(CountrySelectForm, _super);
-    function CountrySelectForm(props) {
-        var _this = _super.call(this, props) || this;
-        var options = props.countries.map(function (c) {
-            return {
-                label: c.country,
-                value: c.countryID
-            };
-        });
-        _this.state = {
-            options: options,
-            option: null,
-            loadDisabled: true
-        };
-        _this.onChange = _this.onChange.bind(_this);
-        _this.onSubmit = _this.onSubmit.bind(_this);
-        return _this;
-    }
-    CountrySelectForm.prototype.onChange = function (option) {
-        this.setState(function (state) {
-            state.option = option;
-            state.loadDisabled = option === null;
-            return state;
-        });
-    };
-    CountrySelectForm.prototype.onSubmit = function (e) {
-        var _this = this;
-        e.preventDefault();
-        var country = this.props.countries.find(function (c) {
-            return _this.state.option.value === c.countryID;
-        });
-        this.props.onExit(country);
-    };
-    CountrySelectForm.prototype.render = function () {
-        return [
-            (React.createElement(react_bootstrap_1.Alert, { bsStyle: "info", className: "mb20 mr15p ml15p text-center", key: "alert" },
-                React.createElement("strong", null, "Select a country to view libraries."))),
-            (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form", onSubmit: this.onSubmit },
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
-                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_select_1.default, { name: "countryID", value: this.state.option, options: this.state.options, onChange: this.onChange }))),
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
-                    React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
-                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit", disabled: this.state.loadDisabled }, "Load"),
-                        React.createElement(react_bootstrap_1.Button, { className: "ml15" }, "Back")))))
-        ];
-    };
-    return CountrySelectForm;
-}(React.Component));
-
-
-/***/ }),
-
-/***/ "./src/components/library/LibraryTable.tsx":
-/*!*************************************************!*\
-  !*** ./src/components/library/LibraryTable.tsx ***!
-  \*************************************************/
+/***/ "./src/components/library/LibraryTablePanel.tsx":
+/*!******************************************************!*\
+  !*** ./src/components/library/LibraryTablePanel.tsx ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -37135,9 +37309,9 @@ var ButtonType;
     ButtonType[ButtonType["EDIT"] = 1] = "EDIT";
     ButtonType[ButtonType["DEL"] = 2] = "DEL";
 })(ButtonType = exports.ButtonType || (exports.ButtonType = {}));
-var LibraryTable = (function (_super) {
-    __extends(LibraryTable, _super);
-    function LibraryTable(props) {
+var LibraryTablePanel = (function (_super) {
+    __extends(LibraryTablePanel, _super);
+    function LibraryTablePanel(props) {
         var _this = _super.call(this, props) || this;
         var list = _this.props.libraries.map(function (l) {
             return [
@@ -37169,33 +37343,36 @@ var LibraryTable = (function (_super) {
         _this.deleteBtnRenderer = _this.deleteBtnRenderer.bind(_this);
         return _this;
     }
-    LibraryTable.prototype.viewBtnRenderer = function (props) {
+    LibraryTablePanel.prototype.viewBtnRenderer = function (props) {
         var l = props.rowData;
         var t = ButtonType.VIEW;
         return React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "small", key: l.libSiglum + t, onClick: this.props.onClick.bind(this, l, t) }, "View");
     };
-    LibraryTable.prototype.editBtnRenderer = function (props) {
+    LibraryTablePanel.prototype.editBtnRenderer = function (props) {
         var l = props.rowData;
         var t = ButtonType.EDIT;
         return React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "small", key: l.libSiglum + t, onClick: this.props.onClick.bind(this, l, t) }, "Edit");
     };
-    LibraryTable.prototype.deleteBtnRenderer = function (props) {
+    LibraryTablePanel.prototype.deleteBtnRenderer = function (props) {
         var l = props.rowData;
         var t = ButtonType.DEL;
         return React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", key: l.libSiglum + t, onClick: this.props.onClick.bind(this, l, t) }, "Delete");
     };
-    LibraryTable.prototype.render = function () {
-        return [(React.createElement(react_virtualized_1.Table, { key: "table", height: this.state.tabHeight, width: this.state.tabWidth, headerHeight: 40, rowHeight: 40, rowCount: this.props.libraries.length, rowGetter: this.state.rowGetter },
+    LibraryTablePanel.prototype.render = function () {
+        return [
+            (React.createElement(react_bootstrap_1.Button, { key: "new", bsStyle: "primary", className: "mb20", onClick: this.props.onClick.bind(this, null, ButtonType.EDIT) }, "New")),
+            (React.createElement(react_bootstrap_1.Button, { key: "back", bsStyle: "default", className: "ml15 mb20", onClick: this.props.onBack }, "Back")),
+            (React.createElement(react_virtualized_1.Table, { key: "table", height: this.state.tabHeight, width: this.state.tabWidth, headerHeight: 40, rowHeight: 40, rowCount: this.props.libraries.length, rowGetter: this.state.rowGetter },
                 React.createElement(react_virtualized_1.Column, { label: "Library", dataKey: "library", width: this.state.columnWidth }),
                 React.createElement(react_virtualized_1.Column, { label: "City", dataKey: "city", width: this.state.columnWidth }),
                 React.createElement(react_virtualized_1.Column, { label: "View", dataKey: "", width: this.state.columnWidth, cellRenderer: this.viewBtnRenderer }),
                 React.createElement(react_virtualized_1.Column, { label: "Edit", dataKey: "", width: this.state.columnWidth, cellRenderer: this.editBtnRenderer }),
                 React.createElement(react_virtualized_1.Column, { label: "Delete", dataKey: "", width: this.state.columnWidth, cellRenderer: this.deleteBtnRenderer }))),
-            (React.createElement(react_bootstrap_1.Button, { bsStyle: "default", className: "ml15", onClick: this.props.onBack }, "Back"))];
+        ];
     };
-    return LibraryTable;
+    return LibraryTablePanel;
 }(React.Component));
-exports.default = LibraryTable;
+exports.default = LibraryTablePanel;
 
 
 /***/ }),
@@ -37212,28 +37389,28 @@ exports.default = LibraryTable;
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var ReactDOM = __webpack_require__(/*! react-dom */ "react-dom");
-var LibraryPage_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryPage.tsx */ "./src/components/library/LibraryPage.tsx");
+var LibraryApp_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryApp.tsx */ "./src/components/library/LibraryApp.tsx");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
-var App = (function () {
-    function App(container) {
+var Spaghetti = (function () {
+    function Spaghetti(container) {
         this.container = container;
         this.stack = [];
-        this.pageContainer = document.getElementById('page');
+        this.appContainer = container.getElementsByTagName('section')[0];
     }
-    App.prototype.renderLibrary = function () {
+    Spaghetti.prototype.renderLibraryApp = function () {
         var _this = this;
         ProxyFactory_ts_1.default.getLibraryProxy().getCountries(function (countries, e) {
             if (e) {
                 alert(e);
                 return;
             }
-            ReactDOM.render((React.createElement(LibraryPage_tsx_1.default, { stack: _this.stack, countries: countries })), _this.pageContainer);
+            ReactDOM.render((React.createElement(LibraryApp_tsx_1.default, { stack: _this.stack, countries: countries })), _this.appContainer);
         });
     };
-    return App;
+    return Spaghetti;
 }());
-var app = new App((document.getElementById('app')));
-app.renderLibrary();
+var spg = new Spaghetti(document.querySelector('main'));
+spg.renderLibraryApp();
 
 
 /***/ }),
@@ -37654,12 +37831,11 @@ var LibraryProxy = (function (_super) {
             action: 'GetCountries'
         };
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
-                return;
-            }
             var data = res.data;
-            if (data.constructor === Array) {
+            if (data.err) {
+                SpgProxy_ts_1.default.callbackError(callback, data.err);
+            }
+            else if (data.constructor === Array) {
                 var countries = data.map(function (props) {
                     return new ctry.Country(props);
                 });
@@ -37718,14 +37894,18 @@ var LibraryProxy = (function (_super) {
     LibraryProxy.prototype.createLibrary = function (props, callback) {
         var params = {
             action: 'CreateLibrary',
-            library: props
         };
+        Object.assign(params, props);
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                callback(null, res.err);
+            var data = res.data;
+            if (data.err) {
+                SpgProxy_ts_1.default.callbackError(callback, data.err);
+            }
+            else if (data.libSiglum) {
+                callback(new lib.Library(data), null);
             }
             else {
-                callback(new lib.Library(res), null);
+                SpgProxy_ts_1.default.callbackError(callback, null);
             }
         });
     };
@@ -37739,7 +37919,10 @@ var LibraryProxy = (function (_super) {
                 SpgProxy_ts_1.default.callbackError(callback, res.err);
             }
             else {
-                callback(new lib.Library(res), null);
+                var data = res.data;
+                if (data.libSiglum) {
+                    callback(new lib.Library(data), null);
+                }
             }
         });
     };
@@ -37763,12 +37946,11 @@ var LibraryProxy = (function (_super) {
             countryID: countryID
         };
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
-                return;
-            }
             var data = res.data;
-            if (data.constructor === Array) {
+            if (data.err) {
+                SpgProxy_ts_1.default.callbackError(callback, data.err);
+            }
+            else if (data.constructor === Array) {
                 var libraries = data.map(function (props) {
                     return new lib.Library(props);
                 });

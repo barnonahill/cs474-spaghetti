@@ -29,7 +29,7 @@ public class LibraryServlet extends SpgHttpServlet {
 	public static final String GET_COUNTRIES 	= "getcountries";
 	
 	//From the Library table.
-	public static final String CREATE_LIBRARY 	= "CreateLibrary";
+	public static final String CREATE_LIBRARY 	= "createlibrary";
 	public static final String UPDATE_LIBRARY 	= "UpdateLibrary";
 	public static final String GET_LIBRARY 		= "getlibrary";
 	public static final String GET_LIBRARIES 	= "getlibraries";
@@ -63,6 +63,7 @@ public class LibraryServlet extends SpgHttpServlet {
 					break;
 				case CREATE_LIBRARY:
 					//None of these are checked for null. Not sure if that needs to be done.
+					// ^ TODO ALWAYS VERIFY FRONT-END INPUT -Paul
 					String createLibSiglum = params.get("libSiglum");
 					String createCountryID = params.get("countryID");
 					String createCity = params.get("city");

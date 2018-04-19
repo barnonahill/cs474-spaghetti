@@ -3,12 +3,15 @@ import {
 	Button,
 	Col,
 	ControlLabel,
+	InputGroup,
 	Form,
 	FormControl,
 	FormGroup,
 } from 'react-bootstrap';
 import {
-	default as Select
+	default as Select,
+	Options,
+	Option
 } from 'react-select';
 
 import { Country } from '@src/models/country.ts';
@@ -16,7 +19,9 @@ import * as lib from '@src/models/library.ts';
 
 interface P {
 	library?: lib.Library
-	countries: Array<Country>
+	country: Country
+	onSubmit: (props:lib.Properties, isNew:boolean) => void
+	onBack: () => void
 }
 interface S {
 	isNew: boolean
@@ -26,10 +31,11 @@ interface S {
 export default class LibraryEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
+
 		var state: S;
 
-		if (this.props.library) {
-			const l = this.props.library;
+		if (p.library) {
+			const l = p.library;
 			state = {
 				isNew: false,
 				props: l.toProperties()
@@ -39,44 +45,137 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 			state = {
 				isNew: true,
 				props: {
-					libSiglum: null,
-					countryID: null,
-					city: null,
-					library: null,
-					address1: null,
-					address2: null,
-					postCode: null
+					libSiglum: '',
+					countryID: p.country.countryID,
+					city: '',
+					library: '',
+					address1: '',
+					address2: '',
+					postCode: ''
 				}
 			};
 		}
 
 		this.state = state;
+		this.onInputChange = this.onInputChange.bind(this);
+		this.onSubmit = this.onSubmit.bind(this);
+	}
+
+	onInputChange(e:React.FormEvent<FormControl>) {
+		const target = e.target as HTMLInputElement;
+		const k = target.id;
+		const v = target.value;
+		this.setState((s:S) => {
+			s.props[k] = v;
+			return s;
+		});
+	}
+
+	onSubmit(e:React.FormEvent<Form>) {
+		e.preventDefault();
+		const props: lib.Properties = this.state.props;
+		const isNew: boolean = this.state.isNew;
+		if (isNew && props.libSiglum.indexOf(props.countryID + '-') !== 0) {
+			props.libSiglum = props.countryID + '-' + props.libSiglum;
+		}
+		this.props.onSubmit(props, isNew);
 	}
 
 	render() {
-		if (this.state.isNew) {
-			return (<Form horizontal>
+		return (
+			<Form horizontal onSubmit={this.onSubmit}>
 				<FormGroup controlId="libSiglum">
 					<Col sm={3} componentClass={ControlLabel}>Library Siglum:</Col>
+					{this.state.isNew
+						? (<Col sm={4}>
+								<InputGroup>
+									<InputGroup.Addon>{this.props.country.countryID}-</InputGroup.Addon>
+									<FormControl
+										type="text"
+										value={this.state.props.libSiglum}
+										onChange={this.onInputChange}
+										className="dib"
+									/>
+								</InputGroup>
+							</Col>)
+						: <Col sm={4} className="pt7 pl26">{this.state.props.libSiglum}</Col>
+					}
+				</FormGroup>
+
+				<FormGroup controlId="countryID">
+					<Col sm={3} componentClass={ControlLabel}>Country:</Col>
+					<Col sm={4} className="pt7 pl26">{this.props.country.country}</Col>
+				</FormGroup>
+
+				<FormGroup controlId="library">
+					<Col sm={3} componentClass={ControlLabel}>Library Name:</Col>
 					<Col sm={4}>
 						<FormControl
 							type="text"
-							value={this.state.props.libSiglum}
+							value={this.state.props.library}
 							onChange={this.onInputChange}
 						/>
 					</Col>
 				</FormGroup>
 
-				<FormGroup controlId="countryID">
-					<Col sm={3} componentClass={ControlLabel}>Country:</Col>
+				<FormGroup controlId="city">
+					<Col sm={3} componentClass={ControlLabel}>City:</Col>
 					<Col sm={4}>
-						<Select
-							name="countryID"
-							value={this.state.option}
-							options={this.state.options}
-							onChange={this.onSelectChange}
+						<FormControl
+							type="text"
+							value={this.state.props.city}
+							onChange={this.onInputChange}
+						/>
+					</Col>
 				</FormGroup>
-			</Form>);
-		}
+
+				<FormGroup controlId="address1">
+					<Col sm={3} componentClass={ControlLabel}>Address:</Col>
+					<Col sm={4}>
+						<FormControl
+							type="text"
+							value={this.state.props.address1}
+							onChange={this.onInputChange}
+						/>
+					</Col>
+				</FormGroup>
+
+				<FormGroup controlId="address2">
+					<Col sm={3} componentClass={ControlLabel}>Address 2:</Col>
+					<Col sm={4}>
+						<FormControl
+							type="text"
+							value={this.state.props.address2}
+							onChange={this.onInputChange}
+						/>
+					</Col>
+				</FormGroup>
+
+				<FormGroup controlId="postCode">
+					<Col sm={3} componentClass={ControlLabel}>Post Code:</Col>
+					<Col sm={4}>
+						<FormControl
+							type="text"
+							value={this.state.props.postCode}
+							onChange={this.onInputChange}
+						/>
+					</Col>
+				</FormGroup>
+
+				<FormGroup controlId="submit">
+					<Col smOffset={3} sm={4}>
+						<Button
+							bsStyle="primary"
+							type="submit"
+							>Save
+						</Button>
+						<Button
+							className="ml15"
+							onClick = {() => this.props.onBack()}
+						>Back</Button>
+					</Col>
+				</FormGroup>
+			</Form>
+		);
 	}
 }

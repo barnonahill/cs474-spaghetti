@@ -21,7 +21,7 @@ interface S {
 }
 
 
-export default class LibraryEntityView extends React.Component<P,S> {
+export default class LibraryEntityPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 		this.state = {
@@ -91,27 +91,27 @@ export default class LibraryEntityView extends React.Component<P,S> {
 		return (<Form horizontal>
 			<FormGroup>
 				<Col sm={3} componentClass={ControlLabel}>Library Siglum:</Col>
-				<Col sm={4} className="pt7 pl0">{l.libSiglum}</Col>
+				<Col sm={4} className="pt7">{l.libSiglum}</Col>
 			</FormGroup>
 
 			<FormGroup>
 				<Col sm={3} componentClass={ControlLabel}>Library Name:</Col>
-				<Col sm={4} className="pt7 pl0">{l.library}</Col>
+				<Col sm={4} className="pt7">{l.library}</Col>
 			</FormGroup>
 
 			<FormGroup>
 				<Col sm={3} componentClass={ControlLabel}>City:</Col>
-				<Col sm={4} className="pt7 pl0">{l.city}</Col>
+				<Col sm={4} className="pt7">{l.city}</Col>
 			</FormGroup>
 
 			<FormGroup>
 				<Col sm={3} componentClass={ControlLabel}>Country:</Col>
-				<Col sm={4} className="pt7 pl0">{c.country}</Col>
+				<Col sm={4} className="pt7">{c.country}</Col>
 			</FormGroup>
 
 			<FormGroup>
 				<Col sm={3} componentClass={ControlLabel}>Address:</Col>
-				<Col sm={4} className="pt7 pl0">{this.renderMultiLine(this.state.address)}</Col>
+				<Col sm={4} className="pt7">{this.renderMultiLine(this.state.address)}</Col>
 			</FormGroup>
 
 			<FormGroup>

@@ -44,7 +44,7 @@ interface State {
 	rowGetter: any
 }
 
-export default class LibraryTable extends React.Component<Properties, State> {
+export default class LibraryTablePanel extends React.Component<Properties, State> {
 	constructor(props: Properties) {
 		super(props);
 
@@ -119,47 +119,55 @@ export default class LibraryTable extends React.Component<Properties, State> {
 	}
 
 	render() {
-		return [(<Table key="table"
-			height={this.state.tabHeight}
-			width={this.state.tabWidth}
-			headerHeight={40}
-			rowHeight={40}
-			rowCount={this.props.libraries.length}
-			rowGetter={this.state.rowGetter}
-		>
-			<Column
-				label="Library"
-				dataKey="library"
-				width={this.state.columnWidth}
-			/>
-			<Column
-				label="City"
-				dataKey="city"
-				width={this.state.columnWidth}
-			/>
-			<Column
-				label="View"
-				dataKey=""
-				width={this.state.columnWidth}
-				cellRenderer={this.viewBtnRenderer}
-			/>
-			<Column
-				label="Edit"
-				dataKey=""
-				width={this.state.columnWidth}
-				cellRenderer={this.editBtnRenderer}
-			/>
-			<Column
-				label="Delete"
-				dataKey=""
-				width={this.state.columnWidth}
-				cellRenderer={this.deleteBtnRenderer}
-			/>
-		</Table>),
-		(<Button
-			bsStyle="default"
-			className="ml15"
-			onClick={this.props.onBack}
-			>Back</Button>)];
+		return [
+			(<Button key="new"
+				bsStyle="primary"
+				className="mb20"
+				onClick={this.props.onClick.bind(this,null,ButtonType.EDIT)}
+			>New</Button>),
+			(<Button key="back"
+				bsStyle="default"
+				className="ml15 mb20"
+				onClick={this.props.onBack}
+			>Back</Button>),
+
+			(<Table key="table"
+				height={this.state.tabHeight}
+				width={this.state.tabWidth}
+				headerHeight={40}
+				rowHeight={40}
+				rowCount={this.props.libraries.length}
+				rowGetter={this.state.rowGetter}
+			>
+				<Column
+					label="Library"
+					dataKey="library"
+					width={this.state.columnWidth}
+				/>
+				<Column
+					label="City"
+					dataKey="city"
+					width={this.state.columnWidth}
+				/>
+				<Column
+					label="View"
+					dataKey=""
+					width={this.state.columnWidth}
+					cellRenderer={this.viewBtnRenderer}
+				/>
+				<Column
+					label="Edit"
+					dataKey=""
+					width={this.state.columnWidth}
+					cellRenderer={this.editBtnRenderer}
+				/>
+				<Column
+					label="Delete"
+					dataKey=""
+					width={this.state.columnWidth}
+					cellRenderer={this.deleteBtnRenderer}
+				/>
+			</Table>),
+		];
 	}
 }

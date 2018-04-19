@@ -82,13 +82,11 @@ export default class LibraryProxy extends SpgProxy {
 		};
 
 		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
-				return;
+			var data:any = res.data;
+			if (data.err) {
+				SpgProxy.callbackError(callback, data.err);
 			}
-
-			var data = res.data;
-			if (data.constructor === Array) {
+			else if (data.constructor === Array) {
 				var countries: Array<ctry.Country> = data.map((props: ctry.Properties) => {
 					return new ctry.Country(props);
 				});
@@ -159,15 +157,19 @@ export default class LibraryProxy extends SpgProxy {
 	createLibrary(props: lib.Properties, callback: (library: lib.Library, err?: string) => void) {
 		var params = {
 			action: 'CreateLibrary',
-			library: props
 		};
+		Object.assign(params, props);
 
 		super.doPost(params, (res: any) => {
-			if (res.err) {
-				callback(null, res.err);
+			var data:any = res.data;
+			if (data.err) {
+				SpgProxy.callbackError(callback, data.err);
+			}
+			else if (data.libSiglum) {
+				callback(new lib.Library(data as lib.Properties), null);
 			}
 			else {
-				callback(new lib.Library(res), null);
+				SpgProxy.callbackError(callback, null);
 			}
 		});
 	}
@@ -178,18 +180,22 @@ export default class LibraryProxy extends SpgProxy {
 	 * @param callback executed async when a response is received.
 	 * @return
 	 */
-	updateLibrary(library: lib.Library, callback: (library: lib.Library, err?: string) => void) {
+	updateLibrary(props: lib.Properties, callback: (library: lib.Library, err?: string) => void) {
 		var params = {
 			action: 'UpdateLibrary',
-			library: library.toProperties()
 		};
+		Object.assign(params, props);
 
 		super.doPost(params, (res: any) => {
 			if (res.err) {
 				SpgProxy.callbackError(callback, res.err);
 			}
 			else {
-				callback(new lib.Library((res as lib.Properties)), null);
+				var data:any = res.data;
+				if (data.libSiglum) {
+					callback(new lib.Library(data as lib.Properties), null);
+				}
+
 			}
 		});
 	}
@@ -231,13 +237,11 @@ export default class LibraryProxy extends SpgProxy {
 		};
 
 		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
-				return;
+			var data:any = res.data;
+			if (data.err) {
+				SpgProxy.callbackError(callback, data.err);
 			}
-
-			var data = res.data;
-			if (data.constructor === Array) {
+			else if (data.constructor === Array) {
 				var libraries: Array<lib.Library> = data.map((props: lib.Properties) => {
 					return new lib.Library(props);
 				});

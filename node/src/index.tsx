@@ -1,21 +1,24 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import LibraryPage from '@src/components/library/LibraryPage.tsx';
+import LibraryApp from '@src/components/library/LibraryApp.tsx';
 
 import { Country } from '@src/models/country.ts';
 import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
-class App {
+/**
+ * Spaghetti is our React Application, composed of a subset of Entity Applications.
+ */
+class Spaghetti {
 	private stack: Array<any>;
-	private pageContainer: HTMLElement;
+	private appContainer: HTMLElement;
 
 	constructor(private container: HTMLElement) {
 		this.stack = [];
-		this.pageContainer = document.getElementById('page');
+		this.appContainer = container.getElementsByTagName('section')[0];
 	}
 
-	renderLibrary() {
+	renderLibraryApp() {
 		proxyFactory.getLibraryProxy().getCountries((countries:Array<Country>, e?:string) => {
 			if (e) {
 				alert(e);
@@ -23,15 +26,15 @@ class App {
 			}
 
 			ReactDOM.render(
-				(<LibraryPage
+				(<LibraryApp
 					stack={this.stack}
 					countries={countries}
 				/>),
-				this.pageContainer
+				this.appContainer
 			);
 		});
 	}
 }
 
-const app: App = new App((document.getElementById('app')));
-app.renderLibrary();
+const spg: Spaghetti = new Spaghetti(document.querySelector('main'));
+spg.renderLibraryApp();

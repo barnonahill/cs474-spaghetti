@@ -15,12 +15,12 @@ import javax.servlet.http.HttpServlet;
 
 public abstract class SpgController extends HttpServlet{
 	
-	public static final String DATABASE_ADDR = "jdbc:mysql://mysql.cs.jmu.edu";
+	public static final String DATABASE_ADDR = 
+			"jdbc:mysql://mysql.cs.jmu.edu/BarnhillButtsClermontTran_Manuscript";
+			//"jdbc:mysql://127.0.0.1/Manuscript2018";
 	public static final String USER = "clermocj";
 	public static final String DB_PASS = "cs474";
-	public static final String DATABASE_NAME = "BarnhillButtsClermontTran_Manuscript";
 	
-	//public static final String DATABASE_ADDR = "jdbc:mysql://127.0.0.1/Manuscript2018";
 	
 	
 	
@@ -41,7 +41,6 @@ public abstract class SpgController extends HttpServlet{
 			//connection = DriverManager.getConnection(DATABASE_ADDR, p);
 			connection = DriverManager.getConnection(DATABASE_ADDR, USER, DB_PASS);
 			statement = connection.createStatement();
-			statement.executeQuery("USE "+ DATABASE_NAME + ";");
 			return statement.executeQuery(queryString);
 		} catch (Exception e) {
 	        e.printStackTrace();

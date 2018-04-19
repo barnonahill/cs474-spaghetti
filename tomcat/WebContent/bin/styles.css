@@ -1,41 +1,50 @@
+/* Utility Classes */
+.dib {
+  display: inline-block !important;
+}
+
 .mb20 {
-  margin-bottom: 20px;
+  margin-bottom: 20px !important;
 }
 
 .ml15 {
-  margin-left: 15px;
+  margin-left: 15px !important;
 }
 
 .ml5p {
-  margin-left: 5%;
+  margin-left: 5% !important;
 }
 
 .mr5p {
-  margin-right: 5%;
+  margin-right: 5% !important;
 }
 
 .ml15p {
-  margin-left: 15%;
+  margin-left: 15% !important;
 }
 
 .mr15p {
-  margin-right: 15%;
+  margin-right: 15% !important;
 }
 
 .pl0 {
-  padding-left: 0;
+  padding-left: 0 !important;
 }
 
 .pt7 {
-  padding-top: 7px;
+  padding-top: 7px !important;
 }
 
 .pt15 {
-  padding-top: 15px;
+  padding-top: 15px !important;
 }
 
 .pb15 {
-  padding-bottom: 15px;
+  padding-bottom: 15px !important;
+}
+
+.pl26 {
+  padding-left: 26px !important;
 }
 
 .panel {
