@@ -1,5 +1,8 @@
 package spg.models;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.json.JSONObject;
 
 /**
@@ -15,6 +18,11 @@ public class Country {
 	public Country(String countryCode, String countryName) {
 		this.countryID = countryCode;
 		this.countryName = countryName;
+	}
+	
+	public Country(ResultSet resultSet) throws SQLException {
+		this.countryID = resultSet.getString("countryID");
+		this.countryName = resultSet.getString("countryName");
 	}
 	
 	public String getCountryCode() {

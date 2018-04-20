@@ -31,8 +31,8 @@ public class LibraryController{
 		ArrayList<Country> countries = new ArrayList<Country>();
 		Country c;
 		
-		while (resultSet.next()) {
-			c = new Country(resultSet.getString("countryID"),
+		while (resultSet.next()) { //TODO still need to add new Country(resultSet); constructor
+			c = new Country(resultSet.getString("countryID"), 
 							resultSet.getString("countryName"));
 			countries.add(c);
 		}
@@ -48,6 +48,9 @@ public class LibraryController{
 	 */
 	public static Library createLibrary(String libSiglum, String countryID, String city,
 			String library, String address1, String address2, String postCode) throws Exception{
+		
+
+		
 		ResultSet resultSet;
 		String query;
 		//Should I check these for null or empty values??
@@ -68,14 +71,7 @@ public class LibraryController{
 		//since the result set may just confirm the Library was inserted. 
 		//(or I could use getLibrary(libSiglum) when that is finished)!!
 		resultSet.next();
-		Library lib = new Library(resultSet.getString("libSiglum"),
-				resultSet.getString("countryID"),
-				resultSet.getString("city"),
-				resultSet.getString("library"),
-				resultSet.getString("address1"),
-				resultSet.getString("address2"),
-				resultSet.getString("postCode")
-				);
+		Library lib = new Library(resultSet);
 		
 		return lib;
 	}
@@ -88,6 +84,7 @@ public class LibraryController{
 	 */
 	public static ArrayList<Library> getLibraries(String countryID) throws Exception{
 		String query = "SELECT * FROM Library WHERE countryID='" + countryID + "';";
+		
 		ResultSet resultSet;
 		resultSet = SpgController.getResultSet(query);
 		
@@ -95,17 +92,13 @@ public class LibraryController{
 		Library l;
 		
 		while (resultSet.next()) {
-			l = new Library(resultSet.getString("libSiglum"),
-							resultSet.getString("countryID"),
-							resultSet.getString("city"),
-							resultSet.getString("library"),
-							resultSet.getString("address1"),
-							resultSet.getString("address2"),
-							resultSet.getString("postCode")
-							);
+			l = new Library(resultSet);
 			libraries.add(l);
 		}
 		
 		return libraries;
 	}
+	
+	
+	
 }
