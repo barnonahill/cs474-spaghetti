@@ -26,6 +26,7 @@ public abstract class SpgController extends HttpServlet{
 	public static final String DB_PASS = "cs474";	
 	
 	/**
+	 * getResultSet - for SELECT.
 	 * makes a connection to the database and returns whatever the query that was received outputs.
 	 * @param queryString - the sql command to execute.
 	 * @return - the resultSet of the sql command.
@@ -51,6 +52,13 @@ public abstract class SpgController extends HttpServlet{
 		}
 	}
 	
+	/**
+	 * executeSQL - for CREATE, UPDATE, DELETE.
+	 * same as getResultSet but for ^.
+	 * @param queryString
+	 * @return
+	 * @throws Exception
+	 */
 	static final int executeSQL(String queryString) throws Exception {
 		Connection connection;
 		Statement statement;
@@ -279,7 +287,6 @@ public abstract class SpgController extends HttpServlet{
 	 * @return filterValue or 'filterValue' where filterValue is a String.
 	 */
 	private static final String checkVarType(String var) {
-		NumberFormat nf = NumberFormat.getInstance();
 		String newValue = var;
 		
     	if (newValue.equalsIgnoreCase("true") || newValue.equalsIgnoreCase("false")) {
@@ -287,8 +294,8 @@ public abstract class SpgController extends HttpServlet{
     	}
 		
         try {
-        	System.out.println( nf.parse(newValue).getClass().getName() );
-        } catch (ParseException e) {
+        	Integer.parseInt(newValue);
+        } catch (NumberFormatException nfe) {
         	newValue = "'"+newValue+"'";
         }
 		

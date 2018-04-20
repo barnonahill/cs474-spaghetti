@@ -9,6 +9,7 @@ import spg.models.Library;
 /**
  * LibraryController - Static methods used for handling Library and Country sql commands.
  * @author Carl Clermont
+ * From Carl, to Reader: I am an idiot who forgot about maps, so you are gonna have to use two arraylists. yay me.
  *
  */
 public class LibraryController{
@@ -64,6 +65,7 @@ public class LibraryController{
 		varNames.add("address2");
 		varNames.add("postCode");
 		
+		//Eventually move to SPG Controller and make generic for testing if primary keys are correct.
 		if(libSiglum == null || libSiglum.equals("")) {
 			throw new Exception("libSiglum cannot be left empty or blank.");
 		}

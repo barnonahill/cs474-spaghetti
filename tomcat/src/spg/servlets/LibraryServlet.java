@@ -2,7 +2,6 @@ package spg.servlets;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Map;
 
 import javax.servlet.annotation.WebServlet;
