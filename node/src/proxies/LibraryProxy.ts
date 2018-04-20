@@ -18,60 +18,6 @@ export default class LibraryProxy extends SpgProxy {
 		super('library');
 	}
 
-	createCentury(props: cnty.Properties, callback: (c: cnty.Century, err?: string) => void) {
-		var params = {
-			action: 'CreateCentury',
-			century: props
-		};
-
-		super.doPost(params, (res: any) => {
-			if (res.err) {
-				callback(null, res.err);
-			}
-			else {
-				callback(new cnty.Century(res as cnty.Properties), null);
-			}
-		});
-	}
-
-	getCentury(centuryID: string, callback: (century: cnty.Century, err?: string) => void) {
-		var params = {
-			action: 'GetCentury',
-			centuryID: centuryID
-		};
-
-		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
-			}
-			else {
-				callback(new cnty.Century(res as cnty.Properties), null);
-			}
-		});
-	}
-
-	getCenturies(callback: (centuries: Array<cnty.Century>, err?: string) => void) {
-		var params = {
-			action: 'GetCenturies'
-		};
-
-		super.doPost(params, (res: any) => {
-			if (res.error) {
-				SpgProxy.callbackError(callback, res.err);
-			}
-			else if (res.constructor === Array) {
-				var centuries: Array<cnty.Century> = [];
-				for (let i = 0; i < res.length; i++) {
-					centuries.push(new cnty.Century(res[i] as cnty.Properties));
-				}
-				callback(centuries, null)
-			}
-			else {
-				SpgProxy.callbackError(callback, null);
-			}
-		});
-	}
-
 	/**
 	 * Fetches all countries from the back-end
 	 * @param callback executed async when a response is received
@@ -98,53 +44,31 @@ export default class LibraryProxy extends SpgProxy {
 		});
 	}
 
-	createCursus(props: crs.Properties, callback: (c: crs.Cursus, err?: string) => void) {
+	/**
+	 * Fetches the libraries from the back-end
+	 * @param countryID to filter by, it can be null.
+	 * @param callback executed async when a response is received.
+	 * @return
+	 */
+	getLibraries(countryID: string, callback: (libraries: Array<lib.Library>, err?: string) => void) {
 		var params = {
-			action: 'CreateCursus',
-			cursus: props
+			action: 'GetLibraries',
+			countryID: countryID
 		};
 
 		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
+			var data:any = res.data;
+			if (data.err) {
+				SpgProxy.callbackError(callback, data.err);
+			}
+			else if (data.constructor === Array) {
+				var libraries: Array<lib.Library> = data.map((props: lib.Properties) => {
+					return new lib.Library(props);
+				});
+				callback(libraries, null);
 			}
 			else {
-				callback(new crs.Cursus(res as crs.Properties), null);
-			}
-		});
-	}
-
-	getCursus(cursusID: string, callback: (c: crs.Cursus, err?: string) => void) {
-		var params = {
-			action: 'GetCursus',
-			cursusID: cursusID
-		};
-
-		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
-			}
-			else {
-				callback(new crs.Cursus(res as crs.Properties), null);
-			}
-		});
-	}
-
-	getCursuses(callback: (arr: Array<crs.Cursus>, err?: string) => void) {
-		var params = {
-			action: 'GetCursuses',
-		};
-
-		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
-			}
-			else if (res.constructor === Array) {
-				var arr: Array<crs.Cursus> = [];
-				for (let i = 0; i < res.length; i++) {
-					arr.push(new crs.Cursus(res[i] as crs.Properties), null);
-				}
-				callback(arr, null);
+				SpgProxy.callbackError(callback, null);
 			}
 		});
 	}
@@ -187,53 +111,23 @@ export default class LibraryProxy extends SpgProxy {
 		Object.assign(params, props);
 
 		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
+			var data:any = res.data;
+			if (data.err) {
+				SpgProxy.callbackError(callback, data.err);
+			}
+			else if (data.libSiglum) {
+				callback(new lib.Library(data as lib.Properties), null);
 			}
 			else {
-				var data:any = res.data;
-				if (data.libSiglum) {
-					callback(new lib.Library(data as lib.Properties), null);
-				}
-
+				SpgProxy.callbackError(callback, null);
 			}
 		});
 	}
 
-	/**
-	 * Fetches the library with matching libSiglum
-	 * @param libSiglum identifier for library, it cannot be null.
-	 * @param callback executed async when a response is received.
-	 * @return
-	 */
-	getLibrary(libSiglum: string, countryID: string,
-		callback: (library: lib.Library, err?: string) => void)
-	{
-		var params = {
-			action: 'GetLibrary',
+	deleteLibrary(libSiglum: string, callback: (success:boolean, err?: string) => void) {
+		var params  = {
+			action: 'DeleteLibrary',
 			libSiglum: libSiglum
-		};
-
-		super.doPost(params, (res: any) => {
-			if (res.err) {
-				callback(null, res.err);
-			}
-			else {
-				callback(new lib.Library(res), null);
-			}
-		});
-	}
-
-	/**
-	 * Fetches the libraries from the back-end
-	 * @param countryID to filter by, it can be null.
-	 * @param callback executed async when a response is received.
-	 * @return
-	 */
-	getLibraries(countryID: string, callback: (libraries: Array<lib.Library>, err?: string) => void) {
-		var params = {
-			action: 'GetLibraries',
-			countryID: countryID
 		};
 
 		super.doPost(params, (res: any) => {
@@ -241,14 +135,8 @@ export default class LibraryProxy extends SpgProxy {
 			if (data.err) {
 				SpgProxy.callbackError(callback, data.err);
 			}
-			else if (data.constructor === Array) {
-				var libraries: Array<lib.Library> = data.map((props: lib.Properties) => {
-					return new lib.Library(props);
-				});
-				callback(libraries, null);
-			}
 			else {
-				SpgProxy.callbackError(callback, null);
+				callback(data.success ? true:false, null);
 			}
 		});
 	}

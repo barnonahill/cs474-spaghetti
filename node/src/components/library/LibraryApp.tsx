@@ -94,7 +94,10 @@ export default class LibraryApp extends React.Component<Properties, State> {
 				this.changeView(View.EDIT,{library:l});
 				break;
 			case TButtonType.DEL:
-				// delete confirmation
+				var del = confirm('Delete ' + l.library + '?');
+				if (del) {
+					this.deleteLibrary(l);
+				}
 				break;
 		}
 	}
@@ -155,6 +158,25 @@ export default class LibraryApp extends React.Component<Properties, State> {
 			}
 			return s;
 		});
+	}
+
+	deleteLibrary(l: lib.Library) {
+		proxyFactory.getLibraryProxy().deleteLibrary(l.libSiglum, (success:boolean, err?:string) => {
+			if (err) {
+				alert(err);
+			}
+			else if (success) {
+				this.setState((s:State) => {
+					var i = s.libraries.findIndex((o: lib.Library) => o.libSiglum === l.libSiglum);
+					s.libraries[i].destroy();
+					s.libraries.splice(i,1);
+					return s;
+				});
+			}
+			else {
+				alert('Could not delete ' + l.library);
+			}
+		})
 	}
 
 	render() {
