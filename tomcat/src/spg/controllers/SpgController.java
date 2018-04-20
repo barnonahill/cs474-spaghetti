@@ -72,7 +72,15 @@ public abstract class SpgController extends HttpServlet{
 	}
 	
 	
-	
+	/**
+	 * 
+	 * @param tableName
+	 * @param createNames
+	 * @param createVals
+	 * @return
+	 * e.g.
+	 * INSERT INTO Library (libSiglum, city, address1) VALUES ('potato', 'H-Burg', 'Neverland st.');
+	 */
 	static final String buildInsertQuery(String tableName, ArrayList<String> createNames, ArrayList<String> createVals) {
 		StringBuilder query = new StringBuilder("");
 		

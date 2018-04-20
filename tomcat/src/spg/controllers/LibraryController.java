@@ -162,24 +162,20 @@ public class LibraryController{
 	 * @return The delete Library.
 	 * @throws Exception - any exception.
 	 */
-	public static Library deleteLibrary(String libSiglum) throws Exception{
+	public static boolean deleteLibrary(String libSiglum) throws Exception{
 		String query;
 		ArrayList<String> pkNames, pkValues;
 		pkNames = new ArrayList<String>();
 		pkValues = new ArrayList<String>();
-		ResultSet resultSet;
-		Library l;
 		
 		pkNames.add("libSiglum");
 		pkValues.add(libSiglum);
 		
 		query = SpgController.createDeleteQuery(LIBRARY, pkNames, pkValues);
 		
-		resultSet = SpgController.getResultSet(query);
-		resultSet.next();
-		l = new Library(resultSet);
-		
-		return l;
+		SpgController.executeSQL(query);
+				
+		return true; //currently unused.
 	}
 	
 	

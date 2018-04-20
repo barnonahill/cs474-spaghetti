@@ -202,8 +202,10 @@ public class LibraryServlet extends SpgHttpServlet {
 	 * @throws Exception
 	 */
 	public String deleteLibrary(String libSiglum) throws Exception {
-		Library lib = LibraryController.deleteLibrary(libSiglum);
-		return lib.toJSON().toString();
+		LibraryController.deleteLibrary(libSiglum);
+		JSONObject j = new JSONObject();
+        j.put("success", true);
+		return j.toString();
 	}
 	
 }
