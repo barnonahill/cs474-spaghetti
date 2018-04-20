@@ -7,50 +7,53 @@ export default class ManuScriptProxy extends SpgProxy {
 		super('manuscript');
 	}
 
-	createMsType(msType: mst.MsType, callback: (msType: mst.MsType, err?: string) => void) {
+	createMsType(props: mst.Properties, callback: (mt: mst.MsType, err?: string) => void) {
 		var params = {
 			action: 'CreateMsType',
-			msType: msType.toProperties()
 		};
+		Object.assign(params, props);
 
 		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
+			var data = res.data;
+			if (data.err) {
+				SpgProxy.callbackError(callback, data.err);
 			}
 			else {
-				callback(new mst.MsType(res as mst.Properties), null);
+				callback(new mst.MsType(data as mst.Properties), null);
 			}
 		});
 	}
 
-	updateMsType(msType: mst.MsType, callback: (msType: mst.MsType, err?: string) => void) {
+	updateMsType(props: mst.Properties, callback: (mt: mst.MsType, err?: string) => void) {
 		var params = {
 			action: 'UpdateMsType',
-			msType: msType.toProperties()
 		};
+		Object.assign(params, props);
 
 		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
+			var data = res.data;
+			if (data.err) {
+				SpgProxy.callbackError(callback, data.err);
 			}
 			else {
-				callback(new mst.MsType(res as mst.Properties), null);
+				callback(new mst.MsType(data as mst.Properties), null);
 			}
 		});
 	}
 
-	getMsType(msType: string, callback: (msType: mst.MsType, err?: string) => void) {
+	getMsType(msType: string, callback: (mt: mst.MsType, err?: string) => void) {
 		var params = {
 			action: 'CreateMsType',
 			msType: msType
 		};
 
 		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
+			var d = res.data;
+			if (d.err) {
+				SpgProxy.callbackError(callback, d.err);
 			}
 			else {
-				callback(new mst.MsType(res as mst.Properties), null);
+				callback(new mst.MsType(d as mst.Properties), null);
 			}
 		});
 	}
@@ -61,15 +64,15 @@ export default class ManuScriptProxy extends SpgProxy {
 		};
 
 		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
+			var d = res.data;
+			if (d.err) {
+				SpgProxy.callbackError(callback, d.err);
 			}
-			else if (res.constructor === Array) {
-				var msTypes: Array<mst.MsType> = [];
-				for (let i = 0; i < res.length; i++) {
-					msTypes.push(new mst.MsType(res as mst.Properties));
-					callback(msTypes, null);
-				}
+			else if (d.constructor === Array) {
+				var msTypes: Array<mst.MsType> = d.map((p: mst.Properties) => {
+					return new mst.MsType(p);
+				});
+				callback(msTypes, null);
 			}
 			else {
 				SpgProxy.callbackError(callback, null);
@@ -77,18 +80,19 @@ export default class ManuScriptProxy extends SpgProxy {
 		});
 	}
 
-	createManuscript(props: ms.Properties, callback: (manuscript: ms.Manuscript, err?: string) => void) {
+	createManuscript(props: ms.Properties, callback: (mst: ms.Manuscript, err?: string) => void) {
 		var params = {
 			action: 'CreateManuscript',
-			manuscript: props
 		};
+		Object.assign(params, props);
 
 		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
+			var d = res.data;
+			if (d.err) {
+				SpgProxy.callbackError(callback, d.err);
 			}
 			else {
-				callback(new ms.Manuscript(res as ms.Properties), null);
+				callback(new ms.Manuscript(d as ms.Properties), null);
 			}
 		});
 	}
@@ -96,15 +100,16 @@ export default class ManuScriptProxy extends SpgProxy {
 	updateManuscript(props: ms.Properties, callback: (manuscript: ms.Manuscript, err?: string) => void) {
 		var params = {
 			action: 'UpdateManuscript',
-			manuscript: props
 		};
+		Object.assign(params, props);
 
 		super.doPost(params, (res: any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
+			var d = res.data;
+			if (d.err) {
+				SpgProxy.callbackError(callback, d.err);
 			}
 			else {
-				callback(new ms.Manuscript(res as ms.Properties), null);
+				callback(new ms.Manuscript(d as ms.Properties), null);
 			}
 		});
 	}
@@ -119,11 +124,12 @@ export default class ManuScriptProxy extends SpgProxy {
 		};
 
 		super.doPost(params, (res:any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
+			var d = res.data;
+			if (d.err) {
+				SpgProxy.callbackError(callback, d.err);
 			}
 			else {
-				callback(new ms.Manuscript(res as ms.Properties), null);
+				callback(new ms.Manuscript(d as ms.Properties), null);
 			}
 		});
 	}
