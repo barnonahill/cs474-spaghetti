@@ -44,8 +44,27 @@ public abstract class SpgController extends HttpServlet{
 			connection = DriverManager.getConnection(DATABASE_ADDR, USER, DB_PASS);
 			statement = connection.createStatement();
 			resultSet = statement.executeQuery(queryString);
-			connection.close();
 			return resultSet; 
+		} catch (Exception e) {
+	        e.printStackTrace();
+	        throw new Exception("Could not connect to database");
+		}
+	}
+	
+	static final int executeSQL(String queryString) throws Exception {
+		Connection connection;
+		Statement statement;
+		int rows;
+		try {
+			//Properties p = new Properties();
+			//p.setProperty("user", "root");
+			//p.setProperty("port", "3306");
+			Class.forName("com.mysql.jdbc.Driver");
+			//connection = DriverManager.getConnection(DATABASE_ADDR, p);
+			connection = DriverManager.getConnection(DATABASE_ADDR, USER, DB_PASS);
+			statement = connection.createStatement();
+			rows = statement.executeUpdate(queryString);
+			return rows; 
 		} catch (Exception e) {
 	        e.printStackTrace();
 	        throw new Exception("Could not connect to database");
@@ -59,8 +78,9 @@ public abstract class SpgController extends HttpServlet{
 		
 		query.append("INSERT INTO ");
 		query.append(tableName);
+		query.append(" (");
 		query.append(createColumnString(createNames, createVals));
-		query.append(" VALUES (");
+		query.append(") VALUES (");
 		query.append(ceateValueListString(createNames, createVals));
 		query.append(");");
 		

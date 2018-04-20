@@ -49,9 +49,8 @@ public class LibraryController{
 	 */
 	public static Library createLibrary(String libSiglum, String countryID, String city,
 			String library, String address1, String address2, String postCode) throws Exception{
-		
-		ResultSet resultSet;
 		String query;
+		Library lib;
 		
 		ArrayList<String> varNames, varValues;
 		varNames = new ArrayList<String>();
@@ -65,6 +64,9 @@ public class LibraryController{
 		varNames.add("address2");
 		varNames.add("postCode");
 		
+		if(libSiglum == null || libSiglum.equals("")) {
+			throw new Exception("libSiglum cannot be left empty or blank.");
+		}
 		varValues.add(libSiglum);
 		varValues.add(countryID);
 		varValues.add(city);
@@ -74,11 +76,10 @@ public class LibraryController{
 		varValues.add(postCode);
 		
 		query = SpgController.buildInsertQuery(LIBRARY, varNames, varValues);
-		resultSet = SpgController.getResultSet(query);
+		SpgController.executeSQL(query);
 		
-		resultSet.next();
-		Library lib = new Library(resultSet);
-		
+		lib = new Library(libSiglum, countryID, city, library, address1, address2, postCode);
+				
 		return lib;
 	}
 	
@@ -124,11 +125,9 @@ public class LibraryController{
 		pkValues.add(libSiglum);
 		
 		query = SpgController.buildUpdateQuery(LIBRARY, varNames, varValues, pkNames, pkValues);
-		ResultSet resultSet;
 
-		resultSet = SpgController.getResultSet(query);
-		resultSet.next();
-		l = new Library(resultSet);
+		SpgController.getResultSet(query);
+		l = new Library(libSiglum, countryID, city, library, address1, address2, postCode);
 		
 		return l;
 	}
