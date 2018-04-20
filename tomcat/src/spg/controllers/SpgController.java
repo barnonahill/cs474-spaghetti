@@ -88,18 +88,44 @@ public abstract class SpgController extends HttpServlet{
 	 * @param updates - Prebuilt changes.
 	 * e.g. address1 = heaven, address2 = hell 
 	 * @return
+	 * UPDATE table SET column1 = val1, column2 = val2 WHERE pk = pkVal;
 	 */
 	static final String buildUpdateQuery(String tableName, ArrayList<String> updateNames, ArrayList<String> updateVals,
-			String predicate ) {
+			ArrayList<String> pkNames, ArrayList<String> pkValues ) {
 		StringBuilder query = new StringBuilder("UPDATE ");
 		query.append(tableName);
 		query.append(" SET ");
 		query.append(ceateUpdatesString(updateNames, updateVals));
 		query.append(" WHERE ");
-		query.append(predicate);
-		query.append(" ;");
+		query.append(createPredicate(pkNames, pkValues));
+		query.append(";");
 		return query.toString();
 	}
+	
+
+	/**
+	 * createDeleteString - creates the query needed to delete from a table.
+	 * @param tableName - ...
+	 * @param pkNames - a list of all the primary key column names.
+	 * @param pkValues - a list of all the primary key values in the same order as pkNames.
+	 * @return
+	 * e.g.
+	 * DELETE FROM Library WHERE libSiglum = 'potato';
+	 */
+	static final String createDeleteQuery(String tableName, ArrayList<String> pkNames, ArrayList<String> pkValues) {
+		StringBuilder query = new StringBuilder("");
+		query.append("DELETE FROM ");
+		query.append(tableName);
+		query.append(" WHERE ");
+		query.append(createPredicate(pkNames, pkValues));
+		query.append(";" );
+		return query.toString();
+	}
+	
+	
+	
+	/*****************************PRIVATES*****************************/
+	
 	
 	/**
 	 * ceateUpdatesString - A helper method to help send in the 'updates' value in buildUpdateQuery. ^^^
@@ -129,6 +155,32 @@ public abstract class SpgController extends HttpServlet{
 	}
 	
 	/**
+	 * createPredicate - creates the part after the WHERE clause.
+	 * @param pkNames
+	 * @param pkValues
+	 * @return a String
+	 * e.g.
+	 * libSiglum = 'potato' AND msType = 'windex'
+	 */
+	private static final String createPredicate(ArrayList<String> pkNames, ArrayList<String> pkValues) {
+		StringBuilder predicate = new StringBuilder("");
+		boolean addAnd = false;
+		int nameIndex;
+		
+		for(String pkVal : pkValues) {
+			if(addAnd) {
+				predicate.append(" AND ");
+			}
+			addAnd = true;
+			nameIndex = pkValues.indexOf(pkVal);
+			predicate.append(pkNames.get(nameIndex) + " = " + checkVarType(pkVal));
+		}
+
+		return predicate.toString();
+	}
+	
+	
+	/**
 	 * checkFilterValue - checks the value to see if it is any kind of number or boolean. 
 	 * if it is then leave the string as is. Else add ' 's around it (varchar/text)
 	 * 
@@ -150,6 +202,7 @@ public abstract class SpgController extends HttpServlet{
         }
 		
 		return newValue;
-		
 	}
+	
+	
 }

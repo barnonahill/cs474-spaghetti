@@ -90,11 +90,13 @@ public class LibraryController{
 	 */
 	public static Library updateLibrary(String libSiglum, String countryID , String city, 
 			String library, String address1, String address2, String postCode) throws Exception {
-		
-		String predicate, query;
-		ArrayList<String> varNames, varValues;
+		Library l;
+		String query;
+		ArrayList<String> varNames, varValues, pkNames, pkValues;
 		varNames = new ArrayList<String>();
 		varValues = new ArrayList<String>();
+		pkNames = new ArrayList<String>();
+		pkValues = new ArrayList<String>();
 		
 		//all non primary keys. aka anything that can be changed within Library.
 		varNames.add("countryID");
@@ -111,12 +113,13 @@ public class LibraryController{
 		varValues.add(address2);
 		varValues.add(postCode);
 		
-		predicate = "Libsiglum = '" + libSiglum + "' ";
+		pkNames.add("libSiglum");
 		
-		query = SpgController.buildUpdateQuery("Library", varNames, varValues, predicate);
+		pkValues.add(libSiglum);
+		
+		query = SpgController.buildUpdateQuery("Library", varNames, varValues, pkNames, pkValues);
 		ResultSet resultSet;
-		Library l;
-		
+
 		resultSet = SpgController.getResultSet(query);
 		resultSet.next();
 		l = new Library(resultSet);
@@ -154,10 +157,17 @@ public class LibraryController{
 	 * @throws Exception - any exception.
 	 */
 	public static Library deleteLibrary(String libSiglum) throws Exception{
-		// TODO Auto-generated method stub
-		String query = "DELETE FROM Library WHERE libSiglum = '" + libSiglum + "' ;";
+		String query;
+		ArrayList<String> pkNames, pkValues;
+		pkNames = new ArrayList<String>();
+		pkValues = new ArrayList<String>();
 		ResultSet resultSet;
 		Library l;
+		
+		pkNames.add("libSiglum");
+		pkValues.add(libSiglum);
+		
+		query = SpgController.createDeleteQuery("Library", pkNames, pkValues);
 		
 		resultSet = SpgController.getResultSet(query);
 		resultSet.next();
