@@ -36931,6 +36931,10 @@ var LibraryApp = (function (_super) {
                 this.changeView(View.EDIT, { library: l });
                 break;
             case LibraryTablePanel_tsx_1.ButtonType.DEL:
+                var del = confirm('Delete ' + l.library + '?');
+                if (del) {
+                    this.deleteLibrary(l);
+                }
                 break;
         }
     };
@@ -36985,6 +36989,25 @@ var LibraryApp = (function (_super) {
                 }
             }
             return s;
+        });
+    };
+    LibraryApp.prototype.deleteLibrary = function (l) {
+        var _this = this;
+        ProxyFactory_ts_1.default.getLibraryProxy().deleteLibrary(l.libSiglum, function (success, err) {
+            if (err) {
+                alert(err);
+            }
+            else if (success) {
+                _this.setState(function (s) {
+                    var i = s.libraries.findIndex(function (o) { return o.libSiglum === l.libSiglum; });
+                    s.libraries[i].destroy();
+                    s.libraries.splice(i, 1);
+                    return s;
+                });
+            }
+            else {
+                alert('Could not delete ' + l.library);
+            }
         });
     };
     LibraryApp.prototype.render = function () {
@@ -37529,48 +37552,6 @@ exports.default = SpgModel;
 
 /***/ }),
 
-/***/ "./src/models/century.ts":
-/*!*******************************!*\
-  !*** ./src/models/century.ts ***!
-  \*******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var SpgModel_ts_1 = __webpack_require__(/*! @src/models/SpgModel.ts */ "./src/models/SpgModel.ts");
-var Century = (function (_super) {
-    __extends(Century, _super);
-    function Century(props) {
-        var _this = _super.call(this) || this;
-        _this.centuryID = props.centuryID;
-        _this.centuryName = props.centuryName || null;
-        return _this;
-    }
-    Century.prototype.toProperties = function () {
-        return {
-            centuryID: this.centuryID,
-            centuryName: this.centuryName
-        };
-    };
-    return Century;
-}(SpgModel_ts_1.default));
-exports.Century = Century;
-
-
-/***/ }),
-
 /***/ "./src/models/country.ts":
 /*!*******************************!*\
   !*** ./src/models/country.ts ***!
@@ -37615,51 +37596,6 @@ var Country = (function (_super) {
     return Country;
 }(SpgModel_ts_1.default));
 exports.Country = Country;
-
-
-/***/ }),
-
-/***/ "./src/models/cursus.ts":
-/*!******************************!*\
-  !*** ./src/models/cursus.ts ***!
-  \******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var SpgModel_ts_1 = __webpack_require__(/*! @src/models/SpgModel.ts */ "./src/models/SpgModel.ts");
-var Cursus = (function (_super) {
-    __extends(Cursus, _super);
-    function Cursus(props) {
-        var _this = _super.call(this) || this;
-        if (!props.cursusID.length) {
-            throw Error('cursusID cannot be empty.');
-        }
-        _this.cursusID = props.cursusID;
-        _this.cursusName = props.cursusName || null;
-        return _this;
-    }
-    Cursus.prototype.toProperties = function () {
-        return {
-            cursusID: this.cursusID,
-            cursusName: this.cursusName
-        };
-    };
-    return Cursus;
-}(SpgModel_ts_1.default));
-exports.Cursus = Cursus;
 
 
 /***/ }),
@@ -37848,9 +37784,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var cnty = __webpack_require__(/*! @src/models/century.ts */ "./src/models/century.ts");
 var ctry = __webpack_require__(/*! @src/models/country.ts */ "./src/models/country.ts");
-var crs = __webpack_require__(/*! @src/models/cursus.ts */ "./src/models/cursus.ts");
 var lib = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var SpgProxy_ts_1 = __webpack_require__(/*! @src/proxies/SpgProxy.ts */ "./src/proxies/SpgProxy.ts");
 var LibraryProxy = (function (_super) {
@@ -37858,54 +37792,6 @@ var LibraryProxy = (function (_super) {
     function LibraryProxy() {
         return _super.call(this, 'library') || this;
     }
-    LibraryProxy.prototype.createCentury = function (props, callback) {
-        var params = {
-            action: 'CreateCentury',
-            century: props
-        };
-        _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                callback(null, res.err);
-            }
-            else {
-                callback(new cnty.Century(res), null);
-            }
-        });
-    };
-    LibraryProxy.prototype.getCentury = function (centuryID, callback) {
-        var params = {
-            action: 'GetCentury',
-            centuryID: centuryID
-        };
-        _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
-            }
-            else {
-                callback(new cnty.Century(res), null);
-            }
-        });
-    };
-    LibraryProxy.prototype.getCenturies = function (callback) {
-        var params = {
-            action: 'GetCenturies'
-        };
-        _super.prototype.doPost.call(this, params, function (res) {
-            if (res.error) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
-            }
-            else if (res.constructor === Array) {
-                var centuries = [];
-                for (var i = 0; i < res.length; i++) {
-                    centuries.push(new cnty.Century(res[i]));
-                }
-                callback(centuries, null);
-            }
-            else {
-                SpgProxy_ts_1.default.callbackError(callback, null);
-            }
-        });
-    };
     LibraryProxy.prototype.getCountries = function (callback) {
         var params = {
             action: 'GetCountries'
@@ -37926,48 +37812,24 @@ var LibraryProxy = (function (_super) {
             }
         });
     };
-    LibraryProxy.prototype.createCursus = function (props, callback) {
+    LibraryProxy.prototype.getLibraries = function (countryID, callback) {
         var params = {
-            action: 'CreateCursus',
-            cursus: props
+            action: 'GetLibraries',
+            countryID: countryID
         };
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
+            var data = res.data;
+            if (data.err) {
+                SpgProxy_ts_1.default.callbackError(callback, data.err);
+            }
+            else if (data.constructor === Array) {
+                var libraries = data.map(function (props) {
+                    return new lib.Library(props);
+                });
+                callback(libraries, null);
             }
             else {
-                callback(new crs.Cursus(res), null);
-            }
-        });
-    };
-    LibraryProxy.prototype.getCursus = function (cursusID, callback) {
-        var params = {
-            action: 'GetCursus',
-            cursusID: cursusID
-        };
-        _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
-            }
-            else {
-                callback(new crs.Cursus(res), null);
-            }
-        });
-    };
-    LibraryProxy.prototype.getCursuses = function (callback) {
-        var params = {
-            action: 'GetCursuses',
-        };
-        _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
-            }
-            else if (res.constructor === Array) {
-                var arr = [];
-                for (var i = 0; i < res.length; i++) {
-                    arr.push(new crs.Cursus(res[i]), null);
-                }
-                callback(arr, null);
+                SpgProxy_ts_1.default.callbackError(callback, null);
             }
         });
     };
@@ -37995,49 +37857,30 @@ var LibraryProxy = (function (_super) {
         };
         Object.assign(params, props);
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
+            var data = res.data;
+            if (data.err) {
+                SpgProxy_ts_1.default.callbackError(callback, data.err);
+            }
+            else if (data.libSiglum) {
+                callback(new lib.Library(data), null);
             }
             else {
-                var data = res.data;
-                if (data.libSiglum) {
-                    callback(new lib.Library(data), null);
-                }
+                SpgProxy_ts_1.default.callbackError(callback, null);
             }
         });
     };
-    LibraryProxy.prototype.getLibrary = function (libSiglum, countryID, callback) {
+    LibraryProxy.prototype.deleteLibrary = function (libSiglum, callback) {
         var params = {
-            action: 'GetLibrary',
+            action: 'DeleteLibrary',
             libSiglum: libSiglum
-        };
-        _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                callback(null, res.err);
-            }
-            else {
-                callback(new lib.Library(res), null);
-            }
-        });
-    };
-    LibraryProxy.prototype.getLibraries = function (countryID, callback) {
-        var params = {
-            action: 'GetLibraries',
-            countryID: countryID
         };
         _super.prototype.doPost.call(this, params, function (res) {
             var data = res.data;
             if (data.err) {
                 SpgProxy_ts_1.default.callbackError(callback, data.err);
             }
-            else if (data.constructor === Array) {
-                var libraries = data.map(function (props) {
-                    return new lib.Library(props);
-                });
-                callback(libraries, null);
-            }
             else {
-                SpgProxy_ts_1.default.callbackError(callback, null);
+                callback(data.success ? true : false, null);
             }
         });
     };
