@@ -24,7 +24,7 @@ public class LibraryController{
 	 * @throws Exception - any exception. 
 	 */
 	public static ArrayList<Country> getCountries() throws Exception{
-		String query = "SELECT * FROM Country;";
+		String query = SpgController.buildSelectQuery("Country", null, null);
 		ResultSet resultSet;
 		resultSet = SpgController.getResultSet(query);
 
@@ -76,20 +76,69 @@ public class LibraryController{
 		return lib;
 	}
 	
-	public static Library updateLibrary(String LibSiglum, String CountryID , String City, 
-			String Library, String Address1, String Address2, String PostCode) throws Exception {
-		//TODO!!!
-		return null;
+	public static Library updateLibrary(String libSiglum, String countryID , String city, 
+			String library, String address1, String address2, String postCode) throws Exception {
+		String predicate, query;
+		StringBuilder updates = new StringBuilder("");
+		predicate = "Libsiglum = '" + libSiglum + "' ";
+		
+		
+		//probably should make this generic with a ceateUpdatesString() vvv
+		if(!(countryID == null || countryID.equals(""))) {
+			updates.append("countryID = '" + countryID + "' ");
+		}
+		
+		if(!(city == null || city.equals(""))) {
+			if(!(countryID == null || countryID.equals("")))
+				updates.append(", ");
+			updates.append("city = '" + city + "' ");
+		}
+		
+		if(!(library == null || library.equals(""))) {
+			if(!(countryID == null || countryID.equals("")) || !(countryID == null || countryID.equals("")))
+				updates.append(", ");
+			updates.append("library = '" + library + "' ");
+		}
+		
+		if(!(address1 == null || address1.equals(""))) {
+			if(!(countryID == null || countryID.equals("")) || !(countryID == null || countryID.equals("")) || !(library == null || library.equals("")))
+				updates.append(", ");
+			updates.append("address1 = '" + address1 + "' ");
+		}
+		
+		if(!(address2 == null || address2.equals(""))) {
+			if(!(address1 == null || address1.equals("")))
+				updates.append(", ");
+			updates.append("address2 = '" + address2 + "' ");
+		}
+		
+		if(!(postCode == null || postCode.equals(""))) {
+			if(!(countryID == null || countryID.equals("")) || !(countryID == null || countryID.equals("")) || !(library == null || library.equals(""))
+					|| !(address1 == null || address1.equals("")))
+				updates.append(", ");
+			updates.append("postCode = '" + postCode + "' ");
+		}
+		//if you have time go and make a generic for this. ^^^
+		
+		query = SpgController.buildUpdateQuery("Library", predicate, updates.toString());
+		ResultSet resultSet;
+		Library l;
+		
+		resultSet = SpgController.getResultSet(query);
+		resultSet.next();
+		l = new Library(resultSet);
+		
+		return l;
 	}
 	
-	
+		
 	/**
 	 * getLibraries - gets an array list of all the Libraries.
 	 * @return - Arraylist of Library objects.
 	 * @throws Exception - any exception. 
 	 */
 	public static ArrayList<Library> getLibraries(String countryID) throws Exception{
-		String query = "SELECT * FROM Library WHERE countryID='" + countryID + "';";
+		String query = SpgController.buildSelectQuery("Library", "countryID", countryID);
 		
 		ResultSet resultSet;
 		resultSet = SpgController.getResultSet(query);
@@ -105,9 +154,23 @@ public class LibraryController{
 		return libraries;
 	}
 
-	public static Library deleteLibrary(String libSiglum) {
+	/**
+	 * deleteLibrary - Removes a library with input libSiglum from the database and returns the library that was deleted. 
+	 * @param libSiglum - represents Libary's libSiglum.
+	 * @return The delete Library.
+	 * @throws Exception - any exception.
+	 */
+	public static Library deleteLibrary(String libSiglum) throws Exception{
 		// TODO Auto-generated method stub
-		return null;
+		String query = "DELETE FROM Library WHERE libSiglum = '" + libSiglum + "' ;";
+		ResultSet resultSet;
+		Library l;
+		
+		resultSet = SpgController.getResultSet(query);
+		resultSet.next();
+		l = new Library(resultSet);
+		
+		return l;
 	}
 	
 	

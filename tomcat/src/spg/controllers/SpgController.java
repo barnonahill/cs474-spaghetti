@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServlet;
@@ -73,6 +74,28 @@ public abstract class SpgController extends HttpServlet{
 			query.append("");
 		}
 		query.append(";");
+		return query.toString();
+	}
+	
+	
+	/**
+	 * 
+	 * @param tableName - name of the updated table. 
+	 * e.g. Libary
+	 * @param predicate - Prebuilt predicate.
+	 * e.g libSiglum = 'potato'
+	 * @param updates - Prebuilt changes.
+	 * e.g. address1 = heaven, address2 = hell 
+	 * @return
+	 */
+	static final String buildUpdateQuery(String tableName, String predicate, String updates) {
+		StringBuilder query = new StringBuilder("UPDATE ");
+		query.append(tableName);
+		query.append(" SET ");
+		query.append(updates);
+		query.append(" WHERE ");
+		query.append(predicate);
+		query.append(" ;");
 		return query.toString();
 	}
 	
