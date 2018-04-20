@@ -36776,10 +36776,10 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./src/components/Header.tsx":
-/*!***********************************!*\
-  !*** ./src/components/Header.tsx ***!
-  \***********************************/
+/***/ "./src/components/common/Header.tsx":
+/*!******************************************!*\
+  !*** ./src/components/common/Header.tsx ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -36805,12 +36805,49 @@ var Header = (function (_super) {
         return _this;
     }
     Header.prototype.render = function () {
-        return (React.createElement("header", { className: "page-header" },
+        var className = this.props.min ? 'min-page-header' : 'page-header';
+        return (React.createElement("div", { className: className },
             React.createElement(this.tag, null, this.props.children)));
     };
     return Header;
 }(React.Component));
 exports.default = Header;
+
+
+/***/ }),
+
+/***/ "./src/components/common/PanelMenu.tsx":
+/*!*********************************************!*\
+  !*** ./src/components/common/PanelMenu.tsx ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var PanelMenu = (function (_super) {
+    __extends(PanelMenu, _super);
+    function PanelMenu(p) {
+        return _super.call(this, p) || this;
+    }
+    PanelMenu.prototype.render = function () {
+        return (React.createElement("div", { className: "panel-menu" }, this.props.children));
+    };
+    return PanelMenu;
+}(React.Component));
+exports.default = PanelMenu;
 
 
 /***/ }),
@@ -36836,11 +36873,12 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
-var Header_tsx_1 = __webpack_require__(/*! @src/components/Header.tsx */ "./src/components/Header.tsx");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var LibraryCountryPanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryCountryPanel.tsx */ "./src/components/library/LibraryCountryPanel.tsx");
 var LibraryEntityPanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryEntityPanel.tsx */ "./src/components/library/LibraryEntityPanel.tsx");
 var LibraryEditPanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryEditPanel.tsx */ "./src/components/library/LibraryEditPanel.tsx");
 var LibraryTablePanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryTablePanel.tsx */ "./src/components/library/LibraryTablePanel.tsx");
+var lib = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var View;
 (function (View) {
@@ -36854,8 +36892,10 @@ var LibraryApp = (function (_super) {
     function LibraryApp(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
-            libraries: null,
-            view: View.INIT
+            view: View.INIT,
+            country: null,
+            library: null,
+            libraries: null
         };
         _this.onCountrySelect = _this.onCountrySelect.bind(_this);
         _this.onTableClick = _this.onTableClick.bind(_this);
@@ -36868,12 +36908,17 @@ var LibraryApp = (function (_super) {
             if (e) {
                 alert(e);
             }
-            _this.setState(function (s) {
-                s.view = View.TABLE;
-                s.country = c;
-                s.libraries = libs;
-                return s;
-            });
+            else {
+                if (_this.state.libraries) {
+                    lib.Library.destroyArray(_this.state.libraries);
+                }
+                _this.setState(function (s) {
+                    s.view = View.TABLE;
+                    s.country = c;
+                    s.libraries = libs;
+                    return s;
+                });
+            }
         });
     };
     LibraryApp.prototype.onTableClick = function (l, t) {
@@ -36906,11 +36951,34 @@ var LibraryApp = (function (_super) {
             });
         }
         else {
+            ProxyFactory_ts_1.default.getLibraryProxy().updateLibrary(p, function (library, e) {
+                if (e) {
+                    alert(e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        var i = s.libraries.findIndex(function (l) { return l.libSiglum === library.libSiglum; });
+                        s.libraries[i].destroy();
+                        if (library.countryID === s.country.countryID) {
+                            s.libraries[i] = library;
+                        }
+                        else {
+                            s.libraries.splice(i, 1);
+                        }
+                        s.view = View.TABLE;
+                        return s;
+                    });
+                }
+            });
         }
     };
     LibraryApp.prototype.changeView = function (v, stateOpts) {
         this.setState(function (s) {
             s.view = v;
+            if (v === View.INIT && s.libraries) {
+                lib.Library.destroyArray(s.libraries);
+                s.libraries = null;
+            }
             if (stateOpts) {
                 for (var k in stateOpts) {
                     s[k] = stateOpts[k];
@@ -36925,32 +36993,27 @@ var LibraryApp = (function (_super) {
             case View.INIT:
             default:
                 return [
-                    React.createElement(Header_tsx_1.default, { key: "header" }, "Libraries"),
-                    (React.createElement(LibraryCountryPanel_tsx_1.default, { countries: this.props.countries, onSubmit: this.onCountrySelect, key: "panel" }))
+                    React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Libraries"),
+                    (React.createElement(LibraryCountryPanel_tsx_1.default, { country: this.state.country || null, countries: this.props.countries, onSubmit: this.onCountrySelect, key: "panel" }))
                 ];
             case View.TABLE:
                 return [
-                    React.createElement(Header_tsx_1.default, { key: "header" },
+                    React.createElement(Header_tsx_1.default, { key: "header", min: true },
                         "Libraries - ",
                         this.state.country.country),
-                    (React.createElement(LibraryTablePanel_tsx_1.default, { key: "grid", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick, onBack: function () { return _this.changeView(View.INIT, null); } }))
+                    (React.createElement(LibraryTablePanel_tsx_1.default, { key: "panel", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick, onRefresh: function () { return _this.onCountrySelect(_this.state.country); }, onBack: function () { return _this.changeView(View.INIT, { country: _this.state.country }); } }))
                 ];
             case View.ENTITY:
                 return [
-                    React.createElement(Header_tsx_1.default, { key: "header" }, this.state.library.library),
-                    (React.createElement(LibraryEntityPanel_tsx_1.default, { key: "EntityPanel", country: this.state.country, library: this.state.library, onBack: function () { return _this.changeView(View.TABLE, null); } }))
+                    React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.library.library),
+                    (React.createElement(LibraryEntityPanel_tsx_1.default, { key: "panel", country: this.state.country, library: this.state.library, onBack: function () { return _this.changeView(View.TABLE, null); } }))
                 ];
             case View.EDIT:
-                var header;
-                if (this.state.library) {
-                    header = this.state.library.library;
-                }
-                else {
-                    header = this.state.country.country + ' - Create a lib.Library';
-                }
+                var header = this.state.country.country + ' - ' +
+                    (this.state.library ? 'Edit' : 'Create') + ' Library';
                 return [
-                    React.createElement(Header_tsx_1.default, { key: "header" }, header),
-                    (React.createElement(LibraryEditPanel_tsx_1.default, { key: "EditPanel", library: this.state.library || null, country: this.state.country, onSubmit: this.onEditSubmit, onBack: function () { return _this.changeView(View.TABLE, null); } }))
+                    React.createElement(Header_tsx_1.default, { key: "header", min: true }, header),
+                    (React.createElement(LibraryEditPanel_tsx_1.default, { key: "panel", library: this.state.library || null, country: this.state.country, onSubmit: this.onEditSubmit, onBack: function () { return _this.changeView(View.TABLE, null); } }))
                 ];
         }
     };
@@ -36984,10 +37047,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
 var react_select_1 = __webpack_require__(/*! react-select */ "./node_modules/react-select/dist/react-select.es.js");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
 var LibraryCountryPanel = (function (_super) {
     __extends(LibraryCountryPanel, _super);
     function LibraryCountryPanel(props) {
         var _this = _super.call(this, props) || this;
+        var option = props.country
+            ? { label: props.country.country, value: props.country.countryID }
+            : null;
         var options = props.countries.map(function (c) {
             return {
                 label: c.country,
@@ -36996,8 +37063,8 @@ var LibraryCountryPanel = (function (_super) {
         });
         _this.state = {
             options: options,
-            option: null,
-            loadDisabled: true
+            option: option,
+            loadDisabled: option === null
         };
         _this.onChange = _this.onChange.bind(_this);
         _this.onSubmit = _this.onSubmit.bind(_this);
@@ -37020,8 +37087,10 @@ var LibraryCountryPanel = (function (_super) {
     };
     LibraryCountryPanel.prototype.render = function () {
         return [
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default" }, "Back"))),
             (React.createElement(react_bootstrap_1.Alert, { bsStyle: "info", className: "mb20 mr15p ml15p text-center", key: "alert" },
-                React.createElement("strong", null, "Select a country to view libraries."))),
+                React.createElement("strong", null, "Select a country to view its libraries."))),
             (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form", onSubmit: this.onSubmit },
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
@@ -37029,8 +37098,7 @@ var LibraryCountryPanel = (function (_super) {
                         React.createElement(react_select_1.default, { name: "countryID", value: this.state.option, options: this.state.options, onChange: this.onChange }))),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
                     React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
-                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit", disabled: this.state.loadDisabled }, "Load"),
-                        React.createElement(react_bootstrap_1.Button, { className: "ml15" }, "Back")))))
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit", disabled: this.state.loadDisabled }, "Load")))))
         ];
     };
     return LibraryCountryPanel;
@@ -37062,6 +37130,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
 var LibraryEditPanel = (function (_super) {
     __extends(LibraryEditPanel, _super);
     function LibraryEditPanel(p) {
@@ -37113,44 +37182,47 @@ var LibraryEditPanel = (function (_super) {
     };
     LibraryEditPanel.prototype.render = function () {
         var _this = this;
-        return (React.createElement(react_bootstrap_1.Form, { horizontal: true, onSubmit: this.onSubmit },
-            React.createElement(react_bootstrap_1.FormGroup, { controlId: "libSiglum" },
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:"),
-                this.state.isNew
-                    ? (React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_bootstrap_1.InputGroup, null,
-                            React.createElement(react_bootstrap_1.InputGroup.Addon, null,
-                                this.props.country.countryID,
-                                "-"),
-                            React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.libSiglum, onChange: this.onInputChange, className: "dib" }))))
-                    : React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl26" }, this.state.props.libSiglum)),
-            React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl26" }, this.props.country.country)),
-            React.createElement(react_bootstrap_1.FormGroup, { controlId: "library" },
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Name:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.library, onChange: this.onInputChange }))),
-            React.createElement(react_bootstrap_1.FormGroup, { controlId: "city" },
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "City:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.city, onChange: this.onInputChange }))),
-            React.createElement(react_bootstrap_1.FormGroup, { controlId: "address1" },
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.address1, onChange: this.onInputChange }))),
-            React.createElement(react_bootstrap_1.FormGroup, { controlId: "address2" },
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address 2:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.address2, onChange: this.onInputChange }))),
-            React.createElement(react_bootstrap_1.FormGroup, { controlId: "postCode" },
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Post Code:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.postCode, onChange: this.onInputChange }))),
-            React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
-                React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit" }, "Save"),
-                    React.createElement(react_bootstrap_1.Button, { className: "ml15", onClick: function () { return _this.props.onBack(); } }, "Back")))));
+        return [
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panel" },
+                React.createElement(react_bootstrap_1.Button, { onClick: function () { return _this.props.onBack(); } }, "Back"))),
+            (React.createElement(react_bootstrap_1.Form, { horizontal: true, onSubmit: this.onSubmit, key: "form" },
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "libSiglum" },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:"),
+                    this.state.isNew
+                        ? (React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                            React.createElement(react_bootstrap_1.InputGroup, null,
+                                React.createElement(react_bootstrap_1.InputGroup.Addon, null,
+                                    this.props.country.countryID,
+                                    "-"),
+                                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.libSiglum, onChange: this.onInputChange, className: "dib" }))))
+                        : React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl26" }, this.state.props.libSiglum)),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl26" }, this.props.country.country)),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "library" },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Name:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.library, onChange: this.onInputChange }))),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "city" },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "City:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.city, onChange: this.onInputChange }))),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "address1" },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.address1, onChange: this.onInputChange }))),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "address2" },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address 2:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.address2, onChange: this.onInputChange }))),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "postCode" },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Post Code:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.postCode, onChange: this.onInputChange }))),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
+                    React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))))
+        ];
     };
     return LibraryEditPanel;
 }(React.Component));
@@ -37181,6 +37253,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
 var LibraryEntityPanel = (function (_super) {
     __extends(LibraryEntityPanel, _super);
     function LibraryEntityPanel(p) {
@@ -37242,27 +37315,28 @@ var LibraryEntityPanel = (function (_super) {
     LibraryEntityPanel.prototype.render = function () {
         var c = this.props.country;
         var l = this.props.library;
-        return (React.createElement(react_bootstrap_1.Form, { horizontal: true },
-            React.createElement(react_bootstrap_1.FormGroup, null,
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.libSiglum)),
-            React.createElement(react_bootstrap_1.FormGroup, null,
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Name:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.library)),
-            React.createElement(react_bootstrap_1.FormGroup, null,
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "City:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.city)),
-            React.createElement(react_bootstrap_1.FormGroup, null,
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, c.country)),
-            React.createElement(react_bootstrap_1.FormGroup, null,
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address:"),
-                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.renderMultiLine(this.state.address))),
-            React.createElement(react_bootstrap_1.FormGroup, null,
-                React.createElement(react_bootstrap_1.Col, { smOffset: 3 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
-                    React.createElement("a", { href: this.state.google, target: "_blank" },
-                        React.createElement(react_bootstrap_1.Button, { bsStyle: "info", className: "ml15" }, "Google Maps"))))));
+        return [
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                React.createElement("a", { href: this.state.google, target: "_blank", className: "ml15" },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info" }, "Google Maps")))),
+            (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.libSiglum)),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Name:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.library)),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "City:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.city)),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, c.country)),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.renderMultiLine(this.state.address)))))
+        ];
     };
     return LibraryEntityPanel;
 }(React.Component));
@@ -37295,6 +37369,7 @@ var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
 var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
 __webpack_require__(/*! react-virtualized/styles.css */ "./node_modules/react-virtualized/styles.css");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
 var DataKey;
 (function (DataKey) {
     DataKey["LIBRARY"] = "library";
@@ -37360,8 +37435,10 @@ var LibraryTablePanel = (function (_super) {
     };
     LibraryTablePanel.prototype.render = function () {
         return [
-            (React.createElement(react_bootstrap_1.Button, { key: "new", bsStyle: "primary", className: "mb20", onClick: this.props.onClick.bind(this, null, ButtonType.EDIT) }, "New")),
-            (React.createElement(react_bootstrap_1.Button, { key: "back", bsStyle: "default", className: "ml15 mb20", onClick: this.props.onBack }, "Back")),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { key: "back", bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                React.createElement(react_bootstrap_1.Button, { key: "new", bsStyle: "primary", onClick: this.props.onClick.bind(this, null, ButtonType.EDIT), className: "ml15" }, "New"),
+                React.createElement(react_bootstrap_1.Button, { key: "refresh", bsStyle: "primary", onClick: this.props.onRefresh, className: "fr" }, "Refresh"))),
             (React.createElement(react_virtualized_1.Table, { key: "table", height: this.state.tabHeight, width: this.state.tabWidth, headerHeight: 40, rowHeight: 40, rowCount: this.props.libraries.length, rowGetter: this.state.rowGetter },
                 React.createElement(react_virtualized_1.Column, { label: "Library", dataKey: "library", width: this.state.columnWidth }),
                 React.createElement(react_virtualized_1.Column, { label: "City", dataKey: "city", width: this.state.columnWidth }),
@@ -37415,62 +37492,6 @@ spg.renderLibraryApp();
 
 /***/ }),
 
-/***/ "./src/models/Library.ts":
-/*!*******************************!*\
-  !*** ./src/models/Library.ts ***!
-  \*******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var SpgModel_ts_1 = __webpack_require__(/*! @src/models/SpgModel.ts */ "./src/models/SpgModel.ts");
-var Library = (function (_super) {
-    __extends(Library, _super);
-    function Library(props) {
-        var _this = _super.call(this) || this;
-        for (var k in props) {
-            if (k === 'libSiglum' || k === 'countryID' || k === 'city' || k === 'library') {
-                if (!(props[k] && props[k].length)) {
-                    throw Error(k + ' cannot be empty');
-                }
-                _this[k] = props[k];
-            }
-            else {
-                _this[k] = props[k] || null;
-            }
-        }
-        return _this;
-    }
-    Library.prototype.toProperties = function () {
-        return {
-            libSiglum: this.libSiglum,
-            city: this.city,
-            library: this.library,
-            address1: this.address1,
-            address2: this.address2,
-            postCode: this.postCode,
-            countryID: this.countryID
-        };
-    };
-    return Library;
-}(SpgModel_ts_1.default));
-exports.Library = Library;
-
-
-/***/ }),
-
 /***/ "./src/models/SpgModel.ts":
 /*!********************************!*\
   !*** ./src/models/SpgModel.ts ***!
@@ -37490,10 +37511,13 @@ var SpgModel = (function () {
         }
     };
     SpgModel.destroyArray = function (arr) {
-        for (var i = 0; i < arr.length; i++) {
-            arr[i].destroy();
+        if (arr) {
+            for (var i = 0; i < arr.length; i++) {
+                arr[i].destroy();
+                arr[i] = null;
+            }
+            arr = null;
         }
-        arr = null;
     };
     SpgModel.prototype.toString = function () {
         return JSON.stringify(this.toProperties());
@@ -37640,6 +37664,62 @@ exports.Cursus = Cursus;
 
 /***/ }),
 
+/***/ "./src/models/library.ts":
+/*!*******************************!*\
+  !*** ./src/models/library.ts ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var SpgModel_ts_1 = __webpack_require__(/*! @src/models/SpgModel.ts */ "./src/models/SpgModel.ts");
+var Library = (function (_super) {
+    __extends(Library, _super);
+    function Library(props) {
+        var _this = _super.call(this) || this;
+        for (var k in props) {
+            if (k === 'libSiglum' || k === 'countryID' || k === 'city' || k === 'library') {
+                if (!(props[k] && props[k].length)) {
+                    throw Error(k + ' cannot be empty');
+                }
+                _this[k] = props[k];
+            }
+            else {
+                _this[k] = props[k] || null;
+            }
+        }
+        return _this;
+    }
+    Library.prototype.toProperties = function () {
+        return {
+            libSiglum: this.libSiglum,
+            city: this.city,
+            library: this.library,
+            address1: this.address1,
+            address2: this.address2,
+            postCode: this.postCode,
+            countryID: this.countryID
+        };
+    };
+    return Library;
+}(SpgModel_ts_1.default));
+exports.Library = Library;
+
+
+/***/ }),
+
 /***/ "./src/models/manuscript.ts":
 /*!**********************************!*\
   !*** ./src/models/manuscript.ts ***!
@@ -37771,7 +37851,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var cnty = __webpack_require__(/*! @src/models/century.ts */ "./src/models/century.ts");
 var ctry = __webpack_require__(/*! @src/models/country.ts */ "./src/models/country.ts");
 var crs = __webpack_require__(/*! @src/models/cursus.ts */ "./src/models/cursus.ts");
-var lib = __webpack_require__(/*! @src/models/Library.ts */ "./src/models/Library.ts");
+var lib = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var SpgProxy_ts_1 = __webpack_require__(/*! @src/proxies/SpgProxy.ts */ "./src/proxies/SpgProxy.ts");
 var LibraryProxy = (function (_super) {
     __extends(LibraryProxy, _super);
@@ -37909,11 +37989,11 @@ var LibraryProxy = (function (_super) {
             }
         });
     };
-    LibraryProxy.prototype.updateLibrary = function (library, callback) {
+    LibraryProxy.prototype.updateLibrary = function (props, callback) {
         var params = {
             action: 'UpdateLibrary',
-            library: library.toProperties()
         };
+        Object.assign(params, props);
         _super.prototype.doPost.call(this, params, function (res) {
             if (res.err) {
                 SpgProxy_ts_1.default.callbackError(callback, res.err);

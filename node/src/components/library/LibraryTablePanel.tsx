@@ -7,8 +7,9 @@ import {
 	Index,
 	TableCellDataGetterParams
 } from 'react-virtualized';
-
 import 'react-virtualized/styles.css'
+
+import PanelMenu from '@src/components/common/PanelMenu.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
@@ -31,6 +32,7 @@ interface Properties {
 	country: Country
 	libraries: Array<Library>
 	onClick: (l:Library,t:ButtonType) => void
+	onRefresh: () => void
 	onBack: () => void
 }
 
@@ -120,16 +122,24 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 
 	render() {
 		return [
-			(<Button key="new"
-				bsStyle="primary"
-				className="mb20"
-				onClick={this.props.onClick.bind(this,null,ButtonType.EDIT)}
-			>New</Button>),
-			(<Button key="back"
-				bsStyle="default"
-				className="ml15 mb20"
-				onClick={this.props.onBack}
-			>Back</Button>),
+			(<PanelMenu key="panelMenu">
+				<Button key="back"
+					bsStyle="default"
+					onClick={this.props.onBack}
+				>Back</Button>
+
+				<Button key="new"
+					bsStyle="primary"
+					onClick={this.props.onClick.bind(this,null,ButtonType.EDIT)}
+					className="ml15"
+				>New</Button>
+
+				<Button key="refresh"
+					bsStyle="primary"
+					onClick={this.props.onRefresh}
+					className="fr"
+				>Refresh</Button>
+			</PanelMenu>),
 
 			(<Table key="table"
 				height={this.state.tabHeight}

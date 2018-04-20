@@ -21,10 +21,13 @@ export default abstract class SpgModel {
 	 * @param arr array of SpgModels to destroy.
 	 */
 	static destroyArray(arr: Array<SpgModel>) {
-		for (let i = 0; i < arr.length; i++) {
-			arr[i].destroy();
+		if (arr) {
+			for (let i = 0; i < arr.length; i++) {
+				arr[i].destroy();
+				arr[i] = null;
+			}
+			arr = null;
 		}
-		arr = null;
 	}
 
 	/**

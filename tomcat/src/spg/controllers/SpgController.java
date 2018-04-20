@@ -19,10 +19,7 @@ public abstract class SpgController extends HttpServlet{
 			"jdbc:mysql://mysql.cs.jmu.edu/BarnhillButtsClermontTran_Manuscript";
 			//"jdbc:mysql://127.0.0.1/Manuscript2018";
 	public static final String USER = "clermocj";
-	public static final String DB_PASS = "cs474";
-	
-	
-	
+	public static final String DB_PASS = "cs474";	
 	
 	/**
 	 * makes a connection to the database and returns whatever the query that was received outputs.

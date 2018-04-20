@@ -14,6 +14,8 @@ import {
 	Option
 } from 'react-select';
 
+import PanelMenu from '@src/components/common/PanelMenu.tsx';
+
 import { Country } from '@src/models/country.ts';
 import * as lib from '@src/models/library.ts';
 
@@ -82,8 +84,14 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 	}
 
 	render() {
-		return (
-			<Form horizontal onSubmit={this.onSubmit}>
+		return [
+			(<PanelMenu key="panel">
+				<Button
+					onClick = {() => this.props.onBack()}
+				>Back</Button>
+			</PanelMenu>),
+
+			(<Form horizontal onSubmit={this.onSubmit} key="form">
 				<FormGroup controlId="libSiglum">
 					<Col sm={3} componentClass={ControlLabel}>Library Siglum:</Col>
 					{this.state.isNew
@@ -165,17 +173,13 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 				<FormGroup controlId="submit">
 					<Col smOffset={3} sm={4}>
 						<Button
-							bsStyle="primary"
+							bsStyle="success"
 							type="submit"
 							>Save
 						</Button>
-						<Button
-							className="ml15"
-							onClick = {() => this.props.onBack()}
-						>Back</Button>
 					</Col>
 				</FormGroup>
-			</Form>
-		);
+			</Form>)
+		];
 	}
 }

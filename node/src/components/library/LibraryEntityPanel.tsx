@@ -7,6 +7,8 @@ import {
 	Button
 } from 'react-bootstrap';
 
+import PanelMenu from '@src/components/common/PanelMenu.tsx';
+
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
 
@@ -88,7 +90,16 @@ export default class LibraryEntityPanel extends React.Component<P,S> {
 	render() {
 		const c = this.props.country;
 		const l = this.props.library;
-		return (<Form horizontal>
+		return [
+			(<PanelMenu key="panelMenu">
+				<Button bsStyle="default" onClick={this.props.onBack}>Back</Button>
+
+				<a href={this.state.google} target="_blank" className="ml15">
+					<Button bsStyle="info">Google Maps</Button>
+				</a>
+			</PanelMenu>),
+
+			(<Form horizontal key="form">
 			<FormGroup>
 				<Col sm={3} componentClass={ControlLabel}>Library Siglum:</Col>
 				<Col sm={4} className="pt7">{l.libSiglum}</Col>
@@ -113,15 +124,7 @@ export default class LibraryEntityPanel extends React.Component<P,S> {
 				<Col sm={3} componentClass={ControlLabel}>Address:</Col>
 				<Col sm={4} className="pt7">{this.renderMultiLine(this.state.address)}</Col>
 			</FormGroup>
-
-			<FormGroup>
-				<Col smOffset={3}>
-					<Button bsStyle="default" onClick={this.props.onBack}>Back</Button>
-					<a href={this.state.google} target="_blank">
-						<Button bsStyle="info" className="ml15">Google Maps</Button>
-					</a>
-				</Col>
-			</FormGroup>
-		</Form>);
+		</Form>)
+	];
 	}
 }

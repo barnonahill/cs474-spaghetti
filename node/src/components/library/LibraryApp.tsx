@@ -14,7 +14,7 @@ import {
 	Option
 } from 'react-select';
 
-import Header from '@src/components/Header.tsx';
+import Header from '@src/components/common/Header.tsx';
 
 import CountryPanel from '@src/components/library/LibraryCountryPanel.tsx';
 import EntityPanel from '@src/components/library/LibraryEntityPanel.tsx';
@@ -42,10 +42,10 @@ interface Properties {
 }
 
 interface State {
-	libraries: Array<lib.Library>
 	view: View
 	country?: Country
 	library?: lib.Library
+	libraries: Array<lib.Library>
 	[x: string]: any
 }
 
@@ -53,8 +53,10 @@ export default class LibraryApp extends React.Component<Properties, State> {
 	constructor(props: Properties) {
 		super(props);
 		this.state = {
-			libraries: null,
-			view: View.INIT
+			view: View.INIT,
+			country: null,
+			library: null,
+			libraries: null
 		};
 
 		this.onCountrySelect = this.onCountrySelect.bind(this);
@@ -67,13 +69,18 @@ export default class LibraryApp extends React.Component<Properties, State> {
 			if (e) {
 				alert(e);
 			}
+			else {
+				if (this.state.libraries) {
+					lib.Library.destroyArray(this.state.libraries);
+				}
 
-			this.setState((s:State) => {
-				s.view = View.TABLE;
-				s.country = c;
-				s.libraries = libs;
-				return s;
-			});
+				this.setState((s:State) => {
+					s.view = View.TABLE;
+					s.country = c;
+					s.libraries = libs;
+					return s;
+				});
+			}
 		});
 	}
 
@@ -135,6 +142,12 @@ export default class LibraryApp extends React.Component<Properties, State> {
 	changeView(v:View, stateOpts:Partial<State>) {
 		this.setState((s:State) => {
 			s.view = v;
+
+			if (v === View.INIT && s.libraries) {
+				lib.Library.destroyArray(s.libraries);
+				s.libraries = null;
+			}
+
 			if (stateOpts) {
 				for (let k in stateOpts) {
 					s[k] = stateOpts[k];
@@ -149,8 +162,9 @@ export default class LibraryApp extends React.Component<Properties, State> {
 			case View.INIT:
 			default:
 				return [
-					<Header key="header">Libraries</Header>,
+					<Header key="header" min>Libraries</Header>,
 					(<CountryPanel
+						country={this.state.country || null}
 						countries={this.props.countries}
 						onSubmit={this.onCountrySelect}
 						key="panel"
@@ -158,36 +172,34 @@ export default class LibraryApp extends React.Component<Properties, State> {
 				];
 			case View.TABLE:
 				return [
-					<Header key="header">Libraries - {this.state.country.country}</Header>,
+					<Header key="header" min>Libraries - {this.state.country.country}</Header>,
 					(<TablePanel
-						key="grid"
+						key="panel"
 						country={this.state.country}
 						libraries={this.state.libraries}
 						onClick={this.onTableClick}
-						onBack={() => this.changeView(View.INIT,null)}
+						onRefresh={() => this.onCountrySelect(this.state.country)}
+						onBack={() => this.changeView(View.INIT,{country:this.state.country})}
 					/>)
 				];
 			case View.ENTITY:
 				return [
-					<Header key="header">{this.state.library.library}</Header>,
+					<Header key="header" min>{this.state.library.library}</Header>,
 					(<EntityPanel
-						key="EntityPanel"
+						key="panel"
 						country={this.state.country}
 						library={this.state.library}
 						onBack={() => this.changeView(View.TABLE,null)}
 					/>)
 				];
 			case View.EDIT:
-				var header:string;
-				if (this.state.library) {
-					header = this.state.library.library;
-				} else {
-					header = this.state.country.country + ' - Create a lib.Library';
-				}
+				var header = this.state.country.country + ' - ' +
+				 	(this.state.library ? 'Edit' : 'Create') + ' Library';
+
 				return [
-					<Header key="header">{header}</Header>,
+					<Header key="header" min>{header}</Header>,
 					(<EditPanel
-						key="EditPanel"
+						key="panel"
 						library={this.state.library || null}
 						country={this.state.country}
 						onSubmit={this.onEditSubmit}

@@ -13,9 +13,12 @@ import {
 	Options
 } from 'react-select';
 
+import PanelMenu from '@src/components/common/PanelMenu.tsx';
+
 import { Country } from '@src/models/country.ts';
 
 interface P {
+	country?: Country
 	countries: Array<Country>
 	onSubmit: (c:Country) => void
 	//onBack: () => void
@@ -29,6 +32,11 @@ interface S {
 export default class LibraryCountryPanel extends React.Component<P, S> {
 	constructor(props: P) {
 		super(props);
+
+		var option = props.country
+			? {label:props.country.country, value:props.country.countryID}
+			: null;
+
 		var options: Options = props.countries.map((c: Country) => {
 			return {
 				label: c.country,
@@ -38,8 +46,8 @@ export default class LibraryCountryPanel extends React.Component<P, S> {
 
 		this.state = {
 			options: options,
-			option: null,
-			loadDisabled: true
+			option: option,
+			loadDisabled: option === null
 		};
 		this.onChange = this.onChange.bind(this);
 		this.onSubmit = this.onSubmit.bind(this);
@@ -63,8 +71,12 @@ export default class LibraryCountryPanel extends React.Component<P, S> {
 
 	public render() {
 		return [
+			(<PanelMenu key="panelMenu">
+				<Button bsStyle="default">Back</Button>
+			</PanelMenu>),
+
 			(<Alert bsStyle="info" className="mb20 mr15p ml15p text-center" key="alert">
-				<strong>Select a country to view libraries.</strong>
+				<strong>Select a country to view its libraries.</strong>
 			</Alert>),
 
 			(<Form horizontal key="form" onSubmit={this.onSubmit}>
@@ -88,7 +100,6 @@ export default class LibraryCountryPanel extends React.Component<P, S> {
 							disabled={this.state.loadDisabled}
 							>Load
 						</Button>
-						<Button className="ml15">Back</Button>
 					</Col>
 				</FormGroup>
 			</Form>)

@@ -4,7 +4,7 @@ import * as crs from '@src/models/cursus.ts';
 import * as sc from '@src/models/sourceCompleteness.ts';
 import * as prv from '@src/models/provenance.ts';
 import * as ntn from '@src/models/notation.ts';
-import * as lib from '@src/models/Library.ts';
+import * as lib from '@src/models/library.ts';
 import SpgProxy from '@src/proxies/SpgProxy.ts';
 
 /**
