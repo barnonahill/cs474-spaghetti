@@ -128,7 +128,7 @@ public class LibraryController{
 		
 		query = SpgController.buildUpdateQuery(LIBRARY, varNames, varValues, pkNames, pkValues);
 
-		SpgController.getResultSet(query);
+		SpgController.executeSQL(query);
 		l = new Library(libSiglum, countryID, city, library, address1, address2, postCode);
 		
 		return l;
