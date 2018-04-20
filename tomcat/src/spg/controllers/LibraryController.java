@@ -13,6 +13,7 @@ import spg.models.Library;
  */
 public class LibraryController{
 
+	private final static String LIBRARY = "Library"; 
 	
 	public LibraryController () {
 		
@@ -41,7 +42,7 @@ public class LibraryController{
 	}
 	
 	/**
-	 * createLibrary - currently assumes no null values. CAREFUL!!!
+	 * createLibrary - builds a Library.
 	 * @params - condensed - (im lazy) the columns of the Library table.
 	 * @return - A Library object. (the one made from what was passed in.)
 	 * @throws Exception - anything.
@@ -49,27 +50,32 @@ public class LibraryController{
 	public static Library createLibrary(String libSiglum, String countryID, String city,
 			String library, String address1, String address2, String postCode) throws Exception{
 		
-
-		
 		ResultSet resultSet;
 		String query;
-		//Should I check these for null or empty values??
-		StringBuilder stringBuilder = new StringBuilder("INSERT INTO Library VALUES ( ");
-		stringBuilder.append("'"+ libSiglum +"',");
-		stringBuilder.append("'"+ countryID +"',");
-		stringBuilder.append("'"+ city +"',");
-		stringBuilder.append("'"+ library +"',");
-		stringBuilder.append("'"+ address1 +"',");
-		stringBuilder.append("'"+ address2 +"',");
-		stringBuilder.append("'"+ postCode +"',");
-		stringBuilder.append(");");
 		
-		query = stringBuilder.toString();
+		ArrayList<String> varNames, varValues;
+		varNames = new ArrayList<String>();
+		varValues = new ArrayList<String>();
+		
+		varNames.add("libSiglum");
+		varNames.add("countryID");
+		varNames.add("city");
+		varNames.add("library");
+		varNames.add("address1");
+		varNames.add("address2");
+		varNames.add("postCode");
+		
+		varValues.add(libSiglum);
+		varValues.add(countryID);
+		varValues.add(city);
+		varValues.add(library);
+		varValues.add(address1);
+		varValues.add(address2);
+		varValues.add(postCode);
+		
+		query = SpgController.buildInsertQuery(LIBRARY, varNames, varValues);
 		resultSet = SpgController.getResultSet(query);
 		
-		//Should I build the Library manually??
-		//since the result set may just confirm the Library was inserted. 
-		//(or I could use getLibrary(libSiglum) when that is finished)!!
 		resultSet.next();
 		Library lib = new Library(resultSet);
 		
@@ -117,7 +123,7 @@ public class LibraryController{
 		
 		pkValues.add(libSiglum);
 		
-		query = SpgController.buildUpdateQuery("Library", varNames, varValues, pkNames, pkValues);
+		query = SpgController.buildUpdateQuery(LIBRARY, varNames, varValues, pkNames, pkValues);
 		ResultSet resultSet;
 
 		resultSet = SpgController.getResultSet(query);
@@ -129,12 +135,13 @@ public class LibraryController{
 	
 		
 	/**
-	 * getLibraries - gets an array list of all the Libraries.
+	 * getLibraries - gets an array list of all the Libraries. 
 	 * @return - Arraylist of Library objects.
 	 * @throws Exception - any exception. 
 	 */
 	public static ArrayList<Library> getLibraries(String countryID) throws Exception{
-		String query = SpgController.buildSelectQuery("Library", "countryID", countryID);
+		//why countryID??
+		String query = SpgController.buildSelectQuery(LIBRARY, "countryID", countryID);
 		
 		ResultSet resultSet;
 		resultSet = SpgController.getResultSet(query);
@@ -167,7 +174,7 @@ public class LibraryController{
 		pkNames.add("libSiglum");
 		pkValues.add(libSiglum);
 		
-		query = SpgController.createDeleteQuery("Library", pkNames, pkValues);
+		query = SpgController.createDeleteQuery(LIBRARY, pkNames, pkValues);
 		
 		resultSet = SpgController.getResultSet(query);
 		resultSet.next();

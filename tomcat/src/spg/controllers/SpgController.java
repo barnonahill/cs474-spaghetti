@@ -53,6 +53,21 @@ public abstract class SpgController extends HttpServlet{
 	}
 	
 	
+	
+	static final String buildInsertQuery(String tableName, ArrayList<String> createNames, ArrayList<String> createVals) {
+		StringBuilder query = new StringBuilder("");
+		
+		query.append("INSERT INTO ");
+		query.append(tableName);
+		query.append(createColumnString(createNames, createVals));
+		query.append(" VALUES (");
+		query.append(ceateValueListString(createNames, createVals));
+		query.append(");");
+		
+		return query.toString();
+	}
+	
+	
 	/**
 	 * buildSelectQuery - handles creating the strings for select queries.
 	 * @param tableName - the table to select from.
@@ -126,9 +141,57 @@ public abstract class SpgController extends HttpServlet{
 	
 	/*****************************PRIVATES*****************************/
 	
+	/**
+	 * createColumnString - used for INSERT
+	 * @param createNames
+	 * @param createVals
+	 * @return
+	 */
+	private static Object createColumnString(ArrayList<String> createNames, ArrayList<String> createVals) {
+		StringBuilder updates = new StringBuilder("");
+		boolean addComma = false;
+		int nameIndex;
+
+		for(String val : createVals) {
+			if(!(val == null || val.equals(""))) {
+				if(addComma) {
+					updates.append(", ");
+				}
+				addComma = true;
+				nameIndex = createVals.indexOf(val);
+				updates.append(createNames.get(nameIndex));
+			}
+		}
+		
+		return updates.toString();
+	}
 	
 	/**
-	 * ceateUpdatesString - A helper method to help send in the 'updates' value in buildUpdateQuery. ^^^
+	 * ceateValueListString - used for INSERT
+	 * @param createNames
+	 * @param createVals
+	 * @return
+	 */
+	private static Object ceateValueListString(ArrayList<String> createNames, ArrayList<String> createVals) {
+		StringBuilder updates = new StringBuilder("");
+		boolean addComma = false;
+
+		for(String val : createVals) {
+			if(!(val == null || val.equals(""))) {
+				if(addComma) {
+					updates.append(", ");
+				}
+				addComma = true;
+				updates.append(checkVarType(val));
+			}
+		}
+		
+		return updates.toString();
+	}
+	
+	
+	/**
+	 * ceateUpdatesString - used for UPDATE.
 	 * @param varNames - the names of the variables to update.
 	 * @param varVals - the values to set them too.
 	 * @return a string.
