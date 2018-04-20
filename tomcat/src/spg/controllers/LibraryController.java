@@ -76,51 +76,44 @@ public class LibraryController{
 		return lib;
 	}
 	
+	/**
+	 * updateLibrary - updates the library with all of the parameters that are not null or empty.
+	 * @param libSiglum
+	 * @param countryID
+	 * @param city
+	 * @param library
+	 * @param address1
+	 * @param address2
+	 * @param postCode
+	 * @return - a the new Library element.
+	 * @throws Exception - any exception.
+	 */
 	public static Library updateLibrary(String libSiglum, String countryID , String city, 
 			String library, String address1, String address2, String postCode) throws Exception {
+		
 		String predicate, query;
-		StringBuilder updates = new StringBuilder("");
+		ArrayList<String> varNames, varValues;
+		varNames = new ArrayList<String>();
+		varValues = new ArrayList<String>();
+		
+		//all non primary keys. aka anything that can be changed within Library.
+		varNames.add("countryID");
+		varNames.add("city");
+		varNames.add("library");
+		varNames.add("address1");
+		varNames.add("address2");
+		varNames.add("postCode");
+		
+		varValues.add(countryID);
+		varValues.add(city);
+		varValues.add(library);
+		varValues.add(address1);
+		varValues.add(address2);
+		varValues.add(postCode);
+		
 		predicate = "Libsiglum = '" + libSiglum + "' ";
 		
-		
-		//probably should make this generic with a ceateUpdatesString() vvv
-		if(!(countryID == null || countryID.equals(""))) {
-			updates.append("countryID = '" + countryID + "' ");
-		}
-		
-		if(!(city == null || city.equals(""))) {
-			if(!(countryID == null || countryID.equals("")))
-				updates.append(", ");
-			updates.append("city = '" + city + "' ");
-		}
-		
-		if(!(library == null || library.equals(""))) {
-			if(!(countryID == null || countryID.equals("")) || !(countryID == null || countryID.equals("")))
-				updates.append(", ");
-			updates.append("library = '" + library + "' ");
-		}
-		
-		if(!(address1 == null || address1.equals(""))) {
-			if(!(countryID == null || countryID.equals("")) || !(countryID == null || countryID.equals("")) || !(library == null || library.equals("")))
-				updates.append(", ");
-			updates.append("address1 = '" + address1 + "' ");
-		}
-		
-		if(!(address2 == null || address2.equals(""))) {
-			if(!(address1 == null || address1.equals("")))
-				updates.append(", ");
-			updates.append("address2 = '" + address2 + "' ");
-		}
-		
-		if(!(postCode == null || postCode.equals(""))) {
-			if(!(countryID == null || countryID.equals("")) || !(countryID == null || countryID.equals("")) || !(library == null || library.equals(""))
-					|| !(address1 == null || address1.equals("")))
-				updates.append(", ");
-			updates.append("postCode = '" + postCode + "' ");
-		}
-		//if you have time go and make a generic for this. ^^^
-		
-		query = SpgController.buildUpdateQuery("Library", predicate, updates.toString());
+		query = SpgController.buildUpdateQuery("Library", varNames, varValues, predicate);
 		ResultSet resultSet;
 		Library l;
 		

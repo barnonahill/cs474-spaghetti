@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 
@@ -88,17 +89,44 @@ public abstract class SpgController extends HttpServlet{
 	 * e.g. address1 = heaven, address2 = hell 
 	 * @return
 	 */
-	static final String buildUpdateQuery(String tableName, String predicate, String updates) {
+	static final String buildUpdateQuery(String tableName, ArrayList<String> updateNames, ArrayList<String> updateVals,
+			String predicate ) {
 		StringBuilder query = new StringBuilder("UPDATE ");
 		query.append(tableName);
 		query.append(" SET ");
-		query.append(updates);
+		query.append(ceateUpdatesString(updateNames, updateVals));
 		query.append(" WHERE ");
 		query.append(predicate);
 		query.append(" ;");
 		return query.toString();
 	}
 	
+	/**
+	 * ceateUpdatesString - A helper method to help send in the 'updates' value in buildUpdateQuery. ^^^
+	 * @param varNames - the names of the variables to update.
+	 * @param varVals - the values to set them too.
+	 * @return a string.
+	 * e.g.
+	 * "countryID = 'US', city = 'Harrisonburg', postCode = '22807'"
+	 */
+	private static final String ceateUpdatesString(ArrayList<String> varNames, ArrayList<String> varVals) {
+		StringBuilder updates = new StringBuilder("");
+		boolean addComma = false;
+		int nameIndex;
+
+		for(String val : varVals) {
+			if(!(val == null || val.equals(""))) {
+				if(addComma) {
+					updates.append(", ");
+				}
+				addComma = true;
+				nameIndex = varVals.indexOf(val);
+				updates.append(varNames.get(nameIndex) + " = " + checkVarType(val));
+			}
+		}
+		
+		return updates.toString();
+	}
 	
 	/**
 	 * checkFilterValue - checks the value to see if it is any kind of number or boolean. 
