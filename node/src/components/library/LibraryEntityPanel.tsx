@@ -68,9 +68,9 @@ export default class LibraryEntityPanel extends React.Component<P,S> {
 			a = l.address1;
 
 			if (l.address2) {
-				a += l.address2;
+				a += "\n" + l.address2;
 			}
-			a += l.city;
+			a += "\n" + l.city;
 
 			if (l.postCode) {
 				a += ', ' + l.postCode;

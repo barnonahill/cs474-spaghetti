@@ -21,7 +21,7 @@ interface P {
 	country?: Country
 	countries: Array<Country>
 	onSubmit: (c:Country) => void
-	//onBack: () => void
+	onBack: () => void
 }
 interface S {
 	options: Options
@@ -72,7 +72,10 @@ export default class LibraryCountryPanel extends React.Component<P, S> {
 	public render() {
 		return [
 			(<PanelMenu key="panelMenu">
-				<Button bsStyle="default">Back</Button>
+				<Button
+					bsStyle="default"
+					onClick={this.props.onBack}
+				>Back</Button>
 			</PanelMenu>),
 
 			(<Alert bsStyle="info" className="mb20 mr15p ml15p text-center" key="alert">

@@ -36776,6 +36776,53 @@ module.exports = g;
 
 /***/ }),
 
+/***/ "./src/components/SpaghettiApp.tsx":
+/*!*****************************************!*\
+  !*** ./src/components/SpaghettiApp.tsx ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var App;
+(function (App) {
+    App[App["INIT"] = 0] = "INIT";
+    App[App["LIB"] = 1] = "LIB";
+})(App = exports.App || (exports.App = {}));
+var SpaghettiApp = (function (_super) {
+    __extends(SpaghettiApp, _super);
+    function SpaghettiApp(p) {
+        return _super.call(this, p) || this;
+    }
+    SpaghettiApp.prototype.render = function () {
+        var _this = this;
+        return [
+            React.createElement(Header_tsx_1.default, { key: "header" }, "Select a page to load"),
+            (React.createElement("div", { key: "pages" },
+                React.createElement("a", { onClick: function () { return _this.props.onSelect(App.LIB); } }, "Library")))
+        ];
+    };
+    return SpaghettiApp;
+}(React.Component));
+exports.default = SpaghettiApp;
+
+
+/***/ }),
+
 /***/ "./src/components/common/Header.tsx":
 /*!******************************************!*\
   !*** ./src/components/common/Header.tsx ***!
@@ -37017,7 +37064,7 @@ var LibraryApp = (function (_super) {
             default:
                 return [
                     React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Libraries"),
-                    (React.createElement(LibraryCountryPanel_tsx_1.default, { country: this.state.country || null, countries: this.props.countries, onSubmit: this.onCountrySelect, key: "panel" }))
+                    (React.createElement(LibraryCountryPanel_tsx_1.default, { country: this.state.country || null, countries: this.props.countries, onSubmit: this.onCountrySelect, onBack: this.props.onBack, key: "panel" }))
                 ];
             case View.TABLE:
                 return [
@@ -37111,7 +37158,7 @@ var LibraryCountryPanel = (function (_super) {
     LibraryCountryPanel.prototype.render = function () {
         return [
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "default" }, "Back"))),
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
             (React.createElement(react_bootstrap_1.Alert, { bsStyle: "info", className: "mb20 mr15p ml15p text-center", key: "alert" },
                 React.createElement("strong", null, "Select a country to view its libraries."))),
             (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form", onSubmit: this.onSubmit },
@@ -37318,9 +37365,9 @@ var LibraryEntityPanel = (function (_super) {
         if (l.address1) {
             a = l.address1;
             if (l.address2) {
-                a += l.address2;
+                a += "\n" + l.address2;
             }
-            a += l.city;
+            a += "\n" + l.city;
             if (l.postCode) {
                 a += ', ' + l.postCode;
             }
@@ -37489,6 +37536,7 @@ exports.default = LibraryTablePanel;
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var ReactDOM = __webpack_require__(/*! react-dom */ "react-dom");
+var SpaghettiApp_tsx_1 = __webpack_require__(/*! @src/components/SpaghettiApp.tsx */ "./src/components/SpaghettiApp.tsx");
 var LibraryApp_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryApp.tsx */ "./src/components/library/LibraryApp.tsx");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Spaghetti = (function () {
@@ -37496,7 +37544,22 @@ var Spaghetti = (function () {
         this.container = container;
         this.stack = [];
         this.appContainer = container.getElementsByTagName('section')[0];
+        this.onSelect = this.onSelect.bind(this);
     }
+    Spaghetti.prototype.onSelect = function (a) {
+        switch (a) {
+            case SpaghettiApp_tsx_1.App.INIT:
+            default:
+                this.renderInitApp();
+                break;
+            case SpaghettiApp_tsx_1.App.LIB:
+                this.renderLibraryApp();
+                break;
+        }
+    };
+    Spaghetti.prototype.renderInitApp = function () {
+        ReactDOM.render((React.createElement(SpaghettiApp_tsx_1.default, { onSelect: this.onSelect })), this.appContainer);
+    };
     Spaghetti.prototype.renderLibraryApp = function () {
         var _this = this;
         ProxyFactory_ts_1.default.getLibraryProxy().getCountries(function (countries, e) {
@@ -37504,13 +37567,13 @@ var Spaghetti = (function () {
                 alert(e);
                 return;
             }
-            ReactDOM.render((React.createElement(LibraryApp_tsx_1.default, { stack: _this.stack, countries: countries })), _this.appContainer);
+            ReactDOM.render((React.createElement(LibraryApp_tsx_1.default, { stack: _this.stack, countries: countries, onBack: function () { return _this.onSelect(SpaghettiApp_tsx_1.App.INIT); } })), _this.appContainer);
         });
     };
     return Spaghetti;
 }());
 var spg = new Spaghetti(document.querySelector('main'));
-spg.renderLibraryApp();
+spg.renderInitApp();
 
 
 /***/ }),

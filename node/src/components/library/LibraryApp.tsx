@@ -38,7 +38,7 @@ enum View {
 interface Properties {
 	stack: Array<any>
 	countries: Array<Country>
-	//onBack: () => void
+	onBack: () => void
 }
 
 interface State {
@@ -189,6 +189,7 @@ export default class LibraryApp extends React.Component<Properties, State> {
 						country={this.state.country || null}
 						countries={this.props.countries}
 						onSubmit={this.onCountrySelect}
+						onBack={this.props.onBack}
 						key="panel"
 					/>)
 				];
