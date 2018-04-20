@@ -76,6 +76,12 @@ public class LibraryController{
 		return lib;
 	}
 	
+	public static Library updateLibrary(String LibSiglum, String CountryID , String City, 
+			String Library, String Address1, String Address2, String PostCode) throws Exception {
+		//TODO!!!
+		return null;
+	}
+	
 	
 	/**
 	 * getLibraries - gets an array list of all the Libraries.
@@ -97,6 +103,11 @@ public class LibraryController{
 		}
 		
 		return libraries;
+	}
+
+	public static Library deleteLibrary(String libSiglum) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

@@ -62,6 +62,8 @@ public abstract class SpgController extends HttpServlet{
 	 * @param filterValue - the value to filter by.
 	 * 
 	 * @return The string to use for the SELECT query based on the input.
+	 * e.g. 
+	 * SELECT * FROM Library WHERE Libsiglum = 'potato';
 	 */
 	static final String buildSelectQuery(String tableName, String filterName, String filterValue) {
 		StringBuilder query = new StringBuilder("SELECT * FROM ");

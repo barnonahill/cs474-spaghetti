@@ -2,6 +2,7 @@ package spg.servlets;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.servlet.annotation.WebServlet;
@@ -33,6 +34,7 @@ public class LibraryServlet extends SpgHttpServlet {
 	public static final String UPDATE_LIBRARY 	= "updatelibrary";
 	public static final String GET_LIBRARY 		= "getlibrary";
 	public static final String GET_LIBRARIES 	= "getlibraries";
+	public static final String DELETE_LIBRARY	= "deletelibrary"; // 
 	
 	public static final String CREATE_CENTURY 	= "createcentury";
 	public static final String GET_CENTURY 		= "getcentury";
@@ -75,8 +77,15 @@ public class LibraryServlet extends SpgHttpServlet {
 					break;
 				case UPDATE_LIBRARY:
 					// TODO
-					
-					
+					String updateLibSiglum = params.get("libSiglum");
+					String updateCountryID = params.get("countryID");
+					String updateCity = params.get("city");
+					String updateLibrary = params.get("library");
+					String updateAddress1 = params.get("address1");
+					String updateAddress2 = params.get("address2");
+					String updatePostCode = params.get("postCode");
+					msg = this.updateLibrary(updateLibSiglum, updateCountryID,updateCity,updateLibrary,
+							updateAddress1,updateAddress2,updatePostCode);
 					break;
 				case GET_LIBRARY:
 					// TODO
@@ -84,6 +93,10 @@ public class LibraryServlet extends SpgHttpServlet {
 				case GET_LIBRARIES:
 					String countryID = super.getParameter(params, "countryID");
 					msg = this.getLibraries(countryID);
+					break;
+				case DELETE_LIBRARY:
+					String libSiglum = super.getParameter(params, "libSiglum");
+					msg = this.deleteLibrary(libSiglum);
 					break;
 				case CREATE_CENTURY:
 					// TODO
@@ -148,10 +161,17 @@ public class LibraryServlet extends SpgHttpServlet {
 	 * 
 	 * @param columnName
 	 * @param newValue
+	 * @param updatePostCode 
+	 * @param updateAddress2 
+	 * @param updateAddress1 
+	 * @param updateLibrary 
+	 * @param updateCity 
 	 * @return
 	 */
-	public String updateLibrary(String columnName, String newValue /*, ,*/) {
-		return null;
+	public String updateLibrary(String LibSiglum, String CountryID , String City, 
+			String Library, String Address1, String Address2, String PostCode) throws Exception {
+		Library lib = LibraryController.updateLibrary(LibSiglum, CountryID, City, Library, Address1, Address2, PostCode);
+		return lib.toJSON().toString();
 	}
 	
 	
@@ -170,4 +190,16 @@ public class LibraryServlet extends SpgHttpServlet {
 				
 		return libraries.toString();
 	}
+	
+	/**
+	 * 
+	 * @param libSiglum
+	 * @return
+	 * @throws Exception
+	 */
+	public String deleteLibrary(String libSiglum) throws Exception {
+		Library lib = LibraryController.deleteLibrary(libSiglum);
+		return lib.toJSON().toString();
+	}
+	
 }
