@@ -55,6 +55,49 @@ public class Manuscript {
 	
 	//getters
 	//
+	public String getlibSiglum() {
+		return this.libSiglum;
+	}
+	
+	public String getmsSiglum() {
+		return this.msSiglum;
+	}
+	
+	public String getmsType() {
+		return this.msType;
+	}
+	
+	public String getDemensions() {
+		return this.dimensions;
+	}
+	
+	public int getLeaves() {
+		return this.leaves;
+	}
+	
+	public boolean getFoliated() {
+		return this.foliated;
+	}
+	
+	public boolean getVellum() {
+		return this.vellum;
+	}
+	
+	public String getBinding() {
+		return this.binding;
+	}
+	
+	public String getsourceNotes() {
+		return this.sourceNotes;
+	}
+	
+	public String getSummary() {
+		return this.summary;
+	}
+	
+	public String getBibliography() {
+		return this.bibliography;
+	}
 	
 	/**
 	 * Returns a JSONObject representation of this Country
