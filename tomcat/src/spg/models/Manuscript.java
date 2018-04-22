@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 /**
  * 
- * @author Carl Clermont
+ * @author Carl Clermont, Kyle Tran
  *
  */
 public class Manuscript {
@@ -100,7 +100,7 @@ public class Manuscript {
 	}
 	
 	/**
-	 * Returns a JSONObject representation of this Country
+	 * Returns a JSONObject representation of this Manuscript.
 	 */
 	public JSONObject toJSON() {
 		JSONObject j = new JSONObject();
@@ -119,7 +119,7 @@ public class Manuscript {
 	}
 	
 	/**
-	 * Returns a JSONObject String representation of this Country.
+	 * Returns a JSONObject String representation of this Manuscript.
 	 */
 	public String toString() {
 		return this.toJSON().toString();
