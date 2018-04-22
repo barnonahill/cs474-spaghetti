@@ -21,9 +21,9 @@ import spg.models.Manuscript;
 public class ManuscriptServlet extends SpgHttpServlet{
 	private static final long serialVersionUID = 1L;
 	
-	public static final String CREATE_MSTYPE 		= "createmsType";
-	public static final String UPDATE_MSTYPE 		= "updatemsType";
-	public static final String GET_MSTYPE 			= "getMstypes";
+	public static final String CREATE_MSTYPE 		= "createmstype";
+	public static final String UPDATE_MSTYPE 		= "updatemstype";
+	public static final String GET_MSTYPE 			= "getmstypes";
 	
 	public static final String CREATE_MANUSCRIPT 	= "createmanuscript";
 	public static final String UPDATE_MANUSCRIPT 	= "updatemanuscript";
