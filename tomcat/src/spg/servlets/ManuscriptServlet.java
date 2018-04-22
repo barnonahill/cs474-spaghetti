@@ -119,11 +119,11 @@ public class ManuscriptServlet extends SpgHttpServlet{
 
 
 	/**
-	 * 
-	 * @param msType
-	 * @param msTypeName
-	 * @return
-	 * @throws Exception
+	 * createMSType -
+	 * @param msType - 
+	 * @param msTypeName - 
+	 * @return - 
+	 * @throws Exception - 
 	 */
 	public String createMSType(String msType, String msTypeName) throws Exception {
 //		MSType msType = ManuscriptController.createMSType(msType, msTypeName);
@@ -134,22 +134,13 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	
 	/**
 	 * createManuscript - creates a new manuscript.
-	 * @param createLibSiglum
-	 * @param createMSSiglum
-	 * @param createMSType
-	 * @param createDimensions
-	 * @param createLeaves
-	 * @param createFoliated
-	 * @param createVellum
-	 * @param createBinding
-	 * @param createSourceNotes
-	 * @param createSummary
-	 * @param createBibliography
-	 * @return 
+	 * @params - 
+	 * @return -
+	 * @throws Exception -
 	 */
 	private String createManuscript(String createLibSiglum, String createMSSiglum, String createMSType,
 			String createDimensions, String createLeaves, String createFoliated, String createVellum,
-			String createBinding, String createSourceNotes, String createSummary, String createBibliography) {
+			String createBinding, String createSourceNotes, String createSummary, String createBibliography) throws Exception {
 		Manuscript ms = ManuscriptController.createManuscript(createLibSiglum, createMSSiglum, createMSType, createDimensions,
 				createLeaves, createFoliated, createVellum, createBinding, createSourceNotes,
 				createSummary, createBibliography);
@@ -158,23 +149,14 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	
 
 	/**
-	 * 
-	 * @param updateLibSiglum
-	 * @param updateMSSiglum
-	 * @param updateMSType
-	 * @param updateDimensions
-	 * @param updateLeaves
-	 * @param updateFoliated
-	 * @param updateVellum
-	 * @param updateBinding
-	 * @param updateSourceNotes
-	 * @param updateSummary
-	 * @param updateBibliography
-	 * @return
+	 * updateManuscript - 
+	 * @params -
+	 * @return -
+	 * @throws Exception 
 	 */
 	private String updateManuscript(String updateLibSiglum, String updateMSSiglum, String updateMSType,
 			String updateDimensions, String updateLeaves, String updateFoliated, String updateVellum,
-			String updateBinding, String updateSourceNotes, String updateSummary, String updateBibliography) {
+			String updateBinding, String updateSourceNotes, String updateSummary, String updateBibliography) throws Exception {
 		Manuscript ms = ManuscriptController.updateManuscript(updateLibSiglum, updateMSSiglum, updateMSType, updateDimensions,
 				updateLeaves, updateFoliated, updateVellum, updateBinding, updateSourceNotes,
 				updateSummary, updateBibliography);
@@ -182,10 +164,10 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	}
 	
 	/**
-	 * 
-	 * @param getLibSiglum
-	 * @param getMSSiglum
-	 * @return
+	 * getManuscript - 
+	 * @param getLibSiglum - 
+	 * @param getMSSiglum - 
+	 * @return - 
 	 */
 	private String getManuscript(String getLibSiglum, String getMSSiglum) {
 		Manuscript ms = ManuscriptController.getManuscript(getLibSiglum, getMSSiglum);
@@ -194,9 +176,10 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	
 
 	/**
+	 * @throws Exception 
 	 * 
 	 */
-	private String getManuscripts() {
+	private String getManuscripts() throws Exception {
 		JSONArray manuscripts = new JSONArray();
 		ArrayList<Manuscript> results = ManuscriptController.getManuscripts();
 		
@@ -209,10 +192,10 @@ public class ManuscriptServlet extends SpgHttpServlet{
 
 	
 	/**
-	 * 
-	 * @param deleteLibSiglum
-	 * @param deleteMSSiglum
-	 * @return
+	 * deleteManuscript - 
+	 * @param deleteLibSiglum -
+	 * @param deleteMSSiglum -
+	 * @return -
 	 */
 	private String deleteManuscript(String deleteLibSiglum, String deleteMSSiglum) {
 		ManuscriptController.deleteManuscript(deleteLibSiglum, deleteMSSiglum);

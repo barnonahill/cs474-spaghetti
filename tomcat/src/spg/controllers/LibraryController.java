@@ -107,7 +107,7 @@ public class LibraryController {
 		
 		pkNamesToValues.put("libSiglum", libSiglum);
 		
-		query = SpgController.buildUpdateQuery(LIBRARY, namesToValues,pkNamesToValues);
+		query = SpgController.buildUpdateQuery(LIBRARY, pkNamesToValues, namesToValues);
 
 		SpgController.executeSQL(query);
 		l = new Library(libSiglum, countryID, city, library, address1, address2, postCode);

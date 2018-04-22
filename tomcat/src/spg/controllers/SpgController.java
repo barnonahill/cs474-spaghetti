@@ -141,8 +141,8 @@ public abstract class SpgController extends HttpServlet{
 	 * @return
 	 * UPDATE table SET column1 = val1, column2 = val2 WHERE pk = pkVal;
 	 */
-	static final String buildUpdateQuery(String tableName,  Map<String, String> namesToValues,
-			 Map<String, String> pkNamesToValues ) {
+	static final String buildUpdateQuery(String tableName,  Map<String, String> pkNamesToValues, 
+			Map<String, String> namesToValues) {
 		StringBuilder query = new StringBuilder("UPDATE ");
 		query.append(tableName);
 		query.append(" SET ");

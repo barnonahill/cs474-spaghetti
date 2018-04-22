@@ -1,25 +1,96 @@
 package spg.controllers;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import spg.models.Library;
 import spg.models.Manuscript;
 
+/**
+ * 
+ * @author Carl Clermont
+ *
+ */
 public class ManuscriptController {
 
 	private final static String MANUSCRIPT = "Manuscript"; 
 	
-	public static Manuscript createManuscript(String createLibSiglum, String createMSSiglum, String createMSType,
-			String createDimensions, String createLeaves, String createFoliated, String createVellum,
-			String createBinding, String createSourceNotes, String createSummary, String createBibliography) {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 * createManuscript - sets up to do an insert statement to create a new Manuscript.
+	 * @params - 
+	 * @return - 
+	 * @throws Exception - 
+	 */
+	public static Manuscript createManuscript(String libSiglum, String msSiglum, String msType,
+			String dimensions, String leaves, String foliated, String vellum,
+			String binding, String sourceNotes, String summary, String bibliography) throws Exception {
+		String query;
+		Manuscript ms;
+		
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+
+		//Eventually move to SPG Controller and make generic for testing if primary keys are correct.
+		if(libSiglum == null || libSiglum.equals("") || msSiglum == null || msSiglum.equals("")) {
+			throw new Exception("libSiglum and msSiglum cannot be left empty or blank.");
+		}
+		
+		namesToValues.put("libSiglum", libSiglum);
+		namesToValues.put("msSiglum", msSiglum);
+		namesToValues.put("msType", msType);
+		namesToValues.put("dimensions", dimensions);
+		namesToValues.put("leaves", leaves);
+		namesToValues.put("foliated", foliated);
+		namesToValues.put("vellum", vellum);
+		namesToValues.put("binding", binding);
+		namesToValues.put("sourceNotes", sourceNotes);
+		namesToValues.put("summary", summary);
+		namesToValues.put("bibliography", bibliography);
+		
+		query = SpgController.buildInsertQuery(MANUSCRIPT, namesToValues);
+		SpgController.executeSQL(query);
+		
+		ms = new Manuscript(libSiglum, msSiglum, msType, dimensions, leaves, foliated, vellum,
+				binding, sourceNotes, summary, bibliography);
+				
+		return ms;
 	}
 
-	public static Manuscript updateManuscript(String updateLibSiglum, String updateMSSiglum, String updateMSType,
-			String updateDimensions, String updateLeaves, String updateFoliated, String updateVellum,
-			String updateBinding, String updateSourceNotes, String updateSummary, String updateBibliography) {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 * updateManuscript -
+	 * @params -
+	 * @return -
+	 * @throws Exception -
+	 */
+	public static Manuscript updateManuscript(String libSiglum, String msSiglum, String msType,
+			String dimensions, String leaves, String foliated, String vellum,
+			String binding, String sourceNotes, String summary, String bibliography) throws Exception {
+		String query;
+		Manuscript ms;
+		
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+		HashMap<String, String> pkNamesToValues = new HashMap<String, String>();
+		
+		namesToValues.put("msType", msType);
+		namesToValues.put("dimensions", dimensions);
+		namesToValues.put("leaves", leaves);
+		namesToValues.put("foliated", foliated);
+		namesToValues.put("vellum", vellum);
+		namesToValues.put("binding", binding);
+		namesToValues.put("sourceNotes", sourceNotes);
+		namesToValues.put("summary", summary);
+		namesToValues.put("bibliography", bibliography);
+		
+		pkNamesToValues.put("libSiglum", libSiglum);
+		pkNamesToValues.put("msSiglum", msSiglum);
+		
+		query = SpgController.buildUpdateQuery(MANUSCRIPT, pkNamesToValues, namesToValues);
+		SpgController.executeSQL(query);
+		
+		ms = new Manuscript(libSiglum, msSiglum, msType, dimensions, leaves, foliated, vellum,
+				binding, sourceNotes, summary, bibliography);
+				
+		return ms;
 	}
 
 	public static Manuscript getManuscript(String getLibSiglum, String getMSSiglum) {
@@ -27,9 +98,26 @@ public class ManuscriptController {
 		return null;
 	}
 	
-	public static ArrayList<Manuscript> getManuscripts() {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public static ArrayList<Manuscript> getManuscripts() throws Exception {
+		String query = SpgController.buildSelectQuery(MANUSCRIPT, null, null);
+		
+		ResultSet resultSet;
+		resultSet = SpgController.getResultSet(query);
+		
+		ArrayList<Manuscript> manuscripts = new ArrayList<Manuscript>();
+		Manuscript ms;
+		
+		while (resultSet.next()) {
+			ms = new Manuscript(resultSet);
+			manuscripts.add(ms);
+		}
+		
+		return manuscripts;
 	}
 	
 	public static void deleteManuscript(String deleteLibSiglum, String deleteMSSiglum) {

@@ -23,6 +23,9 @@ public class Manuscript {
 	private final String summary;
 	private final String bibliography;
 	
+	/*
+	 * input of normal values.
+	 */
 	public Manuscript(String libSiglum, String msSiglum, String msType, String dimensions,
 			Integer leaves, boolean foliated, boolean vellum, String binding, String sourceNotes,
 			String summary, String bibliography) {
@@ -39,6 +42,28 @@ public class Manuscript {
 		this.bibliography = bibliography;
 	}
 	
+	/*
+	 * input of all Strings.
+	 */
+	public Manuscript(String libSiglum, String msSiglum, String msType, String dimensions,
+			String leaves, String foliated, String vellum, String binding, String sourceNotes,
+			String summary, String bibliography) {
+		this.libSiglum = libSiglum;
+		this.msSiglum = msSiglum;
+		this.msType = msType;
+		this.dimensions = dimensions;
+		this.leaves = Integer.parseInt(leaves);
+		this.foliated = Boolean.parseBoolean(foliated);
+		this.vellum = Boolean.parseBoolean(vellum);
+		this.binding = binding;
+		this.sourceNotes = sourceNotes;
+		this.summary = summary;
+		this.bibliography = bibliography;
+	}
+	
+	/*
+	 * input of result set.
+	 */
 	public Manuscript(ResultSet resultSet) throws SQLException {
 		this.libSiglum = resultSet.getString("libSiglum");
 		this.msSiglum = resultSet.getString("msSiglum");
