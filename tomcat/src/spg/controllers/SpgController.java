@@ -114,16 +114,13 @@ public abstract class SpgController extends HttpServlet{
 	 * e.g. 
 	 * SELECT * FROM Library WHERE Libsiglum = 'potato';
 	 */
-	static final String buildSelectQuery(String tableName, String filterName, String filterValue) {
+	static final String buildSelectQuery(String tableName, Map<String,String> namesToValues) {
 		StringBuilder query = new StringBuilder("SELECT * FROM ");
 		query.append(tableName);
 		
-		if(!(filterName == null || filterName.equals("") || filterValue == null || filterValue.equals(""))) {
+		if( namesToValues != null) {
 			query.append(" WHERE ");
-			query.append(filterName);
-			query.append(" = ");
-			query.append(checkVarType(filterValue));
-			query.append("");
+			query.append(createPredicate(namesToValues));
 		}
 		query.append(";");
 		return query.toString();

@@ -27,7 +27,7 @@ public class LibraryController {
 	 * @throws Exception - any exception. 
 	 */
 	public static ArrayList<Country> getCountries() throws Exception{
-		String query = SpgController.buildSelectQuery("Country", null, null);
+		String query = SpgController.buildSelectQuery("Country", null);
 		ResultSet resultSet;
 		resultSet = SpgController.getResultSet(query);
 
@@ -122,14 +122,17 @@ public class LibraryController {
 	 * @throws Exception - any exception. 
 	 */
 	public static ArrayList<Library> getLibraries(String countryID) throws Exception{
-		//why countryID??
-		String query = SpgController.buildSelectQuery(LIBRARY, "countryID", countryID);
-		
+		HashMap<String,String> namesToValues = new HashMap<String, String>();
+		String query;
 		ResultSet resultSet;
+		ArrayList<Library> libraries;
+		Library l;
+		
+		namesToValues.put("countryID", countryID);
+		query = SpgController.buildSelectQuery(LIBRARY, namesToValues);
 		resultSet = SpgController.getResultSet(query);
 		
-		ArrayList<Library> libraries = new ArrayList<Library>();
-		Library l;
+		libraries = new ArrayList<Library>();
 		
 		while (resultSet.next()) {
 			l = new Library(resultSet);

@@ -10,9 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import spg.controllers.LibraryController;
 import spg.controllers.ManuscriptController;
-import spg.models.Library;
 import spg.models.Manuscript;
 
 /**
@@ -53,7 +51,6 @@ public class ManuscriptServlet extends SpgHttpServlet{
 				    String updateMSTypeMSType = params.get("msType");
                     String updateMSTypeMSTypeName = params.get("msTypeName");
                     msg = this.updateMSType(updateMSTypeMSType, updateMSTypeMSTypeName);
-					break;
 					break;
 				case GET_MSTYPE:
 					String getMSTypeMSType = params.get("msType");
@@ -197,8 +194,9 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	 * @param getLibSiglum - 
 	 * @param getMSSiglum - 
 	 * @return - 
+	 * @throws Exception 
 	 */
-	private String getManuscript(String getLibSiglum, String getMSSiglum) {
+	private String getManuscript(String getLibSiglum, String getMSSiglum) throws Exception {
 		Manuscript ms = ManuscriptController.getManuscript(getLibSiglum, getMSSiglum);
 		return ms.toJSON().toString();
 	}
@@ -225,8 +223,9 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	 * @param deleteLibSiglum -
 	 * @param deleteMSSiglum -
 	 * @return -
+	 * @throws Exception 
 	 */
-	private String deleteManuscript(String deleteLibSiglum, String deleteMSSiglum) {
+	private String deleteManuscript(String deleteLibSiglum, String deleteMSSiglum) throws Exception {
 		ManuscriptController.deleteManuscript(deleteLibSiglum, deleteMSSiglum);
 		JSONObject j = new JSONObject();
         j.put("success", true);

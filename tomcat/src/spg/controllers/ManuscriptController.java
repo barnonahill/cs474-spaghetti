@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import spg.models.Library;
 import spg.models.Manuscript;
 
 /**
@@ -93,9 +92,27 @@ public class ManuscriptController {
 		return ms;
 	}
 
-	public static Manuscript getManuscript(String getLibSiglum, String getMSSiglum) {
-		// TODO Auto-generated method stub
-		return null;
+	
+	/**
+	 * 
+	 * @param getLibSiglum
+	 * @param getMSSiglum
+	 * @return
+	 * @throws Exception
+	 */
+	public static Manuscript getManuscript(String getLibSiglum, String getMSSiglum) throws Exception {
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+		Manuscript ms;
+		String query;
+		ResultSet resultSet;
+		
+		query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
+		resultSet = SpgController.getResultSet(query);
+		
+		resultSet.next();
+		ms = new Manuscript(resultSet);
+		
+		return ms;
 	}
 	
 	/**
@@ -104,7 +121,7 @@ public class ManuscriptController {
 	 * @throws Exception
 	 */
 	public static ArrayList<Manuscript> getManuscripts() throws Exception {
-		String query = SpgController.buildSelectQuery(MANUSCRIPT, null, null);
+		String query = SpgController.buildSelectQuery(MANUSCRIPT, null);
 		
 		ResultSet resultSet;
 		resultSet = SpgController.getResultSet(query);
@@ -120,9 +137,25 @@ public class ManuscriptController {
 		return manuscripts;
 	}
 	
-	public static void deleteManuscript(String deleteLibSiglum, String deleteMSSiglum) {
-		// TODO Auto-generated method stub
+	/**
+	 * deleteManuscript -
+	 * @param libSiglum -
+	 * @param msSiglum -
+	 * @return -
+	 * @throws Exception -
+	 */
+	public static boolean deleteManuscript(String libSiglum, String msSiglum) throws Exception {
+		String query;
+		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
+
+		pkNamesToValues.put("libSiglum", libSiglum);
+		pkNamesToValues.put("msSiglum", msSiglum);
 		
+		query = SpgController.createDeleteQuery(MANUSCRIPT, pkNamesToValues);
+		
+		SpgController.executeSQL(query);
+				
+		return true;
 	}
 
 
