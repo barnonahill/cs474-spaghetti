@@ -13,7 +13,7 @@ import spg.models.Library;
  * From Carl, to Reader: I am an idiot who forgot about maps, so you are gonna have to use two arraylists. yay me.
  *
  */
-public class LibraryController{
+public class LibraryController {
 
 	private final static String LIBRARY = "Library"; 
 	
