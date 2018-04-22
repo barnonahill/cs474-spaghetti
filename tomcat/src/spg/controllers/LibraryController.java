@@ -93,32 +93,21 @@ public class LibraryController{
 			String library, String address1, String address2, String postCode) throws Exception {
 		Library l;
 		String query;
-		ArrayList<String> varNames, varValues, pkNames, pkValues;
-		varNames = new ArrayList<String>();
-		varValues = new ArrayList<String>();
-		pkNames = new ArrayList<String>();
-		pkValues = new ArrayList<String>();
+		
+		HashMap<String, String> namesToValues = new HashMap<String,String>();
+		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
 		
 		//all non primary keys. aka anything that can be changed within Library.
-		varNames.add("countryID");
-		varNames.add("city");
-		varNames.add("library");
-		varNames.add("address1");
-		varNames.add("address2");
-		varNames.add("postCode");
+		namesToValues.put("countryID", countryID);
+		namesToValues.put("city", city);
+		namesToValues.put("library", library);
+		namesToValues.put("address1", address1);
+		namesToValues.put("address2", address2);
+		namesToValues.put("postCode", postCode);
 		
-		varValues.add(countryID);
-		varValues.add(city);
-		varValues.add(library);
-		varValues.add(address1);
-		varValues.add(address2);
-		varValues.add(postCode);
+		pkNamesToValues.put("libSiglum", libSiglum);
 		
-		pkNames.add("libSiglum");
-		
-		pkValues.add(libSiglum);
-		
-		query = SpgController.buildUpdateQuery(LIBRARY, varNames, varValues, pkNames, pkValues);
+		query = SpgController.buildUpdateQuery(LIBRARY, namesToValues,pkNamesToValues);
 
 		SpgController.executeSQL(query);
 		l = new Library(libSiglum, countryID, city, library, address1, address2, postCode);
@@ -158,14 +147,11 @@ public class LibraryController{
 	 */
 	public static boolean deleteLibrary(String libSiglum) throws Exception{
 		String query;
-		ArrayList<String> pkNames, pkValues;
-		pkNames = new ArrayList<String>();
-		pkValues = new ArrayList<String>();
+		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
+
+		pkNamesToValues.put("libSiglum", libSiglum);
 		
-		pkNames.add("libSiglum");
-		pkValues.add(libSiglum);
-		
-		query = SpgController.createDeleteQuery(LIBRARY, pkNames, pkValues);
+		query = SpgController.createDeleteQuery(LIBRARY, pkNamesToValues);
 		
 		SpgController.executeSQL(query);
 				

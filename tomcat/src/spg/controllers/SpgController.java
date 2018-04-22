@@ -141,14 +141,14 @@ public abstract class SpgController extends HttpServlet{
 	 * @return
 	 * UPDATE table SET column1 = val1, column2 = val2 WHERE pk = pkVal;
 	 */
-	static final String buildUpdateQuery(String tableName, ArrayList<String> updateNames, ArrayList<String> updateVals,
-			ArrayList<String> pkNames, ArrayList<String> pkValues ) {
+	static final String buildUpdateQuery(String tableName,  Map<String, String> namesToValues,
+			 Map<String, String> pkNamesToValues ) {
 		StringBuilder query = new StringBuilder("UPDATE ");
 		query.append(tableName);
 		query.append(" SET ");
-		query.append(ceateUpdatesString(updateNames, updateVals));
+		query.append(ceateUpdatesString(namesToValues));
 		query.append(" WHERE ");
-		query.append(createPredicate(pkNames, pkValues));
+		query.append(createPredicate(pkNamesToValues));
 		query.append(";");
 		return query.toString();
 	}
@@ -163,12 +163,12 @@ public abstract class SpgController extends HttpServlet{
 	 * e.g.
 	 * DELETE FROM Library WHERE libSiglum = 'potato';
 	 */
-	static final String createDeleteQuery(String tableName, ArrayList<String> pkNames, ArrayList<String> pkValues) {
+	static final String createDeleteQuery(String tableName, Map<String, String> namesToValues) {	
 		StringBuilder query = new StringBuilder("");
 		query.append("DELETE FROM ");
 		query.append(tableName);
 		query.append(" WHERE ");
-		query.append(createPredicate(pkNames, pkValues));
+		query.append(createPredicate(namesToValues));
 		query.append(";" );
 		return query.toString();
 	}
@@ -183,13 +183,13 @@ public abstract class SpgController extends HttpServlet{
 	 * @param createVals
 	 * @return
 	 */
-	private static Object createColumnString(Map<String,String> nameToValues) {
+	private static Object createColumnString(Map<String,String> namesToValues) {
 		StringBuilder updates = new StringBuilder("");
 		boolean addComma = false;
 		String val;
 		
-		for(String name : nameToValues.keySet()) {
-			val = nameToValues.get(name);
+		for(String name : namesToValues.keySet()) {
+			val = namesToValues.get(name);
 			if(!(val == null || val.equals(""))) { 
 				if(addComma) {
 					updates.append(", ");
@@ -208,13 +208,13 @@ public abstract class SpgController extends HttpServlet{
 	 * @param createVals
 	 * @return
 	 */
-	private static Object ceateValueListString(Map<String,String> nameToValues) {
+	private static Object ceateValueListString(Map<String,String> namesToValues) {
 		StringBuilder updates = new StringBuilder("");
 		boolean addComma = false;
 		String val;
 		
-		for(String name : nameToValues.keySet()) {
-			val = nameToValues.get(name);
+		for(String name : namesToValues.keySet()) {
+			val = namesToValues.get(name);
 			if(!(val == null || val.equals(""))) {
 				if(addComma) {
 					updates.append(", ");
@@ -236,19 +236,20 @@ public abstract class SpgController extends HttpServlet{
 	 * e.g.
 	 * "countryID = 'US', city = 'Harrisonburg', postCode = '22807'"
 	 */
-	private static final String ceateUpdatesString(ArrayList<String> varNames, ArrayList<String> varVals) {
+	private static final String ceateUpdatesString(Map<String,String> namesToValues) {
+	
 		StringBuilder updates = new StringBuilder("");
 		boolean addComma = false;
-		int nameIndex;
+		String val;
 
-		for(String val : varVals) {
+		for(String name : namesToValues.keySet()) {
+			val = namesToValues.get(name);
 			if(!(val == null || val.equals(""))) {
 				if(addComma) {
 					updates.append(", ");
 				}
 				addComma = true;
-				nameIndex = varVals.indexOf(val);
-				updates.append(varNames.get(nameIndex) + " = " + checkVarType(val));
+				updates.append(name + " = " + checkVarType(val));
 			}
 		}
 		
@@ -263,18 +264,18 @@ public abstract class SpgController extends HttpServlet{
 	 * e.g.
 	 * libSiglum = 'potato' AND msType = 'windex'
 	 */
-	private static final String createPredicate(ArrayList<String> pkNames, ArrayList<String> pkValues) {
+	private static final String createPredicate(Map<String,String> namesToValues) {
 		StringBuilder predicate = new StringBuilder("");
 		boolean addAnd = false;
-		int nameIndex;
+		String pkVal;
 		
-		for(String pkVal : pkValues) {
+		for(String name : namesToValues.keySet()) {
+			pkVal = namesToValues.get(name);
 			if(addAnd) {
 				predicate.append(" AND ");
 			}
 			addAnd = true;
-			nameIndex = pkValues.indexOf(pkVal);
-			predicate.append(pkNames.get(nameIndex) + " = " + checkVarType(pkVal));
+			predicate.append(name + " = " + checkVarType(pkVal));
 		}
 
 		return predicate.toString();
