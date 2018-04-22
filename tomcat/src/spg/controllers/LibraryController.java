@@ -2,6 +2,7 @@ package spg.controllers;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import spg.models.Country;
 import spg.models.Library;
@@ -12,7 +13,7 @@ import spg.models.Library;
  * From Carl, to Reader: I am an idiot who forgot about maps, so you are gonna have to use two arraylists. yay me.
  *
  */
-public class LibraryController{
+public class LibraryController {
 
 	private final static String LIBRARY = "Library"; 
 	
@@ -26,7 +27,7 @@ public class LibraryController{
 	 * @throws Exception - any exception. 
 	 */
 	public static ArrayList<Country> getCountries() throws Exception{
-		String query = SpgController.buildSelectQuery("Country", null, null);
+		String query = SpgController.buildSelectQuery("Country", null);
 		ResultSet resultSet;
 		resultSet = SpgController.getResultSet(query);
 
@@ -53,31 +54,22 @@ public class LibraryController{
 		String query;
 		Library lib;
 		
-		ArrayList<String> varNames, varValues;
-		varNames = new ArrayList<String>();
-		varValues = new ArrayList<String>();
-		
-		varNames.add("libSiglum");
-		varNames.add("countryID");
-		varNames.add("city");
-		varNames.add("library");
-		varNames.add("address1");
-		varNames.add("address2");
-		varNames.add("postCode");
-		
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+
 		//Eventually move to SPG Controller and make generic for testing if primary keys are correct.
 		if(libSiglum == null || libSiglum.equals("")) {
 			throw new Exception("libSiglum cannot be left empty or blank.");
 		}
-		varValues.add(libSiglum);
-		varValues.add(countryID);
-		varValues.add(city);
-		varValues.add(library);
-		varValues.add(address1);
-		varValues.add(address2);
-		varValues.add(postCode);
 		
-		query = SpgController.buildInsertQuery(LIBRARY, varNames, varValues);
+		namesToValues.put("libSiglum", libSiglum);
+		namesToValues.put("countryID", countryID);
+		namesToValues.put("city", city);
+		namesToValues.put("library", library);
+		namesToValues.put("address1", address1);
+		namesToValues.put("address2", address2);
+		namesToValues.put("postCode", postCode);
+		
+		query = SpgController.buildInsertQuery(LIBRARY, namesToValues);
 		SpgController.executeSQL(query);
 		
 		lib = new Library(libSiglum, countryID, city, library, address1, address2, postCode);
@@ -101,32 +93,21 @@ public class LibraryController{
 			String library, String address1, String address2, String postCode) throws Exception {
 		Library l;
 		String query;
-		ArrayList<String> varNames, varValues, pkNames, pkValues;
-		varNames = new ArrayList<String>();
-		varValues = new ArrayList<String>();
-		pkNames = new ArrayList<String>();
-		pkValues = new ArrayList<String>();
+		
+		HashMap<String, String> namesToValues = new HashMap<String,String>();
+		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
 		
 		//all non primary keys. aka anything that can be changed within Library.
-		varNames.add("countryID");
-		varNames.add("city");
-		varNames.add("library");
-		varNames.add("address1");
-		varNames.add("address2");
-		varNames.add("postCode");
+		namesToValues.put("countryID", countryID);
+		namesToValues.put("city", city);
+		namesToValues.put("library", library);
+		namesToValues.put("address1", address1);
+		namesToValues.put("address2", address2);
+		namesToValues.put("postCode", postCode);
 		
-		varValues.add(countryID);
-		varValues.add(city);
-		varValues.add(library);
-		varValues.add(address1);
-		varValues.add(address2);
-		varValues.add(postCode);
+		pkNamesToValues.put("libSiglum", libSiglum);
 		
-		pkNames.add("libSiglum");
-		
-		pkValues.add(libSiglum);
-		
-		query = SpgController.buildUpdateQuery(LIBRARY, varNames, varValues, pkNames, pkValues);
+		query = SpgController.buildUpdateQuery(LIBRARY, pkNamesToValues, namesToValues);
 
 		SpgController.executeSQL(query);
 		l = new Library(libSiglum, countryID, city, library, address1, address2, postCode);
@@ -141,14 +122,17 @@ public class LibraryController{
 	 * @throws Exception - any exception. 
 	 */
 	public static ArrayList<Library> getLibraries(String countryID) throws Exception{
-		//why countryID??
-		String query = SpgController.buildSelectQuery(LIBRARY, "countryID", countryID);
-		
+		HashMap<String,String> namesToValues = new HashMap<String, String>();
+		String query;
 		ResultSet resultSet;
+		ArrayList<Library> libraries;
+		Library l;
+		
+		namesToValues.put("countryID", countryID);
+		query = SpgController.buildSelectQuery(LIBRARY, namesToValues);
 		resultSet = SpgController.getResultSet(query);
 		
-		ArrayList<Library> libraries = new ArrayList<Library>();
-		Library l;
+		libraries = new ArrayList<Library>();
 		
 		while (resultSet.next()) {
 			l = new Library(resultSet);
@@ -166,14 +150,11 @@ public class LibraryController{
 	 */
 	public static boolean deleteLibrary(String libSiglum) throws Exception{
 		String query;
-		ArrayList<String> pkNames, pkValues;
-		pkNames = new ArrayList<String>();
-		pkValues = new ArrayList<String>();
+		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
+
+		pkNamesToValues.put("libSiglum", libSiglum);
 		
-		pkNames.add("libSiglum");
-		pkValues.add(libSiglum);
-		
-		query = SpgController.createDeleteQuery(LIBRARY, pkNames, pkValues);
+		query = SpgController.createDeleteQuery(LIBRARY, pkNamesToValues);
 		
 		SpgController.executeSQL(query);
 				

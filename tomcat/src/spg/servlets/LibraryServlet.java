@@ -35,17 +35,6 @@ public class LibraryServlet extends SpgHttpServlet {
 	public static final String GET_LIBRARIES 	= "getlibraries";
 	public static final String DELETE_LIBRARY	= "deletelibrary"; // 
 	
-	public static final String CREATE_CENTURY 	= "createcentury";
-	public static final String GET_CENTURY 		= "getcentury";
-	public static final String GET_CENTURIES 	= "getcenturies";
-	
-	
-	// Don't implement these here. They should go in the SectionService. -Paul 
-	public static final String CREATE_CURSUS 	= "createcursus";
-	public static final String GET_CURSUS 		= "getcursus";
-	public static final String GET_CURSUSES	 	= "getcursuses";
-	
-	
 	public LibraryServlet() {
 		// TODO Auto-generated constructor stub
 	}
@@ -65,7 +54,6 @@ public class LibraryServlet extends SpgHttpServlet {
 					msg = this.getCountries();
 					break;
 				case CREATE_LIBRARY:
-					//None of these are checked for null. Not sure if that needs to be done.
 					// ^ TODO ALWAYS VERIFY FRONT-END INPUT -Paul
 					String createLibSiglum = params.get("libSiglum");
 					String createCountryID = params.get("countryID");
@@ -99,24 +87,6 @@ public class LibraryServlet extends SpgHttpServlet {
 				case DELETE_LIBRARY:
 					String libSiglum = super.getParameter(params, "libSiglum");
 					msg = this.deleteLibrary(libSiglum);
-					break;
-				case CREATE_CENTURY:
-					// TODO
-					break;
-				case GET_CENTURY:
-					// TODO
-					break;
-				case GET_CENTURIES:
-					// TODO
-					break;
-				case CREATE_CURSUS:
-					// TODO
-					break;
-				case GET_CURSUS:
-					// TODO
-					break;
-				case GET_CURSUSES:
-					// TODO
 					break;
 				default:
 					throw new Exception("Invalid action parameter.");
