@@ -37545,6 +37545,9 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var ManuscriptInitPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptInitPanel.tsx */ "./src/components/manuscript/ManuscriptInitPanel.tsx");
+var ManuscriptFilterPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptFilterPanel.tsx */ "./src/components/manuscript/ManuscriptFilterPanel.tsx");
+var ms = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
 (function (Panel) {
     Panel[Panel["INIT"] = 0] = "INIT";
@@ -37559,16 +37562,62 @@ var ManuscriptApp = (function (_super) {
             panel: Panel.INIT
         };
         _this.changePanel = _this.changePanel.bind(_this);
+        _this.onInitSelect = _this.onInitSelect.bind(_this);
+        _this.onFilterLoad = _this.onFilterLoad.bind(_this);
         return _this;
     }
-    ManuscriptApp.prototype.changePanel = function (p, stateOpts) {
+    ManuscriptApp.prototype.onInitSelect = function (p) {
+        var _this = this;
+        switch (p) {
+            case Panel.FILTER:
+            default:
+                this.setState(function (s) {
+                    s.panel = p;
+                    return s;
+                });
+                break;
+            case Panel.TABLE:
+                ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(null, null, function (manuscripts, e) {
+                    if (e) {
+                        alert(e);
+                    }
+                    else {
+                        _this.setState(function (s) {
+                            s.panel = p;
+                            if (s.manuscripts) {
+                                ms.Manuscript.destroyArray(s.manuscripts);
+                            }
+                            s.manuscripts = manuscripts;
+                            return s;
+                        });
+                    }
+                });
+                break;
+        }
+    };
+    ManuscriptApp.prototype.onFilterLoad = function (c, l) {
+        var _this = this;
+        var countryID = c.countryID;
+        var libSiglum = l ? l.libSiglum : null;
+        ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(countryID, libSiglum, function (manuscripts, e) {
+            if (e) {
+                alert(e);
+            }
+            else {
+                _this.setState(function (s) {
+                    s.panel = Panel.TABLE;
+                    if (s.manuscripts) {
+                        ms.Manuscript.destroyArray(s.manuscripts);
+                    }
+                    s.manuscripts = manuscripts;
+                    return s;
+                });
+            }
+        });
+    };
+    ManuscriptApp.prototype.changePanel = function (p) {
         this.setState(function (s) {
             s.panel = p;
-            if (stateOpts) {
-                for (var k in stateOpts) {
-                    s[k] = stateOpts[k];
-                }
-            }
             return s;
         });
     };
@@ -37577,12 +37626,98 @@ var ManuscriptApp = (function (_super) {
         switch (this.state.panel) {
             case Panel.INIT:
             default:
-                return (React.createElement(ManuscriptInitPanel_tsx_1.default, { onBack: this.props.onBack, onSelect: function (p) { return _this.changePanel(p, null); } }));
+                return (React.createElement(ManuscriptInitPanel_tsx_1.default, { onBack: this.props.onBack, onSelect: function (p) { return _this.changePanel(p); } }));
+            case Panel.FILTER:
+                return (React.createElement(ManuscriptFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSelect: this.onFilterLoad }));
         }
     };
     return ManuscriptApp;
 }(React.Component));
 exports.default = ManuscriptApp;
+
+
+/***/ }),
+
+/***/ "./src/components/manuscript/ManuscriptFilterPanel.tsx":
+/*!*************************************************************!*\
+  !*** ./src/components/manuscript/ManuscriptFilterPanel.tsx ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_select_1 = __webpack_require__(/*! react-select */ "./node_modules/react-select/dist/react-select.es.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
+var ManuscriptFilterPanel = (function (_super) {
+    __extends(ManuscriptFilterPanel, _super);
+    function ManuscriptFilterPanel(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            countryOptions: _this.props.countries.map(function (c) {
+                return { label: c.country, value: c.countryID };
+            }),
+            countryOption: null,
+            libraries: null,
+            libraryOptions: null,
+            libraryOption: null,
+            loadDisabled: true
+        };
+        _this.onCountrySelect = _this.onCountrySelect.bind(_this);
+        _this.onLibrarySelect = _this.onLibrarySelect.bind(_this);
+        return _this;
+    }
+    ManuscriptFilterPanel.prototype.onCountrySelect = function (o) {
+        this.setState(function (s) {
+            s.countryOption = o;
+            s.loadDisabled = o === null;
+            if (s.loadDisabled) {
+                s.libraryOption = null;
+                s.libraryOptions = null;
+                if (s.libraries) {
+                    library_ts_1.Library.destroyArray(s.libraries);
+                }
+            }
+            return s;
+        });
+    };
+    ManuscriptFilterPanel.prototype.onLibrarySelect = function (o) {
+        this.setState(function (s) {
+            s.libraryOption = o;
+        });
+    };
+    ManuscriptFilterPanel.prototype.render = function () {
+        return [
+            React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Filter Manuscripts"),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
+            (React.createElement(react_bootstrap_1.Alert, { bsStyle: "info", className: "mb20 mr15p ml15p text-center", key: "alert" },
+                React.createElement("strong", null, "Filter manuscripts by country and library."))),
+            React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_select_1.default, { name: "countryID", value: this.state.countryOption, options: this.state.countryOptions, onChange: this.onCountrySelect }))))
+        ];
+    };
+    return ManuscriptFilterPanel;
+}(React.Component));
+exports.default = ManuscriptFilterPanel;
 
 
 /***/ }),
@@ -38113,6 +38248,28 @@ var ManuScriptProxy = (function (_super) {
     function ManuScriptProxy() {
         return _super.call(this, 'manuscript') || this;
     }
+    ManuScriptProxy.prototype.getManuscripts = function (countryID, libSiglum, callback) {
+        var params = {
+            action: 'GetManuscripts',
+            countryID: countryID || null,
+            libSiglum: libSiglum || null
+        };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                SpgProxy_ts_1.default.callbackError(callback, res.err);
+            }
+            else if (d.constructor === Array) {
+                var manuscripts = d.map(function (p) {
+                    return new ms.Manuscript(p);
+                });
+                callback(manuscripts, null);
+            }
+            else {
+                SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
     ManuScriptProxy.prototype.createMsType = function (props, callback) {
         var params = {
             action: 'CreateMsType',
@@ -38221,26 +38378,6 @@ var ManuScriptProxy = (function (_super) {
             }
             else {
                 callback(new ms.Manuscript(d), null);
-            }
-        });
-    };
-    ManuScriptProxy.prototype.getManuscripts = function (callback) {
-        var params = {
-            action: 'GetManuscripts'
-        };
-        _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
-            }
-            else if (res.constructor === Array) {
-                var manuscripts = [];
-                for (var i = 0; i < res.length; i++) {
-                    manuscripts.push(new ms.Manuscript(res[i]));
-                }
-                callback(manuscripts, null);
-            }
-            else {
-                SpgProxy_ts_1.default.callbackError(callback, null);
             }
         });
     };

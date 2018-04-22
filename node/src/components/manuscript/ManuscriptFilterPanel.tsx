@@ -42,6 +42,8 @@ export default class ManuscriptFilterPanel extends React.Component<P,S> {
 				return {label: c.country, value: c.countryID};
 			}),
 			countryOption: null,
+			libraries: null,
+			libraryOptions: null,
 			libraryOption: null,
 			loadDisabled: true
 		};
