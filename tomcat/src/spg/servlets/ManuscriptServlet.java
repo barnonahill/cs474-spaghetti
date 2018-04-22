@@ -50,10 +50,15 @@ public class ManuscriptServlet extends SpgHttpServlet{
 					msg = this.createMSType(MSTypeMSType, MSTypeMSTypeName);
 					break;
 				case UPDATE_MSTYPE:
-					// TODO
+				    String updateMSTypeMSType = params.get("msType");
+                    String updateMSTypeMSTypeName = params.get("msTypeName");
+                    msg = this.updateMSType(updateMSTypeMSType, updateMSTypeMSTypeName);
+					break;
 					break;
 				case GET_MSTYPE:
-					// TODO
+					String getMSTypeMSType = params.get("msType");
+                    String getMSTypeMSTypeName = params.get("msTypeName");
+                    msg = this.getMSType(getMSTypeMSType, getMSTypeMSTypeName);
 					break;
 				case CREATE_MANUSCRIPT:
 					String createLibSiglum = params.get("libSiglum");
@@ -130,8 +135,32 @@ public class ManuscriptServlet extends SpgHttpServlet{
 //		return msType.toJSON().toString();
 		return null; //^commented b/c stuff isnt implemented.
 	}
-	
-	
+	/**
+     *updateMSType - updates an existing MSType
+     *@param updateMSTypeMSType
+     *@param updateMSTypeMSTypeName
+     *@return
+     */
+    public String updateMSType(String updateMSTypeMSType, String updateMSTypeMSTypeName) throws Exception
+    {
+//        MSType mst = ManuscriptController.updateMSType(updateMSTypeMSType, updateMSTypeMSTypeName);
+//        return mst.toJSON().toString();
+	      return null;
+	}
+
+	/**
+     *getMSType - gets an existing MSType
+     *@param getMSTypeMSType
+     *@param getMSTypeMSTypeName
+     *@return
+     */
+    public String getMSType(String getMSTypeMSType, String getMSTypeMSTypeName) throws Exception
+    {
+ //       MSType mst = ManuscriptController.getMSType(getMSTypeMSType, getMSTypeMSTypeName);
+ //       return mst.toJSON().toString();
+	      return null;
+	}
+		
 	/**
 	 * createManuscript - creates a new manuscript.
 	 * @params - 
