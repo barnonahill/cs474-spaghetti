@@ -53,8 +53,7 @@ public class Manuscript {
 		this.bibliography = resultSet.getString("bibliography");
 	}
 	
-	//getters
-	//
+	//Getters
 	public String getlibSiglum() {
 		return this.libSiglum;
 	}
