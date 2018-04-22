@@ -105,29 +105,6 @@ public abstract class SpgController extends HttpServlet{
 	
 	
 	/**
-	 * buildSelectQuery - handles creating the strings for select queries.
-	 * @param tableName - the table to select from.
-	 * @param filterName - the variable to filter by.
-	 * @param filterValue - the value to filter by.
-	 * 
-	 * @return The string to use for the SELECT query based on the input.
-	 * e.g. 
-	 * SELECT * FROM Library WHERE Libsiglum = 'potato';
-	 */
-	static final String buildSelectQuery(String tableName, Map<String,String> namesToValues) {
-		StringBuilder query = new StringBuilder("SELECT * FROM ");
-		query.append(tableName);
-		
-		if( namesToValues != null) {
-			query.append(" WHERE ");
-			query.append(createPredicate(namesToValues));
-		}
-		query.append(";");
-		return query.toString();
-	}
-	
-	
-	/**
 	 * 
 	 * @param tableName - name of the updated table. 
 	 * e.g. Libary
@@ -150,6 +127,28 @@ public abstract class SpgController extends HttpServlet{
 		return query.toString();
 	}
 	
+	/**
+	 * buildSelectQuery - handles creating the strings for select queries.
+	 * @param tableName - the table to select from.
+	 * @param filterName - the variable to filter by.
+	 * @param filterValue - the value to filter by.
+	 * 
+	 * @return The string to use for the SELECT query based on the input.
+	 * e.g. 
+	 * SELECT * FROM Library WHERE Libsiglum = 'potato';
+	 */
+	static final String buildSelectQuery(String tableName, Map<String,String> namesToValues) {
+		StringBuilder query = new StringBuilder("SELECT * FROM ");
+		query.append(tableName);
+		
+		if( namesToValues != null) {
+			query.append(" WHERE ");
+			query.append(createPredicate(namesToValues));
+		}
+		query.append(";");
+		return query.toString();
+	}
+	
 
 	/**
 	 * createDeleteString - creates the query needed to delete from a table.
@@ -160,7 +159,7 @@ public abstract class SpgController extends HttpServlet{
 	 * e.g.
 	 * DELETE FROM Library WHERE libSiglum = 'potato';
 	 */
-	static final String createDeleteQuery(String tableName, Map<String, String> namesToValues) {	
+	static final String buildDeleteQuery(String tableName, Map<String, String> namesToValues) {	
 		StringBuilder query = new StringBuilder("");
 		query.append("DELETE FROM ");
 		query.append(tableName);
