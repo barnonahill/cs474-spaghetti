@@ -89,15 +89,15 @@ public abstract class SpgController extends HttpServlet{
 	 * e.g.
 	 * INSERT INTO Library (libSiglum, city, address1) VALUES ('potato', 'H-Burg', 'Neverland st.');
 	 */
-	static final String buildInsertQuery(String tableName, ArrayList<String> createNames, ArrayList<String> createVals) {
+	static final String buildInsertQuery(String tableName, Map<String,String> namesToValues) {
 		StringBuilder query = new StringBuilder("");
 		
 		query.append("INSERT INTO ");
 		query.append(tableName);
 		query.append(" (");
-		query.append(createColumnString(createNames, createVals));
+		query.append(createColumnString(namesToValues));
 		query.append(") VALUES (");
-		query.append(ceateValueListString(createNames, createVals));
+		query.append(ceateValueListString(namesToValues));
 		query.append(");");
 		
 		return query.toString();
@@ -183,19 +183,19 @@ public abstract class SpgController extends HttpServlet{
 	 * @param createVals
 	 * @return
 	 */
-	private static Object createColumnString(ArrayList<String> createNames, ArrayList<String> createVals) {
+	private static Object createColumnString(Map<String,String> nameToValues) {
 		StringBuilder updates = new StringBuilder("");
 		boolean addComma = false;
-		int nameIndex;
-
-		for(String val : createVals) {
-			if(!(val == null || val.equals(""))) {
+		String val;
+		
+		for(String name : nameToValues.keySet()) {
+			val = nameToValues.get(name);
+			if(!(val == null || val.equals(""))) { 
 				if(addComma) {
 					updates.append(", ");
 				}
 				addComma = true;
-				nameIndex = createVals.indexOf(val);
-				updates.append(createNames.get(nameIndex));
+				updates.append(name);
 			}
 		}
 		
@@ -208,11 +208,13 @@ public abstract class SpgController extends HttpServlet{
 	 * @param createVals
 	 * @return
 	 */
-	private static Object ceateValueListString(ArrayList<String> createNames, ArrayList<String> createVals) {
+	private static Object ceateValueListString(Map<String,String> nameToValues) {
 		StringBuilder updates = new StringBuilder("");
 		boolean addComma = false;
-
-		for(String val : createVals) {
+		String val;
+		
+		for(String name : nameToValues.keySet()) {
+			val = nameToValues.get(name);
 			if(!(val == null || val.equals(""))) {
 				if(addComma) {
 					updates.append(", ");
