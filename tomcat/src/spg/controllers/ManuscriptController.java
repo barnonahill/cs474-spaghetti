@@ -117,13 +117,26 @@ public class ManuscriptController {
 	
 	/**
 	 * 
+	 * @param country 
+	 * @param libSiglum 
 	 * @return
 	 * @throws Exception
 	 */
-	public static ArrayList<Manuscript> getManuscripts() throws Exception {
-		String query = SpgController.buildSelectQuery(MANUSCRIPT, null);
-		
+	public static ArrayList<Manuscript> getManuscripts(String libSiglum, String country) throws Exception {
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+		String query;
 		ResultSet resultSet;
+
+		//filter by none, country, or country and libSiglum.
+		if( !(country == null || country.equals("")) ) {
+			namesToValues.put("country", country);
+			if(!(libSiglum == null || libSiglum.equals(""))) {
+				namesToValues.put("libSiglum", libSiglum);
+			}
+		}
+		
+		query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
+		
 		resultSet = SpgController.getResultSet(query);
 		
 		ArrayList<Manuscript> manuscripts = new ArrayList<Manuscript>();
