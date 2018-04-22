@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import spg.controllers.ManuscriptController;
+import spg.models.MSType;
 import spg.models.Manuscript;
 
 /**
@@ -130,9 +131,8 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	 * @throws Exception - 
 	 */
 	public String createMSType(String msType, String msTypeName) throws Exception {
-//		MSType msType = ManuscriptController.createMSType(msType, msTypeName);
-//		return msType.toJSON().toString();
-		return null; //^commented b/c stuff isnt implemented.
+		MSType mst = ManuscriptController.createMSType(msType, msTypeName);
+		return mst.toJSON().toString();
 	}
 	/**
      *updateMSType - updates an existing MSType
@@ -142,9 +142,8 @@ public class ManuscriptServlet extends SpgHttpServlet{
      */
     public String updateMSType(String updateMSTypeMSType, String updateMSTypeMSTypeName) throws Exception
     {
-//        MSType mst = ManuscriptController.updateMSType(updateMSTypeMSType, updateMSTypeMSTypeName);
-//        return mst.toJSON().toString();
-	      return null;
+        MSType mst = ManuscriptController.updateMSType(updateMSTypeMSType, updateMSTypeMSTypeName);
+        return mst.toJSON().toString();
 	}
 
 	/**
@@ -155,9 +154,8 @@ public class ManuscriptServlet extends SpgHttpServlet{
      */
     public String getMSType(String getMSTypeMSType, String getMSTypeMSTypeName) throws Exception
     {
- //       MSType mst = ManuscriptController.getMSType(getMSTypeMSType, getMSTypeMSTypeName);
- //       return mst.toJSON().toString();
-	      return null;
+        MSType mst = ManuscriptController.getMSType(getMSTypeMSType, getMSTypeMSTypeName);
+        return mst.toJSON().toString();
 	}
 		
 	/**

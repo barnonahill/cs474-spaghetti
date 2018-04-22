@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import spg.models.MSType;
 import spg.models.Manuscript;
 
 /**
@@ -13,7 +14,81 @@ import spg.models.Manuscript;
  */
 public class ManuscriptController {
 
-	private final static String MANUSCRIPT = "Manuscript"; 
+	private final static String MANUSCRIPT = "Manuscript";
+	private final static String MSTYPE = "MSType"; 
+	
+	/**
+	 * createMSType -
+	 * @param msType -
+	 * @param msTypeName -
+	 * @return - 
+	 * @throws Exception -
+	 */
+	public static MSType createMSType(String msType, String msTypeName) throws Exception {
+		String query;
+		MSType mst;
+		
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+		
+		if(msType == null || msType.equals("")) {
+			throw new Exception("msType cannot be left empty.");
+		}
+		
+		namesToValues.put("msType", msType);
+		namesToValues.put("msTypeName", msTypeName);
+		
+		query = SpgController.buildInsertQuery(MSTYPE, namesToValues);
+		SpgController.executeSQL(query);
+		
+		mst = new MSType(msType, msTypeName);
+				
+		return mst;
+	}
+
+	
+	/**
+	 * updateMSType - 
+	 * @param msType - 
+	 * @param msTypeName - 
+	 * @return - 
+	 * @throws Exception -
+	 */
+	public static MSType updateMSType(String msType, String msTypeName) throws Exception {
+		String query;
+		MSType mst;
+		
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+		HashMap<String, String> pkNamesToValues = new HashMap<String, String>();
+		
+		pkNamesToValues.put("msType", msType);
+		namesToValues.put("msTypeName", msTypeName);
+		
+		query = SpgController.buildUpdateQuery(MSTYPE, pkNamesToValues, namesToValues);
+		SpgController.executeSQL(query);
+		
+		mst = new MSType(msType, msTypeName);
+				
+		return mst;
+	}
+
+	
+	public static MSType getMSType(String msType, String msTypeName) throws Exception {
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+		MSType mst;
+		String query;
+		ResultSet resultSet;
+		
+		namesToValues.put("msType", msType);
+		query = SpgController.buildSelectQuery(MSTYPE, namesToValues);
+		resultSet = SpgController.getResultSet(query);
+		
+		resultSet.next();
+		mst = new MSType(resultSet);
+		
+		return mst;
+	}
+	
+	
 	
 	/**
 	 * createManuscript - sets up to do an insert statement to create a new Manuscript.
@@ -100,12 +175,14 @@ public class ManuscriptController {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Manuscript getManuscript(String getLibSiglum, String getMSSiglum) throws Exception {
+	public static Manuscript getManuscript(String libSiglum, String msSiglum) throws Exception {
 		HashMap<String, String> namesToValues = new HashMap<String, String>();
 		Manuscript ms;
 		String query;
 		ResultSet resultSet;
 		
+		namesToValues.put("libSiglum", libSiglum);
+		namesToValues.put("msSiglum", msSiglum);
 		query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
 		resultSet = SpgController.getResultSet(query);
 		
@@ -164,14 +241,12 @@ public class ManuscriptController {
 		pkNamesToValues.put("libSiglum", libSiglum);
 		pkNamesToValues.put("msSiglum", msSiglum);
 		
-		query = SpgController.createDeleteQuery(MANUSCRIPT, pkNamesToValues);
+		query = SpgController.buildDeleteQuery(MANUSCRIPT, pkNamesToValues);
 		
 		SpgController.executeSQL(query);
 				
 		return true;
 	}
 
-
-
-
+	
 }
