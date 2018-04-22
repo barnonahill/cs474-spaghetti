@@ -2,7 +2,6 @@ package spg.controllers;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import spg.models.Country;
 import spg.models.Library;
@@ -54,22 +53,31 @@ public class LibraryController{
 		String query;
 		Library lib;
 		
-		HashMap<String, String> namesToValues = new HashMap<String, String>();
-
+		ArrayList<String> varNames, varValues;
+		varNames = new ArrayList<String>();
+		varValues = new ArrayList<String>();
+		
+		varNames.add("libSiglum");
+		varNames.add("countryID");
+		varNames.add("city");
+		varNames.add("library");
+		varNames.add("address1");
+		varNames.add("address2");
+		varNames.add("postCode");
+		
 		//Eventually move to SPG Controller and make generic for testing if primary keys are correct.
 		if(libSiglum == null || libSiglum.equals("")) {
 			throw new Exception("libSiglum cannot be left empty or blank.");
 		}
+		varValues.add(libSiglum);
+		varValues.add(countryID);
+		varValues.add(city);
+		varValues.add(library);
+		varValues.add(address1);
+		varValues.add(address2);
+		varValues.add(postCode);
 		
-		namesToValues.put("libSiglum", libSiglum);
-		namesToValues.put("countryID", countryID);
-		namesToValues.put("city", city);
-		namesToValues.put("library", library);
-		namesToValues.put("address1", address1);
-		namesToValues.put("address2", address2);
-		namesToValues.put("postCode", postCode);
-		
-		query = SpgController.buildInsertQuery(LIBRARY, namesToValues);
+		query = SpgController.buildInsertQuery(LIBRARY, varNames, varValues);
 		SpgController.executeSQL(query);
 		
 		lib = new Library(libSiglum, countryID, city, library, address1, address2, postCode);
