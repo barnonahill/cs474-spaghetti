@@ -70,7 +70,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 
 	onFilterLoad(c:Country, l?:Library) {
 		var countryID = c.countryID;
-		var libSiglum = l ? l.libSiglum: null;
+		var libSiglum = l ? l.libSiglum : null;
 		proxyFactory.getManuscriptProxy().getManuscripts(countryID, libSiglum, (manuscripts:Array<ms.Manuscript>, e?:string) => {
 			if (e) {
 				alert(e);
@@ -101,7 +101,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 			default:
 				return (<InitPanel
 					onBack={this.props.onBack}
-					onSelect={(p:Panel) => this.changePanel(p)}
+					onSelect={this.onInitSelect}
 				/>);
 			case Panel.FILTER:
 				return (<FilterPanel

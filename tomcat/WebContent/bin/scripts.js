@@ -37626,7 +37626,7 @@ var ManuscriptApp = (function (_super) {
         switch (this.state.panel) {
             case Panel.INIT:
             default:
-                return (React.createElement(ManuscriptInitPanel_tsx_1.default, { onBack: this.props.onBack, onSelect: function (p) { return _this.changePanel(p); } }));
+                return (React.createElement(ManuscriptInitPanel_tsx_1.default, { onBack: this.props.onBack, onSelect: this.onInitSelect }));
             case Panel.FILTER:
                 return (React.createElement(ManuscriptFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSelect: this.onFilterLoad }));
         }

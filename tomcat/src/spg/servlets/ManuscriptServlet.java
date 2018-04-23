@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -19,6 +20,7 @@ import spg.models.Manuscript;
  * @author Carl Clermont
  *
  */
+@WebServlet(name="ManuscriptServices", urlPatterns= {"/manuscript"})
 public class ManuscriptServlet extends SpgHttpServlet{
 	private static final long serialVersionUID = 1L;
 	
