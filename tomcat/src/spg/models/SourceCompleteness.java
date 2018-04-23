@@ -5,6 +5,11 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
+/**
+ * 
+ * @author Kyle Tran
+ *
+ */
 public class SourceCompleteness {
 	private final String sourceCompletenessID;
 	private final String sourceCompletenessName;

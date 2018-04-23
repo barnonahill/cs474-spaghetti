@@ -5,6 +5,11 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
+/**
+ * 
+ * @author Kyle Tran
+ *
+ */
 public class Notation {
 	private final String notationID;
 	private final String notationName;

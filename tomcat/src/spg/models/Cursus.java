@@ -5,6 +5,11 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
+/**
+ * 
+ * @author Kyle Tran
+ *
+ */
 public class Cursus {
 	private final String cursusID;
 	private final String cursusName;

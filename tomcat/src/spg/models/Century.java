@@ -5,6 +5,11 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
+/**
+ * 
+ * @author Kyle Tran
+ *
+ */
 public class Century {
 	private final String centuryID;
 	private final String centuryName;
