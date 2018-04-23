@@ -36944,7 +36944,7 @@ var SearchBar = (function (_super) {
         if (e.key === 'Enter') {
             this.setState(function (s) {
                 s.isFiltered = _this.state.value ? true : false;
-                _this.props.onClick(_this.state.value);
+                _this.props.onSubmit(_this.state.value);
                 return s;
             });
         }
@@ -36954,7 +36954,7 @@ var SearchBar = (function (_super) {
         this.setState(function (s) {
             s.value = '';
             s.isFiltered = false;
-            _this.props.onClick('');
+            _this.props.onSubmit('');
             return s;
         });
     };
@@ -36964,7 +36964,7 @@ var SearchBar = (function (_super) {
             React.createElement(react_bootstrap_1.FormControl, { type: "search", value: this.state.value, onChange: this.onChange, onKeyPress: this.onKeyPress, placeholder: this.props.placeholder }),
             this.state.isFiltered && React.createElement("span", { className: "input-delete", onClick: function () { return _this.clear(); } },
                 React.createElement(react_bootstrap_1.Glyphicon, { glyph: "remove" })),
-            React.createElement(react_bootstrap_1.Button, { componentClass: react_bootstrap_1.InputGroup.Addon, onClick: function () { return _this.props.onClick(_this.state.value.toLowerCase()); } },
+            React.createElement(react_bootstrap_1.Button, { componentClass: react_bootstrap_1.InputGroup.Addon, onClick: function () { return _this.props.onSubmit(_this.state.value.toLowerCase()); } },
                 React.createElement(react_bootstrap_1.Glyphicon, { glyph: "search" }))));
     };
     return SearchBar;
@@ -37563,12 +37563,12 @@ var LibraryTablePanel = (function (_super) {
     LibraryTablePanel.prototype.viewBtnRenderer = function (props) {
         var l = props.rowData;
         var t = ButtonType.VIEW;
-        return React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "small", key: l.libSiglum + t, onClick: this.props.onClick.bind(this, l, t) }, "View");
+        return React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "small", key: l.libSiglum + t, onClick: this.props.onClick.bind(this, l, t) }, "View");
     };
     LibraryTablePanel.prototype.editBtnRenderer = function (props) {
         var l = props.rowData;
         var t = ButtonType.EDIT;
-        return React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "small", key: l.libSiglum + t, onClick: this.props.onClick.bind(this, l, t) }, "Edit");
+        return React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", key: l.libSiglum + t, onClick: this.props.onClick.bind(this, l, t) }, "Edit");
     };
     LibraryTablePanel.prototype.deleteBtnRenderer = function (props) {
         var l = props.rowData;
@@ -37582,11 +37582,11 @@ var LibraryTablePanel = (function (_super) {
                 React.createElement(react_bootstrap_1.Row, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
                         React.createElement(react_bootstrap_1.Button, { key: "back", bsStyle: "default", onClick: this.props.onBack }, "Back"),
-                        React.createElement(react_bootstrap_1.Button, { key: "new", bsStyle: "primary", onClick: function () { return _this.props.onClick(null, ButtonType.EDIT); }, className: "ml15" }, "New")),
+                        React.createElement(react_bootstrap_1.Button, { key: "new", bsStyle: "success", onClick: function () { return _this.props.onClick(null, ButtonType.EDIT); }, className: "ml15" }, "New")),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by name, city, and siglum...", onClick: this.filter })),
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by name, city, and siglum...", onSubmit: this.filter })),
                     React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
-                        React.createElement(react_bootstrap_1.Button, { key: "refresh", bsStyle: "primary", onClick: this.props.onRefresh }, "Refresh"))))),
+                        React.createElement(react_bootstrap_1.Button, { key: "refresh", bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
             (React.createElement(react_virtualized_1.Table, { key: "table", rowClassName: "tr", height: window.innerHeight, width: window.innerWidth - 50, headerHeight: 40, rowHeight: 50, rowCount: this.state.libraries.length, rowGetter: this.state.rowGetter },
                 React.createElement(react_virtualized_1.Column, { label: "Siglum", dataKey: "libSiglum", width: 100 }),
                 React.createElement(react_virtualized_1.Column, { label: "Name", dataKey: "library", width: window.innerWidth - 420 - (window.innerWidth / 6) }),
@@ -37636,7 +37636,8 @@ var Panel;
     Panel[Panel["INIT"] = 0] = "INIT";
     Panel[Panel["FILTER"] = 1] = "FILTER";
     Panel[Panel["TABLE"] = 2] = "TABLE";
-    Panel[Panel["MST"] = 3] = "MST";
+    Panel[Panel["EDIT"] = 3] = "EDIT";
+    Panel[Panel["MST"] = 4] = "MST";
 })(Panel = exports.Panel || (exports.Panel = {}));
 var ManuscriptApp = (function (_super) {
     __extends(ManuscriptApp, _super);
@@ -37647,11 +37648,15 @@ var ManuscriptApp = (function (_super) {
             country: null,
             libraries: null,
             library: null,
-            manuscripts: null
+            manuscripts: null,
+            manuscript: null
         };
         _this.changePanel = _this.changePanel.bind(_this);
         _this.onInitSelect = _this.onInitSelect.bind(_this);
         _this.onFilterLoad = _this.onFilterLoad.bind(_this);
+        _this.loadManuscripts = _this.loadManuscripts.bind(_this);
+        _this.openEditPanel = _this.openEditPanel.bind(_this);
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
         return _this;
     }
     ManuscriptApp.prototype.onInitSelect = function (p) {
@@ -37678,6 +37683,8 @@ var ManuscriptApp = (function (_super) {
                         });
                     }
                 });
+                break;
+            case Panel.MST:
                 break;
         }
     };
@@ -37720,9 +37727,58 @@ var ManuscriptApp = (function (_super) {
             case Panel.FILTER:
                 return (React.createElement(ManuscriptFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSelect: this.onFilterLoad }));
             case Panel.TABLE:
-                return (React.createElement(ManuscriptTablePanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscripts: this.state.manuscripts, onBack: function () { return _this.changePanel(Panel.INIT); } }));
+                return (React.createElement(ManuscriptTablePanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscripts: this.state.manuscripts, onBack: function () { return _this.changePanel(Panel.INIT); }, onRefresh: this.loadManuscripts, onEdit: this.openEditPanel, onDelete: this.confirmDelete }));
             case Panel.MST:
                 return (React.createElement(MsTypeApp_tsx_1.default, { onBack: function () { return _this.changePanel(Panel.MST); } }));
+        }
+    };
+    ManuscriptApp.prototype.loadManuscripts = function () {
+        var _this = this;
+        var countryID = this.state.country ? this.state.country.countryID : null;
+        var libSiglum = this.state.library ? this.state.library.libSiglum : null;
+        ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(countryID, libSiglum, function (manuscripts, e) {
+            if (e) {
+                alert(e);
+            }
+            else {
+                _this.setState(function (s) {
+                    ms.Manuscript.destroyArray(s.manuscripts);
+                    s.manuscripts = manuscripts;
+                    return s;
+                });
+            }
+        });
+    };
+    ManuscriptApp.prototype.openEditPanel = function (manuscript) {
+        this.setState(function (s) {
+            s.panel = Panel.EDIT;
+            s.manuscript = manuscript;
+            return s;
+        });
+    };
+    ManuscriptApp.prototype.confirmDelete = function (manuscript) {
+        var _this = this;
+        var del = confirm('Delete ' + manuscript.libSiglum + ' ' + manuscript.msSiglum + '?');
+        if (del) {
+            ProxyFactory_ts_1.default.getManuscriptProxy().deleteManuscript(manuscript.libSiglum, manuscript.msSiglum, function (s, e) {
+                if (e) {
+                    alert(e);
+                }
+                else if (s) {
+                    _this.setState(function (s) {
+                        var i = s.manuscripts.findIndex(function (m) {
+                            return m.libSiglum === manuscript.libSiglum &&
+                                m.msSiglum === manuscript.msSiglum;
+                        });
+                        s.manuscripts[i].destroy();
+                        s.manuscripts.splice(i, 1);
+                        return s;
+                    });
+                }
+                else {
+                    alert('Could not delete ' + manuscript.libSiglum + ' ' + manuscript.msSiglum);
+                }
+            });
         }
     };
     return ManuscriptApp;
@@ -37937,24 +37993,26 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
 __webpack_require__(/*! react-virtualized/styles.css */ "./node_modules/react-virtualized/styles.css");
 var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SearchBar_tsx_1 = __webpack_require__(/*! @src/components/common/SearchBar.tsx */ "./src/components/common/SearchBar.tsx");
 var ManuscriptTablePanel = (function (_super) {
     __extends(ManuscriptTablePanel, _super);
     function ManuscriptTablePanel(p) {
         var _this = _super.call(this, p) || this;
-        var list = _this.props.manuscripts.map(function (m) {
-            return [
-                m.libSiglum,
-                m.msSiglum,
-                m.msType,
-                null,
-                null,
-                null,
-            ];
-        });
+        _this.state = {
+            rowGetter: function (i) { return _this.state.manuscripts[i.index]; },
+            manuscripts: _this.props.manuscripts,
+            height: window.innerHeight * 0.95,
+            width: window.innerWidth - 50
+        };
         _this.getHeader = _this.getHeader.bind(_this);
+        _this.renderView = _this.renderView.bind(_this);
+        _this.renderEdit = _this.renderEdit.bind(_this);
+        _this.renderDelete = _this.renderDelete.bind(_this);
+        _this.filter = _this.filter.bind(_this);
         return _this;
     }
     ManuscriptTablePanel.prototype.getHeader = function () {
@@ -37970,11 +38028,56 @@ var ManuscriptTablePanel = (function (_super) {
         return h;
     };
     ManuscriptTablePanel.prototype.render = function () {
+        var _this = this;
         return [
             React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.getHeader()),
-            React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Row, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "success", onClick: function () { return _this.props.onEdit(null); }, className: "ml15" }, "New")),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by libSiglum, msSiglum, and msType...", onSubmit: this.filter })),
+                    React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", className: "mb10", rowClassName: "tr", rowGetter: this.state.rowGetter, height: this.state.height, width: this.state.width, headerHeight: 40, rowHeight: 50, rowCount: this.state.manuscripts.length },
+                React.createElement(react_virtualized_1.Column, { label: "Lib Siglum", dataKey: "libSiglum", width: 100 }),
+                React.createElement(react_virtualized_1.Column, { label: "MS Siglum", dataKey: "msSiglum", width: this.state.width - 480 }),
+                React.createElement(react_virtualized_1.Column, { label: "Type", dataKey: "msType", width: 200 }),
+                React.createElement(react_virtualized_1.Column, { dataKey: "", width: 60, cellRenderer: this.renderView }),
+                React.createElement(react_virtualized_1.Column, { dataKey: "", width: 60, cellRenderer: this.renderEdit }),
+                React.createElement(react_virtualized_1.Column, { dataKey: "", width: 60, cellRenderer: this.renderDelete })))
         ];
+    };
+    ManuscriptTablePanel.prototype.renderView = function (p) {
+        var ms = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "small", className: "w100p" }, "View"));
+    };
+    ManuscriptTablePanel.prototype.renderEdit = function (p) {
+        var _this = this;
+        var ms = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onEdit(ms); } }, "Edit"));
+    };
+    ManuscriptTablePanel.prototype.renderDelete = function (p) {
+        var _this = this;
+        var ms = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onDelete(ms); } }, "Delete"));
+    };
+    ManuscriptTablePanel.prototype.filter = function (v) {
+        var _this = this;
+        this.setState(function (s) {
+            if (v) {
+                s.manuscripts = _this.props.manuscripts.filter(function (m) {
+                    return m.libSiglum.toLowerCase().indexOf(v) !== -1 ||
+                        m.msType.toLowerCase().indexOf(v) !== -1 ||
+                        m.msSiglum.toLowerCase().indexOf(v) !== -1;
+                });
+            }
+            else {
+                s.manuscripts = _this.props.manuscripts;
+            }
+            return s;
+        });
     };
     return ManuscriptTablePanel;
 }(React.Component));
@@ -38671,15 +38774,10 @@ var ManuScriptProxy = (function (_super) {
     }
     ManuScriptProxy.prototype.getManuscripts = function (countryID, libSiglum, callback) {
         var params = {
-            action: 'GetManuscripts'
+            action: 'GetManuscripts',
+            countryID: countryID,
+            libSiglum: libSiglum
         };
-        if (countryID) {
-            params.countryID = countryID;
-        }
-        if (libSiglum) {
-            params.libSiglum = libSiglum;
-        }
-        console.log(params);
         _super.prototype.doPost.call(this, params, function (res) {
             var d = res.data;
             if (d.err) {
@@ -38693,6 +38791,52 @@ var ManuScriptProxy = (function (_super) {
             }
             else {
                 SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    ManuScriptProxy.prototype.createManuscript = function (props, callback) {
+        var params = {
+            action: 'CreateManuscript',
+        };
+        Object.assign(params, props);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            else {
+                callback(new ms.Manuscript(d), null);
+            }
+        });
+    };
+    ManuScriptProxy.prototype.updateManuscript = function (props, callback) {
+        var params = {
+            action: 'UpdateManuscript',
+        };
+        Object.assign(params, props);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            else {
+                callback(new ms.Manuscript(d), null);
+            }
+        });
+    };
+    ManuScriptProxy.prototype.deleteManuscript = function (libSiglum, msSiglum, callback) {
+        var params = {
+            action: 'DeleteManuscript',
+            libSiglum: libSiglum,
+            msSiglum: msSiglum
+        };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            else {
+                callback(d.success ? true : false, null);
             }
         });
     };
@@ -38758,52 +38902,6 @@ var ManuScriptProxy = (function (_super) {
             }
             else {
                 callback(d.success ? true : false, null);
-            }
-        });
-    };
-    ManuScriptProxy.prototype.createManuscript = function (props, callback) {
-        var params = {
-            action: 'CreateManuscript',
-        };
-        Object.assign(params, props);
-        _super.prototype.doPost.call(this, params, function (res) {
-            var d = res.data;
-            if (d.err) {
-                SpgProxy_ts_1.default.callbackError(callback, d.err);
-            }
-            else {
-                callback(new ms.Manuscript(d), null);
-            }
-        });
-    };
-    ManuScriptProxy.prototype.updateManuscript = function (props, callback) {
-        var params = {
-            action: 'UpdateManuscript',
-        };
-        Object.assign(params, props);
-        _super.prototype.doPost.call(this, params, function (res) {
-            var d = res.data;
-            if (d.err) {
-                SpgProxy_ts_1.default.callbackError(callback, d.err);
-            }
-            else {
-                callback(new ms.Manuscript(d), null);
-            }
-        });
-    };
-    ManuScriptProxy.prototype.getManuscript = function (libSiglum, msSiglum, callback) {
-        var params = {
-            action: 'GetManuscript',
-            libSiglum: libSiglum,
-            msSiglum: msSiglum
-        };
-        _super.prototype.doPost.call(this, params, function (res) {
-            var d = res.data;
-            if (d.err) {
-                SpgProxy_ts_1.default.callbackError(callback, d.err);
-            }
-            else {
-                callback(new ms.Manuscript(d), null);
             }
         });
     };

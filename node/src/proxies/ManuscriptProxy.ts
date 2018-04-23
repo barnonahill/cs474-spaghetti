@@ -9,15 +9,10 @@ export default class ManuScriptProxy extends SpgProxy {
 
 	getManuscripts(countryID:string, libSiglum:string, callback: (manuscripts: Array<ms.Manuscript>, err?: string) => void) {
 		var params:any = {
-			action: 'GetManuscripts'
+			action: 'GetManuscripts',
+			countryID: countryID,
+			libSiglum: libSiglum
 		};
-		if (countryID) {
-			params.countryID = countryID;
-		}
-		if (libSiglum) {
-			params.libSiglum = libSiglum;
-		}
-		console.log(params);
 
 		super.doPost(params, (res:any) => {
 			var d = res.data;
@@ -32,6 +27,59 @@ export default class ManuScriptProxy extends SpgProxy {
 			}
 			else {
 				SpgProxy.callbackError(callback, null);
+			}
+		});
+	}
+
+
+	createManuscript(props: ms.Properties, callback: (mst: ms.Manuscript, err?: string) => void) {
+		var params = {
+			action: 'CreateManuscript',
+		};
+		Object.assign(params, props);
+
+		super.doPost(params, (res: any) => {
+			var d = res.data;
+			if (d.err) {
+				SpgProxy.callbackError(callback, d.err);
+			}
+			else {
+				callback(new ms.Manuscript(d as ms.Properties), null);
+			}
+		});
+	}
+
+	updateManuscript(props: ms.Properties, callback: (manuscript: ms.Manuscript, err?: string) => void) {
+		var params = {
+			action: 'UpdateManuscript',
+		};
+		Object.assign(params, props);
+
+		super.doPost(params, (res: any) => {
+			var d = res.data;
+			if (d.err) {
+				SpgProxy.callbackError(callback, d.err);
+			}
+			else {
+				callback(new ms.Manuscript(d as ms.Properties), null);
+			}
+		});
+	}
+
+	deleteManuscript(libSiglum:string, msSiglum:string, callback:(success:boolean, e?:string) => void) {
+		var params = {
+			action: 'DeleteManuscript',
+			libSiglum: libSiglum,
+			msSiglum: msSiglum
+		};
+
+		super.doPost(params, (res:any) => {
+			var d = res.data;
+			if (d.err) {
+				SpgProxy.callbackError(callback, d.err);
+			}
+			else {
+				callback(d.success ? true:false, null);
 			}
 		});
 	}
@@ -105,60 +153,6 @@ export default class ManuScriptProxy extends SpgProxy {
 			}
 			else {
 				callback(d.success ? true:false, null);
-			}
-		});
-	}
-
-	createManuscript(props: ms.Properties, callback: (mst: ms.Manuscript, err?: string) => void) {
-		var params = {
-			action: 'CreateManuscript',
-		};
-		Object.assign(params, props);
-
-		super.doPost(params, (res: any) => {
-			var d = res.data;
-			if (d.err) {
-				SpgProxy.callbackError(callback, d.err);
-			}
-			else {
-				callback(new ms.Manuscript(d as ms.Properties), null);
-			}
-		});
-	}
-
-	updateManuscript(props: ms.Properties, callback: (manuscript: ms.Manuscript, err?: string) => void) {
-		var params = {
-			action: 'UpdateManuscript',
-		};
-		Object.assign(params, props);
-
-		super.doPost(params, (res: any) => {
-			var d = res.data;
-			if (d.err) {
-				SpgProxy.callbackError(callback, d.err);
-			}
-			else {
-				callback(new ms.Manuscript(d as ms.Properties), null);
-			}
-		});
-	}
-
-	getManuscript(libSiglum: string, msSiglum: string,
-		callback: (manuscript: ms.Manuscript, err?: string) => void)
-	{
-		var params = {
-			action: 'GetManuscript',
-			libSiglum: libSiglum,
-			msSiglum: msSiglum
-		};
-
-		super.doPost(params, (res:any) => {
-			var d = res.data;
-			if (d.err) {
-				SpgProxy.callbackError(callback, d.err);
-			}
-			else {
-				callback(new ms.Manuscript(d as ms.Properties), null);
 			}
 		});
 	}

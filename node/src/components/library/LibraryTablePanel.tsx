@@ -81,7 +81,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 		const t = ButtonType.VIEW;
 		// props.rowData: Library
 		return <Button
-			bsStyle="primary"
+			bsStyle="info"
 			bsSize="small"
 			key={l.libSiglum + t}
 			onClick={this.props.onClick.bind(this,l,t)}
@@ -93,7 +93,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 		const l: Library = props.rowData;
 		const t = ButtonType.EDIT;
 		return <Button
-			bsStyle="primary"
+			bsStyle="success"
 			bsSize="small"
 			key={l.libSiglum + t}
 			onClick={this.props.onClick.bind(this,l,t)}
@@ -123,7 +123,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 							onClick={this.props.onBack}
 						>Back</Button>
 						<Button key="new"
-							bsStyle="primary"
+							bsStyle="success"
 							onClick={() => this.props.onClick(null,ButtonType.EDIT)}
 							className="ml15"
 						>New</Button>
@@ -131,12 +131,13 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 					<Col sm={4}>
 						<SearchBar
 							placeholder="Filter by name, city, and siglum..."
-							onClick={this.filter}
+							onSubmit={this.filter}
 						/>
 					</Col>
 					<Col sm={2} smOffset={2}>
 						<Button key="refresh"
 							bsStyle="primary"
+							className="fr"
 							onClick={this.props.onRefresh}
 						>Refresh</Button>
 					</Col>

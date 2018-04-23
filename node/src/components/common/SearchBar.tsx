@@ -9,7 +9,7 @@ import {
 
 interface P {
 	placeholder: string
-	onClick: (v:string) => void
+	onSubmit: (v:string) => void
 }
 interface S {
 	value: string
@@ -39,7 +39,7 @@ export default class SearchBar extends React.Component<P,S> {
 		if (e.key === 'Enter') {
 			this.setState((s:S) => {
 				s.isFiltered = this.state.value ? true : false;
-				this.props.onClick(this.state.value);
+				this.props.onSubmit(this.state.value);
 				return s;
 			});
 		}
@@ -49,7 +49,7 @@ export default class SearchBar extends React.Component<P,S> {
 		this.setState((s:S) => {
 			s.value = '';
 			s.isFiltered = false;
-			this.props.onClick('');
+			this.props.onSubmit('');
 			return s;
 		});
 	}
@@ -69,7 +69,7 @@ export default class SearchBar extends React.Component<P,S> {
 			><Glyphicon glyph="remove" /></span>}
 			<Button
 				componentClass={InputGroup.Addon}
-				onClick={() => this.props.onClick(this.state.value.toLowerCase())}
+				onClick={() => this.props.onSubmit(this.state.value.toLowerCase())}
 			><Glyphicon glyph="search" /></Button>
 		</InputGroup>);
 	}
