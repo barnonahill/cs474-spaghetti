@@ -30,7 +30,7 @@ public class ManuscriptController {
 		
 		HashMap<String, String> namesToValues = new HashMap<String, String>();
 		
-		if(msType == null || msType.equals("")) {
+		if(msType == null) {
 			throw new Exception("msType cannot be left empty.");
 		}
 		
@@ -105,7 +105,7 @@ public class ManuscriptController {
 		HashMap<String, String> namesToValues = new HashMap<String, String>();
 
 		//Eventually move to SPG Controller and make generic for testing if primary keys are correct.
-		if(libSiglum == null || libSiglum.equals("") || msSiglum == null || msSiglum.equals("")) {
+		if(libSiglum == null  || msSiglum == null) {
 			throw new Exception("libSiglum and msSiglum cannot be left empty or blank.");
 		}
 		
@@ -205,10 +205,10 @@ public class ManuscriptController {
 		ResultSet resultSet;
 
 		//filter by none, country, or country and libSiglum.
-		if( !(country == null || country.equals("")) ) {
+		if( !(country == null) ) {
 			namesToValues = new HashMap<String, String>();
 			namesToValues.put("country", country);
-			if(!(libSiglum == null || libSiglum.equals(""))) {
+			if(!(libSiglum == null)) {
 				namesToValues.put("libSiglum", libSiglum);
 			}
 		}
