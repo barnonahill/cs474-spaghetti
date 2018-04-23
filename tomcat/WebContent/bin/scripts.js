@@ -37456,29 +37456,10 @@ var LibraryTablePanel = (function (_super) {
     __extends(LibraryTablePanel, _super);
     function LibraryTablePanel(props) {
         var _this = _super.call(this, props) || this;
-        var list = _this.props.libraries.map(function (l) {
-            return [
-                l.library,
-                l.city,
-                null,
-                null,
-                null,
-            ];
-        });
-        var tabHeight = window.innerHeight * 0.7;
-        var tabWidth = window.innerWidth * 0.9;
-        var rowCount = list.length;
-        var columnCount = list.length ? list[0].length : 0;
-        var columnWidth = tabWidth / columnCount;
         var rowGetter = function (i) {
             return _this.props.libraries[i.index];
         };
         _this.state = {
-            list: list,
-            tabHeight: tabHeight,
-            tabWidth: tabWidth,
-            columnCount: columnCount,
-            columnWidth: columnWidth,
             rowGetter: rowGetter
         };
         _this.viewBtnRenderer = _this.viewBtnRenderer.bind(_this);
@@ -37507,10 +37488,10 @@ var LibraryTablePanel = (function (_super) {
                 React.createElement(react_bootstrap_1.Button, { key: "back", bsStyle: "default", onClick: this.props.onBack }, "Back"),
                 React.createElement(react_bootstrap_1.Button, { key: "new", bsStyle: "primary", onClick: this.props.onClick.bind(this, null, ButtonType.EDIT), className: "ml15" }, "New"),
                 React.createElement(react_bootstrap_1.Button, { key: "refresh", bsStyle: "primary", onClick: this.props.onRefresh, className: "fr" }, "Refresh"))),
-            (React.createElement(react_virtualized_1.Table, { key: "table", height: this.state.tabHeight, width: this.state.tabWidth, headerHeight: 40, rowHeight: 40, rowCount: this.props.libraries.length, rowGetter: this.state.rowGetter },
-                React.createElement(react_virtualized_1.Column, { label: "Siglum", dataKey: "libSiglum", width: 120 }),
-                React.createElement(react_virtualized_1.Column, { label: "Library", dataKey: "library", width: this.state.columnWidth }),
-                React.createElement(react_virtualized_1.Column, { label: "City", dataKey: "city", width: this.state.columnWidth }),
+            (React.createElement(react_virtualized_1.Table, { key: "table", rowClassName: "tr", height: window.innerHeight, width: window.innerWidth - 50, headerHeight: 40, rowHeight: 50, rowCount: this.props.libraries.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_virtualized_1.Column, { label: "Siglum", dataKey: "libSiglum", width: 100 }),
+                React.createElement(react_virtualized_1.Column, { label: "Library", dataKey: "library", width: window.innerWidth - 420 - (window.innerWidth / 6) }),
+                React.createElement(react_virtualized_1.Column, { label: "City", dataKey: "city", width: window.innerWidth / 6 }),
                 React.createElement(react_virtualized_1.Column, { label: "View", dataKey: "", width: 60, cellRenderer: this.viewBtnRenderer }),
                 React.createElement(react_virtualized_1.Column, { label: "Edit", dataKey: "", width: 60, cellRenderer: this.editBtnRenderer }),
                 React.createElement(react_virtualized_1.Column, { label: "Delete", dataKey: "", width: 60, cellRenderer: this.deleteBtnRenderer }))),
@@ -37546,6 +37527,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var ManuscriptInitPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptInitPanel.tsx */ "./src/components/manuscript/ManuscriptInitPanel.tsx");
 var ManuscriptFilterPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptFilterPanel.tsx */ "./src/components/manuscript/ManuscriptFilterPanel.tsx");
+var ManuscriptTablePanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptTablePanel.tsx */ "./src/components/manuscript/ManuscriptTablePanel.tsx");
+var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var ms = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
@@ -37584,9 +37567,7 @@ var ManuscriptApp = (function (_super) {
                     else {
                         _this.setState(function (s) {
                             s.panel = p;
-                            if (s.manuscripts) {
-                                ms.Manuscript.destroyArray(s.manuscripts);
-                            }
+                            ms.Manuscript.destroyArray(s.manuscripts);
                             s.manuscripts = manuscripts;
                             return s;
                         });
@@ -37595,21 +37576,25 @@ var ManuscriptApp = (function (_super) {
                 break;
         }
     };
-    ManuscriptApp.prototype.onFilterLoad = function (c, l) {
+    ManuscriptApp.prototype.onFilterLoad = function (c, l, libraries) {
         var _this = this;
         var countryID = c.countryID;
         var libSiglum = l ? l.libSiglum : null;
+        console.log(libSiglum);
         ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(countryID, libSiglum, function (manuscripts, e) {
             if (e) {
                 alert(e);
             }
             else {
                 _this.setState(function (s) {
+                    console.log(manuscripts);
                     s.panel = Panel.TABLE;
-                    if (s.manuscripts) {
-                        ms.Manuscript.destroyArray(s.manuscripts);
-                    }
+                    s.country = c;
+                    s.library = l;
+                    ms.Manuscript.destroyArray(s.manuscripts);
                     s.manuscripts = manuscripts;
+                    library_ts_1.Library.destroyArray(s.libraries);
+                    s.libraries = libraries;
                     return s;
                 });
             }
@@ -37629,6 +37614,8 @@ var ManuscriptApp = (function (_super) {
                 return (React.createElement(ManuscriptInitPanel_tsx_1.default, { onBack: this.props.onBack, onSelect: this.onInitSelect }));
             case Panel.FILTER:
                 return (React.createElement(ManuscriptFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSelect: this.onFilterLoad }));
+            case Panel.TABLE:
+                return (React.createElement(ManuscriptTablePanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscripts: this.state.manuscripts, onBack: function () { return _this.changePanel(Panel.INIT); } }));
         }
     };
     return ManuscriptApp;
@@ -37664,6 +37651,7 @@ var react_select_1 = __webpack_require__(/*! react-select */ "./node_modules/rea
 var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
 var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var ManuscriptFilterPanel = (function (_super) {
     __extends(ManuscriptFilterPanel, _super);
     function ManuscriptFilterPanel(p) {
@@ -37680,26 +37668,64 @@ var ManuscriptFilterPanel = (function (_super) {
         };
         _this.onCountrySelect = _this.onCountrySelect.bind(_this);
         _this.onLibrarySelect = _this.onLibrarySelect.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
         return _this;
     }
     ManuscriptFilterPanel.prototype.onCountrySelect = function (o) {
-        this.setState(function (s) {
-            s.countryOption = o;
-            s.loadDisabled = o === null;
-            if (s.loadDisabled) {
+        var _this = this;
+        if (o) {
+            ProxyFactory_ts_1.default.getLibraryProxy().getLibraries(o.value, function (libraries, e) {
+                if (e) {
+                    alert(e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        s.countryOption = o;
+                        library_ts_1.Library.destroyArray(s.libraries);
+                        s.libraries = libraries;
+                        s.libraryOption = null;
+                        s.libraryOptions = s.libraries.map(function (l) {
+                            return { label: l.library, value: l.libSiglum };
+                        });
+                        s.loadDisabled = false;
+                        return s;
+                    });
+                }
+            });
+        }
+        else {
+            this.setState(function (s) {
+                s.countryOption = null;
+                library_ts_1.Library.destroyArray(s.libraries);
                 s.libraryOption = null;
                 s.libraryOptions = null;
-                if (s.libraries) {
-                    library_ts_1.Library.destroyArray(s.libraries);
-                }
-            }
-            return s;
-        });
+                s.loadDisabled = true;
+                return s;
+            });
+        }
     };
     ManuscriptFilterPanel.prototype.onLibrarySelect = function (o) {
         this.setState(function (s) {
             s.libraryOption = o;
+            return s;
         });
+    };
+    ManuscriptFilterPanel.prototype.onSubmit = function (e) {
+        var _this = this;
+        e.preventDefault();
+        var country = null;
+        var library = null;
+        if (this.state.countryOption) {
+            country = this.props.countries.find(function (c) {
+                return c.countryID === _this.state.countryOption.value;
+            });
+            if (this.state.libraryOption) {
+                library = this.state.libraries.find(function (l) {
+                    return l.libSiglum === _this.state.libraryOption.value;
+                });
+            }
+        }
+        this.props.onSelect(country, library, this.state.libraries);
     };
     ManuscriptFilterPanel.prototype.render = function () {
         return [
@@ -37708,11 +37734,18 @@ var ManuscriptFilterPanel = (function (_super) {
                 React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
             (React.createElement(react_bootstrap_1.Alert, { bsStyle: "info", className: "mb20 mr15p ml15p text-center", key: "alert" },
                 React.createElement("strong", null, "Filter manuscripts by country and library."))),
-            React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
+            (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form", onSubmit: this.onSubmit },
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_select_1.default, { name: "countryID", value: this.state.countryOption, options: this.state.countryOptions, onChange: this.onCountrySelect }))))
+                        React.createElement(react_select_1.default, { name: "countryID", value: this.state.countryOption, options: this.state.countryOptions, onChange: this.onCountrySelect }))),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_select_1.default, { name: "libSiglum", value: this.state.libraryOption, options: this.state.libraryOptions, onChange: this.onLibrarySelect, disabled: this.state.loadDisabled }))),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
+                    React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit", disabled: this.state.loadDisabled }, "Load")))))
         ];
     };
     return ManuscriptFilterPanel;
@@ -37768,6 +37801,74 @@ var ManuscriptInitPanel = (function (_super) {
     return ManuscriptInitPanel;
 }(React.Component));
 exports.default = ManuscriptInitPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/manuscript/ManuscriptTablePanel.tsx":
+/*!************************************************************!*\
+  !*** ./src/components/manuscript/ManuscriptTablePanel.tsx ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+__webpack_require__(/*! react-virtualized/styles.css */ "./node_modules/react-virtualized/styles.css");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var ManuscriptTablePanel = (function (_super) {
+    __extends(ManuscriptTablePanel, _super);
+    function ManuscriptTablePanel(p) {
+        var _this = _super.call(this, p) || this;
+        var list = _this.props.manuscripts.map(function (m) {
+            return [
+                m.libSiglum,
+                m.msSiglum,
+                m.msType,
+                null,
+                null,
+                null,
+            ];
+        });
+        _this.getHeader = _this.getHeader.bind(_this);
+        return _this;
+    }
+    ManuscriptTablePanel.prototype.getHeader = function () {
+        var h = 'Manuscripts';
+        if (this.props.country) {
+            if (this.props.library) {
+                h += ' - ' + this.props.library.library + ', ' + this.props.country.country;
+            }
+            else {
+                h += ' - ' + this.props.country.country;
+            }
+        }
+        return h;
+    };
+    ManuscriptTablePanel.prototype.render = function () {
+        return [
+            React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.getHeader()),
+            React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))
+        ];
+    };
+    return ManuscriptTablePanel;
+}(React.Component));
+exports.default = ManuscriptTablePanel;
 
 
 /***/ }),
@@ -38012,7 +38113,7 @@ var Manuscript = (function (_super) {
         var _this = _super.call(this) || this;
         for (var k in props) {
             if (k === 'libSiglum' || k === 'msSiglum') {
-                if (!(props[k] && props[k].length)) {
+                if (props[k] === null) {
                     throw Error(k + ' cannot be empty');
                 }
                 _this[k] = props[k];
@@ -38250,10 +38351,15 @@ var ManuScriptProxy = (function (_super) {
     }
     ManuScriptProxy.prototype.getManuscripts = function (countryID, libSiglum, callback) {
         var params = {
-            action: 'GetManuscripts',
-            countryID: countryID || null,
-            libSiglum: libSiglum || null
+            action: 'GetManuscripts'
         };
+        if (countryID) {
+            params.countryID = countryID;
+        }
+        if (libSiglum) {
+            params.libSiglum = libSiglum;
+        }
+        console.log(params);
         _super.prototype.doPost.call(this, params, function (res) {
             var d = res.data;
             if (d.err) {

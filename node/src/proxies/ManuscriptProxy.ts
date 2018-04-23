@@ -8,11 +8,16 @@ export default class ManuScriptProxy extends SpgProxy {
 	}
 
 	getManuscripts(countryID:string, libSiglum:string, callback: (manuscripts: Array<ms.Manuscript>, err?: string) => void) {
-		var params = {
-			action: 'GetManuscripts',
-			countryID: countryID || null,
-			libSiglum: libSiglum || null
+		var params:any = {
+			action: 'GetManuscripts'
 		};
+		if (countryID) {
+			params.countryID = countryID;
+		}
+		if (libSiglum) {
+			params.libSiglum = libSiglum;
+		}
+		console.log(params);
 
 		super.doPost(params, (res:any) => {
 			var d = res.data;

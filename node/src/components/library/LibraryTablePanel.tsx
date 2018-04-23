@@ -37,12 +37,6 @@ interface Properties {
 }
 
 interface State {
-	// Array of Library properties as Arrays
-	list: Array<Array<string>>
-	tabHeight: number
-	tabWidth: number
-	columnCount: number
-	columnWidth: number
 	rowGetter: any
 }
 
@@ -50,31 +44,11 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 	constructor(props: Properties) {
 		super(props);
 
-		var list = this.props.libraries.map((l: Library) => {
-			return [
-				l.library,
-				l.city,
-				null, // View
-				null, // Edit
-				null, // Delete
-			];
-		});
-		var tabHeight = window.innerHeight * 0.7;
-		var tabWidth = window.innerWidth * 0.9;
-		var rowCount = list.length;
-		var columnCount = list.length ? list[0].length : 0;
-		var columnWidth = tabWidth / columnCount;
-
 		var rowGetter = (i:Index) => {
 			return this.props.libraries[i.index];
 		}
 
 		this.state = {
-			list: list,
-			tabHeight: tabHeight,
-			tabWidth: tabWidth,
-			columnCount: columnCount,
-			columnWidth: columnWidth,
 			rowGetter: rowGetter
 		};
 
@@ -142,28 +116,31 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 			</PanelMenu>),
 
 			(<Table key="table"
-				height={this.state.tabHeight}
-				width={this.state.tabWidth}
+				rowClassName="tr"
+				height={window.innerHeight}
+				width={window.innerWidth - 50}
 				headerHeight={40}
-				rowHeight={40}
+				rowHeight={50}
 				rowCount={this.props.libraries.length}
 				rowGetter={this.state.rowGetter}
 			>
 				<Column
 					label="Siglum"
 					dataKey="libSiglum"
-					width={120}
+					width={100}
 				/>
 
 				<Column
 					label="Library"
 					dataKey="library"
-					width={this.state.columnWidth}
+					// 60*3 (buttons) + 100 (siglum) + 10*6 (margin-right) + 30 (container padding) +
+					// 20 (outer v inner window) = 390
+					width={window.innerWidth - 420 - (window.innerWidth / 6)}
 				/>
 				<Column
 					label="City"
 					dataKey="city"
-					width={this.state.columnWidth}
+					width={window.innerWidth / 6}
 				/>
 				<Column
 					label="View"
