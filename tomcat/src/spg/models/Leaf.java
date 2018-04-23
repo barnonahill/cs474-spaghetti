@@ -5,6 +5,11 @@ import java.sql.SQLException;
 
 import org.json.JSONObject;
 
+/**
+ * 
+ * @author Kyle Tran
+ *
+ */
 public class Leaf {
 	private final String libSiglum;
 	private final String msSiglum;
