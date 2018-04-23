@@ -26,7 +26,8 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	
 	public static final String CREATE_MSTYPE 		= "createmstype";
 	public static final String UPDATE_MSTYPE 		= "updatemstype";
-	public static final String GET_MSTYPE 			= "getmstypes";
+	public static final String GET_MSTYPES 			= "getmstypes";
+	public static final String DELETE_MSTYPE		= "deletemstype";
 	
 	public static final String CREATE_MANUSCRIPT 	= "createmanuscript";
 	public static final String UPDATE_MANUSCRIPT 	= "updatemanuscript";
@@ -55,11 +56,18 @@ public class ManuscriptServlet extends SpgHttpServlet{
                     String updateMSTypeMSTypeName = params.get("msTypeName");
                     msg = this.updateMSType(updateMSTypeMSType, updateMSTypeMSTypeName);
 					break;
-				case GET_MSTYPE:
+				case GET_MSTYPES:
+					// TODO should return array of all MsTypes - Paul
 					String getMSTypeMSType = params.get("msType");
                     String getMSTypeMSTypeName = params.get("msTypeName");
                     msg = this.getMSType(getMSTypeMSType, getMSTypeMSTypeName);
 					break;
+				case DELETE_MSTYPE:
+					// TODO implement - Paul
+					// If you use if-elsif blocks you don't need these funky var names. -Paul
+					// Since you're using a switch, this is the equivalent of declaring all these
+					// variables at the top. Incredibly inefficient.
+					String msType = params.get("msType");
 				case CREATE_MANUSCRIPT:
 					String createLibSiglum = params.get("libSiglum");
 					String createMSSiglum = params.get("msSiglum");

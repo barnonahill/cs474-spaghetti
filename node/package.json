@@ -12,6 +12,7 @@
     "axios": "^0.18.0",
     "css-loader": "^0.28.11",
     "lodash": "^4.17.5",
+    "material-ui-search-bar": "^0.4.1",
     "react": "16.3.1",
     "react-bootstrap": "^0.32.1",
     "react-dom": "16.3.1",

@@ -36808,10 +36808,12 @@ var SpaghettiApp = (function (_super) {
     SpaghettiApp.prototype.render = function () {
         var _this = this;
         return [
-            React.createElement(Header_tsx_1.default, { key: "header" }, "Select a page to load"),
-            (React.createElement("div", { key: "apps", className: "apps" },
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "mt20 db", onClick: function () { return _this.props.onSelect(index_tsx_1.App.LIB); } }, "Library"),
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "mt20 db", onClick: function () { return _this.props.onSelect(index_tsx_1.App.MS); } }, "Manuscript")))
+            React.createElement(Header_tsx_1.default, { key: "header" }, "Select an Entity Application"),
+            (React.createElement(react_bootstrap_1.Row, { key: "apps", className: "apps" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "mt20 w100p", onClick: function () { return _this.props.onSelect(index_tsx_1.App.LIB); } }, "Library")),
+                React.createElement(react_bootstrap_1.Col, { sm: 3 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "mt20 w100p", onClick: function () { return _this.props.onSelect(index_tsx_1.App.MS); } }, "Manuscript"))))
         ];
     };
     return SpaghettiApp;
@@ -36893,6 +36895,81 @@ var PanelMenu = (function (_super) {
     return PanelMenu;
 }(React.Component));
 exports.default = PanelMenu;
+
+
+/***/ }),
+
+/***/ "./src/components/common/SearchBar.tsx":
+/*!*********************************************!*\
+  !*** ./src/components/common/SearchBar.tsx ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var SearchBar = (function (_super) {
+    __extends(SearchBar, _super);
+    function SearchBar(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = { value: '', isFiltered: false };
+        _this.clear = _this.clear.bind(_this);
+        _this.onChange = _this.onChange.bind(_this);
+        _this.onKeyPress = _this.onKeyPress.bind(_this);
+        return _this;
+    }
+    SearchBar.prototype.onChange = function (e) {
+        var target = e.target;
+        var v = target.value;
+        this.setState(function (s) {
+            s.value = v;
+            return s;
+        });
+    };
+    SearchBar.prototype.onKeyPress = function (e) {
+        var _this = this;
+        if (e.key === 'Enter') {
+            this.setState(function (s) {
+                s.isFiltered = _this.state.value ? true : false;
+                _this.props.onClick(_this.state.value);
+                return s;
+            });
+        }
+    };
+    SearchBar.prototype.clear = function () {
+        var _this = this;
+        this.setState(function (s) {
+            s.value = '';
+            s.isFiltered = false;
+            _this.props.onClick('');
+            return s;
+        });
+    };
+    SearchBar.prototype.render = function () {
+        var _this = this;
+        return (React.createElement(react_bootstrap_1.InputGroup, null,
+            React.createElement(react_bootstrap_1.FormControl, { type: "search", value: this.state.value, onChange: this.onChange, onKeyPress: this.onKeyPress, placeholder: this.props.placeholder }),
+            this.state.isFiltered && React.createElement("span", { className: "input-delete", onClick: function () { return _this.clear(); } },
+                React.createElement(react_bootstrap_1.Glyphicon, { glyph: "remove" })),
+            React.createElement(react_bootstrap_1.Button, { componentClass: react_bootstrap_1.InputGroup.Addon, onClick: function () { return _this.props.onClick(_this.state.value.toLowerCase()); } },
+                React.createElement(react_bootstrap_1.Glyphicon, { glyph: "search" }))));
+    };
+    return SearchBar;
+}(React.Component));
+exports.default = SearchBar;
 
 
 /***/ }),
@@ -37438,6 +37515,7 @@ var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modul
 var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
 __webpack_require__(/*! react-virtualized/styles.css */ "./node_modules/react-virtualized/styles.css");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SearchBar_tsx_1 = __webpack_require__(/*! @src/components/common/SearchBar.tsx */ "./src/components/common/SearchBar.tsx");
 var DataKey;
 (function (DataKey) {
     DataKey["LIBRARY"] = "library";
@@ -37456,17 +37534,32 @@ var LibraryTablePanel = (function (_super) {
     __extends(LibraryTablePanel, _super);
     function LibraryTablePanel(props) {
         var _this = _super.call(this, props) || this;
-        var rowGetter = function (i) {
-            return _this.props.libraries[i.index];
-        };
         _this.state = {
-            rowGetter: rowGetter
+            rowGetter: function (i) { return _this.state.libraries[i.index]; },
+            libraries: _this.props.libraries
         };
+        _this.filter = _this.filter.bind(_this);
         _this.viewBtnRenderer = _this.viewBtnRenderer.bind(_this);
         _this.editBtnRenderer = _this.editBtnRenderer.bind(_this);
         _this.deleteBtnRenderer = _this.deleteBtnRenderer.bind(_this);
         return _this;
     }
+    LibraryTablePanel.prototype.filter = function (v) {
+        var _this = this;
+        this.setState(function (s) {
+            if (v) {
+                s.libraries = _this.props.libraries.filter(function (l) {
+                    return l.libSiglum.toLowerCase().indexOf(v) !== -1 ||
+                        l.library.toLowerCase().indexOf(v) !== -1 ||
+                        l.city.toLowerCase().indexOf(v) !== -1;
+                });
+            }
+            else {
+                s.libraries = _this.props.libraries;
+            }
+            return s;
+        });
+    };
     LibraryTablePanel.prototype.viewBtnRenderer = function (props) {
         var l = props.rowData;
         var t = ButtonType.VIEW;
@@ -37483,14 +37576,20 @@ var LibraryTablePanel = (function (_super) {
         return React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", key: l.libSiglum + t, onClick: this.props.onClick.bind(this, l, t) }, "Delete");
     };
     LibraryTablePanel.prototype.render = function () {
+        var _this = this;
         return [
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
-                React.createElement(react_bootstrap_1.Button, { key: "back", bsStyle: "default", onClick: this.props.onBack }, "Back"),
-                React.createElement(react_bootstrap_1.Button, { key: "new", bsStyle: "primary", onClick: this.props.onClick.bind(this, null, ButtonType.EDIT), className: "ml15" }, "New"),
-                React.createElement(react_bootstrap_1.Button, { key: "refresh", bsStyle: "primary", onClick: this.props.onRefresh, className: "fr" }, "Refresh"))),
-            (React.createElement(react_virtualized_1.Table, { key: "table", rowClassName: "tr", height: window.innerHeight, width: window.innerWidth - 50, headerHeight: 40, rowHeight: 50, rowCount: this.props.libraries.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_bootstrap_1.Row, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { key: "back", bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                        React.createElement(react_bootstrap_1.Button, { key: "new", bsStyle: "primary", onClick: function () { return _this.props.onClick(null, ButtonType.EDIT); }, className: "ml15" }, "New")),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by name, city, and siglum...", onClick: this.filter })),
+                    React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
+                        React.createElement(react_bootstrap_1.Button, { key: "refresh", bsStyle: "primary", onClick: this.props.onRefresh }, "Refresh"))))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", rowClassName: "tr", height: window.innerHeight, width: window.innerWidth - 50, headerHeight: 40, rowHeight: 50, rowCount: this.state.libraries.length, rowGetter: this.state.rowGetter },
                 React.createElement(react_virtualized_1.Column, { label: "Siglum", dataKey: "libSiglum", width: 100 }),
-                React.createElement(react_virtualized_1.Column, { label: "Library", dataKey: "library", width: window.innerWidth - 420 - (window.innerWidth / 6) }),
+                React.createElement(react_virtualized_1.Column, { label: "Name", dataKey: "library", width: window.innerWidth - 420 - (window.innerWidth / 6) }),
                 React.createElement(react_virtualized_1.Column, { label: "City", dataKey: "city", width: window.innerWidth / 6 }),
                 React.createElement(react_virtualized_1.Column, { label: "View", dataKey: "", width: 60, cellRenderer: this.viewBtnRenderer }),
                 React.createElement(react_virtualized_1.Column, { label: "Edit", dataKey: "", width: 60, cellRenderer: this.editBtnRenderer }),
@@ -37528,6 +37627,7 @@ var React = __webpack_require__(/*! react */ "react");
 var ManuscriptInitPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptInitPanel.tsx */ "./src/components/manuscript/ManuscriptInitPanel.tsx");
 var ManuscriptFilterPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptFilterPanel.tsx */ "./src/components/manuscript/ManuscriptFilterPanel.tsx");
 var ManuscriptTablePanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptTablePanel.tsx */ "./src/components/manuscript/ManuscriptTablePanel.tsx");
+var MsTypeApp_tsx_1 = __webpack_require__(/*! @src/components/manuscript/MsTypeApp.tsx */ "./src/components/manuscript/MsTypeApp.tsx");
 var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var ms = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
@@ -37536,13 +37636,18 @@ var Panel;
     Panel[Panel["INIT"] = 0] = "INIT";
     Panel[Panel["FILTER"] = 1] = "FILTER";
     Panel[Panel["TABLE"] = 2] = "TABLE";
+    Panel[Panel["MST"] = 3] = "MST";
 })(Panel = exports.Panel || (exports.Panel = {}));
 var ManuscriptApp = (function (_super) {
     __extends(ManuscriptApp, _super);
     function ManuscriptApp(p) {
         var _this = _super.call(this, p) || this;
         _this.state = {
-            panel: Panel.INIT
+            panel: Panel.INIT,
+            country: null,
+            libraries: null,
+            library: null,
+            manuscripts: null
         };
         _this.changePanel = _this.changePanel.bind(_this);
         _this.onInitSelect = _this.onInitSelect.bind(_this);
@@ -37616,6 +37721,8 @@ var ManuscriptApp = (function (_super) {
                 return (React.createElement(ManuscriptFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSelect: this.onFilterLoad }));
             case Panel.TABLE:
                 return (React.createElement(ManuscriptTablePanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscripts: this.state.manuscripts, onBack: function () { return _this.changePanel(Panel.INIT); } }));
+            case Panel.MST:
+                return (React.createElement(MsTypeApp_tsx_1.default, { onBack: function () { return _this.changePanel(Panel.MST); } }));
         }
     };
     return ManuscriptApp;
@@ -37791,11 +37898,14 @@ var ManuscriptInitPanel = (function (_super) {
             React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Manuscripts"),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
                 React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
-            (React.createElement(react_bootstrap_1.Row, { key: "row" },
-                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 6 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.FILTER); } }, "Filter by Country and Library")),
-                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 6 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.TABLE); } }, "Load all Manuscripts"))))
+            (React.createElement(react_bootstrap_1.Row, { key: "actions", className: "mb40" },
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 1 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.FILTER); } }, "Filter by Country and Library")),
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 2 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.TABLE); } }, "Load all Manuscripts")))),
+            (React.createElement(react_bootstrap_1.Row, { key: "entities" },
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p" }, "Manuscript Types"))))
         ];
     };
     return ManuscriptInitPanel;
@@ -37869,6 +37979,216 @@ var ManuscriptTablePanel = (function (_super) {
     return ManuscriptTablePanel;
 }(React.Component));
 exports.default = ManuscriptTablePanel;
+
+
+/***/ }),
+
+/***/ "./src/components/manuscript/MsTypeApp.tsx":
+/*!*************************************************!*\
+  !*** ./src/components/manuscript/MsTypeApp.tsx ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var MsTypeTablePanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/MsTypeTablePanel.tsx */ "./src/components/manuscript/MsTypeTablePanel.tsx");
+var mst = __webpack_require__(/*! @src/models/msType.ts */ "./src/models/msType.ts");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var Panel;
+(function (Panel) {
+    Panel[Panel["TABLE"] = 0] = "TABLE";
+    Panel[Panel["EDIT"] = 1] = "EDIT";
+})(Panel || (Panel = {}));
+var MsTypeApp = (function (_super) {
+    __extends(MsTypeApp, _super);
+    function MsTypeApp(p) {
+        var _this = _super.call(this, p) || this;
+        ProxyFactory_ts_1.default.getManuscriptProxy().getMsTypes(function (msTypes, e) {
+            if (e) {
+                alert(e);
+            }
+            else {
+                _this.state = {
+                    msTypes: msTypes,
+                    msType: null,
+                    panel: Panel.TABLE
+                };
+            }
+        });
+        _this.openEdit = _this.openEdit.bind(_this);
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.saveMsType = _this.saveMsType.bind(_this);
+        return _this;
+    }
+    MsTypeApp.prototype.openEdit = function (msType) {
+        this.setState(function (s) {
+            s.panel = Panel.EDIT;
+            s.msType = msType;
+            return s;
+        });
+    };
+    MsTypeApp.prototype.saveMsType = function (p, isNew) {
+        var _this = this;
+        if (isNew) {
+            ProxyFactory_ts_1.default.getManuscriptProxy().createMsType(p, function (msType, e) {
+                if (e) {
+                    alert(e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        s.msTypes.push(msType);
+                        return s;
+                    });
+                }
+            });
+        }
+        else {
+            ProxyFactory_ts_1.default.getManuscriptProxy().updateMsType(p, function (msType, e) {
+                if (e) {
+                    alert(e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        var i = s.msTypes.findIndex(function (m) {
+                            return m.msType === p.msType;
+                        });
+                        s.msTypes[i].destroy();
+                        s.msTypes[i] = msType;
+                        return s;
+                    });
+                }
+            });
+        }
+    };
+    MsTypeApp.prototype.loadMsTypes = function () {
+        var _this = this;
+        ProxyFactory_ts_1.default.getManuscriptProxy().getMsTypes(function (msTypes, e) {
+            if (e) {
+                alert(e);
+            }
+            else {
+                _this.setState(function (s) {
+                    mst.MsType.destroyArray(s.msTypes);
+                    s.msTypes = msTypes;
+                    s.msType = null;
+                    return s;
+                });
+            }
+        });
+    };
+    MsTypeApp.prototype.confirmDelete = function (msType) {
+        var _this = this;
+        var del = confirm('Delete ' + msType.msTypeName + '?');
+        if (del) {
+            ProxyFactory_ts_1.default.getManuscriptProxy().deleteMsType(msType.msType, function (s, e) {
+                if (e) {
+                    alert(e);
+                }
+                else if (s) {
+                    _this.setState(function (s) {
+                        var i = s.msTypes.findIndex(function (m) {
+                            return m.msType === msType.msType;
+                        });
+                        s.msTypes[i].destroy();
+                        s.msTypes.splice(i, 1);
+                        return s;
+                    });
+                }
+            });
+        }
+    };
+    MsTypeApp.prototype.render = function () {
+        var _this = this;
+        switch (this.state.panel) {
+            case Panel.TABLE:
+                return (React.createElement(MsTypeTablePanel_tsx_1.default, { msTypes: this.state.msTypes, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: function () { return _this.loadMsTypes; } }));
+            default:
+                return null;
+        }
+    };
+    return MsTypeApp;
+}(React.Component));
+exports.default = MsTypeApp;
+
+
+/***/ }),
+
+/***/ "./src/components/manuscript/MsTypeTablePanel.tsx":
+/*!********************************************************!*\
+  !*** ./src/components/manuscript/MsTypeTablePanel.tsx ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var MsTypeTablePanel = (function (_super) {
+    __extends(MsTypeTablePanel, _super);
+    function MsTypeTablePanel(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            rowGetter: function (i) { return _this.props.msTypes[i.index]; },
+            width: window.innerWidth - 50
+        };
+        _this.renderEdit = _this.renderEdit.bind(_this);
+        _this.renderDelete = _this.renderDelete.bind(_this);
+        return _this;
+    }
+    MsTypeTablePanel.prototype.renderEdit = function (p) {
+        var _this = this;
+        var mst = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", onClick: function () { return _this.props.onEdit(mst); } }, "Edit"));
+    };
+    MsTypeTablePanel.prototype.renderDelete = function (p) {
+        var _this = this;
+        var mst = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", onClick: function () { return _this.props.onDelete(mst); } }, "Delete"));
+    };
+    MsTypeTablePanel.prototype.render = function () {
+        var _this = this;
+        return [
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "success", className: "ml15", onClick: function () { return _this.props.onEdit(null); } }, "New"),
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", rowClassName: "tr", height: window.innerHeight, width: this.state.width, headerHeight: 40, rowHeight: 50, rowCount: this.props.msTypes.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_virtualized_1.Column, { width: 200, label: "Manuscript Type", dataKey: "msType" }),
+                React.createElement(react_virtualized_1.Column, { width: this.state.width - 330, label: "Name", dataKey: "msTypeName" }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderEdit }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderDelete })))
+        ];
+    };
+    return MsTypeTablePanel;
+}(React.Component));
+exports.default = MsTypeTablePanel;
 
 
 /***/ }),
@@ -38406,21 +38726,6 @@ var ManuScriptProxy = (function (_super) {
             }
         });
     };
-    ManuScriptProxy.prototype.getMsType = function (msType, callback) {
-        var params = {
-            action: 'CreateMsType',
-            msType: msType
-        };
-        _super.prototype.doPost.call(this, params, function (res) {
-            var d = res.data;
-            if (d.err) {
-                SpgProxy_ts_1.default.callbackError(callback, d.err);
-            }
-            else {
-                callback(new mst.MsType(d), null);
-            }
-        });
-    };
     ManuScriptProxy.prototype.getMsTypes = function (callback) {
         var params = {
             action: 'GetMsTypes'
@@ -38438,6 +38743,21 @@ var ManuScriptProxy = (function (_super) {
             }
             else {
                 SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    ManuScriptProxy.prototype.deleteMsType = function (msType, callback) {
+        var params = {
+            action: 'DeleteMsType',
+            msType: msType
+        };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            else {
+                callback(d.success ? true : false, null);
             }
         });
     };

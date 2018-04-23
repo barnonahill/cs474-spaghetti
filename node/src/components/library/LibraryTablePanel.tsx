@@ -1,15 +1,19 @@
 import * as React from 'react';
-import { Button } from 'react-bootstrap';
+import {
+	Button,
+	Col,
+	Row
+ } from 'react-bootstrap';
 import {
 	Table,
 	Column,
 	TableCellProps,
-	Index,
-	TableCellDataGetterParams
+	Index
 } from 'react-virtualized';
 import 'react-virtualized/styles.css'
 
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
+import SearchBar from '@src/components/common/SearchBar.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
@@ -37,24 +41,39 @@ interface Properties {
 }
 
 interface State {
-	rowGetter: any
+	rowGetter: (i:Index) => Library
+	libraries: Array<Library>
 }
 
 export default class LibraryTablePanel extends React.Component<Properties, State> {
 	constructor(props: Properties) {
 		super(props);
 
-		var rowGetter = (i:Index) => {
-			return this.props.libraries[i.index];
-		}
-
 		this.state = {
-			rowGetter: rowGetter
+			rowGetter: (i:Index) => this.state.libraries[i.index],
+			libraries: this.props.libraries
 		};
 
+		this.filter = this.filter.bind(this);
 		this.viewBtnRenderer = this.viewBtnRenderer.bind(this);
 		this.editBtnRenderer = this.editBtnRenderer.bind(this);
 		this.deleteBtnRenderer = this.deleteBtnRenderer.bind(this);
+	}
+
+	filter(v: string) {
+		this.setState((s:State) => {
+			if (v) {
+				s.libraries = this.props.libraries.filter((l:Library) => {
+					return l.libSiglum.toLowerCase().indexOf(v) !== -1 ||
+						l.library.toLowerCase().indexOf(v) !== -1 ||
+						l.city.toLowerCase().indexOf(v) !== -1;
+				});
+			}
+			else {
+				s.libraries = this.props.libraries;
+			}
+			return s;
+		});
 	}
 
 	viewBtnRenderer(props: TableCellProps) {
@@ -97,22 +116,31 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 	render() {
 		return [
 			(<PanelMenu key="panelMenu">
-				<Button key="back"
-					bsStyle="default"
-					onClick={this.props.onBack}
-				>Back</Button>
-
-				<Button key="new"
-					bsStyle="primary"
-					onClick={this.props.onClick.bind(this,null,ButtonType.EDIT)}
-					className="ml15"
-				>New</Button>
-
-				<Button key="refresh"
-					bsStyle="primary"
-					onClick={this.props.onRefresh}
-					className="fr"
-				>Refresh</Button>
+				<Row>
+					<Col sm={4}>
+						<Button key="back"
+							bsStyle="default"
+							onClick={this.props.onBack}
+						>Back</Button>
+						<Button key="new"
+							bsStyle="primary"
+							onClick={() => this.props.onClick(null,ButtonType.EDIT)}
+							className="ml15"
+						>New</Button>
+					</Col>
+					<Col sm={4}>
+						<SearchBar
+							placeholder="Filter by name, city, and siglum..."
+							onClick={this.filter}
+						/>
+					</Col>
+					<Col sm={2} smOffset={2}>
+						<Button key="refresh"
+							bsStyle="primary"
+							onClick={this.props.onRefresh}
+						>Refresh</Button>
+					</Col>
+				</Row>
 			</PanelMenu>),
 
 			(<Table key="table"
@@ -121,7 +149,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 				width={window.innerWidth - 50}
 				headerHeight={40}
 				rowHeight={50}
-				rowCount={this.props.libraries.length}
+				rowCount={this.state.libraries.length}
 				rowGetter={this.state.rowGetter}
 			>
 				<Column
@@ -131,7 +159,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 				/>
 
 				<Column
-					label="Library"
+					label="Name"
 					dataKey="library"
 					// 60*3 (buttons) + 100 (siglum) + 10*6 (margin-right) + 30 (container padding) +
 					// 20 (outer v inner window) = 390

@@ -70,23 +70,6 @@ export default class ManuScriptProxy extends SpgProxy {
 		});
 	}
 
-	getMsType(msType: string, callback: (mt: mst.MsType, err?: string) => void) {
-		var params = {
-			action: 'CreateMsType',
-			msType: msType
-		};
-
-		super.doPost(params, (res: any) => {
-			var d = res.data;
-			if (d.err) {
-				SpgProxy.callbackError(callback, d.err);
-			}
-			else {
-				callback(new mst.MsType(d as mst.Properties), null);
-			}
-		});
-	}
-
 	getMsTypes(callback: (msTypes: Array<mst.MsType>, err?: string) => void) {
 		var params = {
 			action: 'GetMsTypes'
@@ -105,6 +88,23 @@ export default class ManuScriptProxy extends SpgProxy {
 			}
 			else {
 				SpgProxy.callbackError(callback, null);
+			}
+		});
+	}
+
+	deleteMsType(msType: string, callback: (success:boolean, e?:string) => void) {
+		var params = {
+			action: 'DeleteMsType',
+			msType: msType
+		};
+
+		super.doPost(params, (res:any) => {
+			var d = res.data;
+			if (d.err) {
+				SpgProxy.callbackError(callback, d.err);
+			}
+			else {
+				callback(d.success ? true:false, null);
 			}
 		});
 	}

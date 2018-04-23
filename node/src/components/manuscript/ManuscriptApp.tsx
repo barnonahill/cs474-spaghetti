@@ -3,6 +3,7 @@ import * as React from 'react';
 import InitPanel from '@src/components/manuscript/ManuscriptInitPanel.tsx';
 import FilterPanel from '@src/components/manuscript/ManuscriptFilterPanel.tsx';
 import TablePanel from '@src/components/manuscript/ManuscriptTablePanel.tsx';
+import MsTypeApp from '@src/components/manuscript/MsTypeApp.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
@@ -12,7 +13,8 @@ import proxyFactory from '@src/proxies/ProxyFactory.ts';
 export enum Panel {
 	INIT=0,
 	FILTER=1,
-	TABLE=2
+	TABLE=2,
+	MST=3
 }
 
 interface P {
@@ -21,10 +23,10 @@ interface P {
 }
 interface S {
 	panel: Panel
-	country?: Country
-	libraries?: Array<Library>
-	library?: Library
-	manuscripts?: Array<ms.Manuscript>
+	country: Country
+	libraries: Array<Library>
+	library: Library
+	manuscripts: Array<ms.Manuscript>
 	[x: string]: any
 }
 
@@ -33,7 +35,11 @@ export default class ManuscriptApp extends React.Component<P,S> {
 		super(p);
 
 		this.state = {
-			panel: Panel.INIT
+			panel: Panel.INIT,
+			country: null,
+			libraries: null,
+			library: null,
+			manuscripts: null
 		};
 		this.changePanel = this.changePanel.bind(this);
 		this.onInitSelect = this.onInitSelect.bind(this);
@@ -119,6 +125,10 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					library={this.state.library}
 					manuscripts={this.state.manuscripts}
 					onBack={() => this.changePanel(Panel.INIT)}
+				/>);
+			case Panel.MST:
+				return (<MsTypeApp
+					onBack={() => this.changePanel(Panel.MST)}
 				/>);
 		}
 	}

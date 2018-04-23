@@ -29,18 +29,33 @@ export default class ManuscriptInitPanel extends React.Component<P,{}> {
 					onClick={this.props.onBack}
 				>Back</Button>
 			</PanelMenu>),
-			(<Row key="row">
-				<Col xs={12} sm={6}>
+
+			(<Row key="actions" className="mb40">
+				<Col xs={12} sm={4} smOffset={1}>
 					<Button
 						bsStyle="primary"
+						bsSize="large"
+						className="w100p"
 						onClick={() => this.props.onSelect(Panel.FILTER)}
 					>Filter by Country and Library</Button>
 				</Col>
-				<Col xs={12} sm={6}>
+				<Col xs={12} sm={4} smOffset={2}>
 					<Button
 						bsStyle="primary"
+						bsSize="large"
+						className="w100p"
 						onClick={() => this.props.onSelect(Panel.TABLE)}
 					>Load all Manuscripts</Button>
+				</Col>
+			</Row>),
+
+			(<Row key="entities">
+				<Col xs={12} sm={4} smOffset={4}>
+					<Button
+						bsStyle="info"
+						bsSize="large"
+						className="w100p"
+					>Manuscript Types</Button>
 				</Col>
 			</Row>)
 		];
