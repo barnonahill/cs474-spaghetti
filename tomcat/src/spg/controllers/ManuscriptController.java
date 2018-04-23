@@ -200,12 +200,13 @@ public class ManuscriptController {
 	 * @throws Exception
 	 */
 	public static ArrayList<Manuscript> getManuscripts(String libSiglum, String country) throws Exception {
-		HashMap<String, String> namesToValues = new HashMap<String, String>();
+		HashMap<String, String> namesToValues = null;
 		String query;
 		ResultSet resultSet;
 
 		//filter by none, country, or country and libSiglum.
 		if( !(country == null || country.equals("")) ) {
+			namesToValues = new HashMap<String, String>();
 			namesToValues.put("country", country);
 			if(!(libSiglum == null || libSiglum.equals(""))) {
 				namesToValues.put("libSiglum", libSiglum);
