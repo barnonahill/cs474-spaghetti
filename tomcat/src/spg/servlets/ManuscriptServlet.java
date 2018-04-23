@@ -17,7 +17,7 @@ import spg.models.Manuscript;
 
 /**
  * 
- * @author Carl Clermont
+ * @author Carl Clermont & Zach Butts
  *
  */
 @WebServlet(name="ManuscriptServices", urlPatterns= {"/manuscript"})
@@ -164,8 +164,14 @@ public class ManuscriptServlet extends SpgHttpServlet{
      */
     public String getMSType(String getMSTypeMSType, String getMSTypeMSTypeName) throws Exception
     {
-        MSType mst = ManuscriptController.getMSType(getMSTypeMSType, getMSTypeMSTypeName);
-        return mst.toJSON().toString();
+        JSONArray msTypes = new JSONArray();
+		ArrayList<Manuscript> results = ManuscriptController.getMSType(getMSTypeMSType, getMSTypeMSTypeName);
+		
+		for(Manuscript m : results) {
+			msTypes.put(m.toJSON());
+		}
+				
+		return manuscripts.toString();
 	}
 		
 	/**
