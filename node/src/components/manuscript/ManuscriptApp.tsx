@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import InitPanel from '@src/components/manuscript/ManuscriptInitPanel.tsx';
 import FilterPanel from '@src/components/manuscript/ManuscriptFilterPanel.tsx';
+import TablePanel from '@src/components/manuscript/ManuscriptTablePanel.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
@@ -56,9 +57,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					else {
 						this.setState((s:S) => {
 							s.panel = p;
-							if (s.manuscripts) {
-								ms.Manuscript.destroyArray(s.manuscripts);
-							}
+							ms.Manuscript.destroyArray(s.manuscripts);
 							s.manuscripts = manuscripts;
 							return s;
 						});
@@ -68,22 +67,27 @@ export default class ManuscriptApp extends React.Component<P,S> {
 		}
 	}
 
-	onFilterLoad(c:Country, l?:Library) {
+	onFilterLoad(c:Country, l:Library, libraries:Array<Library>) {
 		var countryID = c.countryID;
 		var libSiglum = l ? l.libSiglum : null;
+		console.log(libSiglum);
 		proxyFactory.getManuscriptProxy().getManuscripts(countryID, libSiglum, (manuscripts:Array<ms.Manuscript>, e?:string) => {
 			if (e) {
 				alert(e);
 			}
 			else {
 				this.setState((s:S) => {
+					console.log(manuscripts);
 					s.panel = Panel.TABLE;
-					if (s.manuscripts) {
-						ms.Manuscript.destroyArray(s.manuscripts);
-					}
+					s.country = c;
+					s.library = l;
+
+					ms.Manuscript.destroyArray(s.manuscripts);
 					s.manuscripts = manuscripts;
+					Library.destroyArray(s.libraries);
+					s.libraries = libraries;
 					return s;
-				})
+				});
 			}
 		});
 	}
@@ -108,6 +112,13 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					countries={this.props.countries}
 					onBack={() => this.changePanel(Panel.INIT)}
 					onSelect={this.onFilterLoad}
+				/>);
+			case Panel.TABLE:
+				return (<TablePanel
+					country={this.state.country}
+					library={this.state.library}
+					manuscripts={this.state.manuscripts}
+					onBack={() => this.changePanel(Panel.INIT)}
 				/>);
 		}
 	}
