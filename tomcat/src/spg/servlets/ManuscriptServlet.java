@@ -63,11 +63,11 @@ public class ManuscriptServlet extends SpgHttpServlet{
                     msg = this.getMSType(getMSTypeMSType, getMSTypeMSTypeName);
 					break;
 				case DELETE_MSTYPE:
-					// TODO implement - Paul
-					// If you use if-elsif blocks you don't need these funky var names. -Paul
-					// Since you're using a switch, this is the equivalent of declaring all these
-					// variables at the top. Incredibly inefficient.
-					String msType = params.get("msType");
+					String deleteMSType = params.get("msType");
+					String deleteMSTypeName = params.get("msTypeName");
+					
+					msg = this.deleteMSType(deleteMSType, deleteMSTypeName);
+					break;
 				case CREATE_MANUSCRIPT:
 					String createLibSiglum = params.get("libSiglum");
 					String createMSSiglum = params.get("msSiglum");
@@ -167,11 +167,18 @@ public class ManuscriptServlet extends SpgHttpServlet{
         JSONArray msTypes = new JSONArray();
 		ArrayList<Manuscript> results = ManuscriptController.getMSType(getMSTypeMSType, getMSTypeMSTypeName);
 		
-		for(Manuscript m : results) {
+		for(msType m : results) {
 			msTypes.put(m.toJSON());
 		}
 				
-		return manuscripts.toString();
+		return msTypes.toString();
+	}
+
+    private String deleteMSType(String deletMSType, String deleteMSTypeName) throws Exception {
+		ManuscriptController.deleteMSType(deleteMSType, deleteMSTypeName);
+		JSONObject j = new JSONObject();
+        j.put("success", true);
+		return j.toString();
 	}
 		
 	/**
