@@ -57,7 +57,7 @@ public class LibraryController {
 		HashMap<String, String> namesToValues = new HashMap<String, String>();
 
 		//Eventually move to SPG Controller and make generic for testing if primary keys are correct.
-		if(libSiglum == null || libSiglum.equals("")) {
+		if(libSiglum == null) {
 			throw new Exception("libSiglum cannot be left empty or blank.");
 		}
 		
