@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import spg.models.Library;
 import spg.models.MSType;
 import spg.models.Manuscript;
 
@@ -199,30 +200,46 @@ public class ManuscriptController {
 	 * @return
 	 * @throws Exception
 	 */
-	public static ArrayList<Manuscript> getManuscripts(String libSiglum, String country) throws Exception {
+	public static ArrayList<Manuscript> getManuscripts(String libSiglum, String countryID) throws Exception {
 		HashMap<String, String> namesToValues = null;
 		String query;
+		String libSig;
 		ResultSet resultSet;
+		Manuscript ms;
+		ArrayList<Manuscript> manuscriptsAll = new ArrayList<Manuscript>();
+		ArrayList<Manuscript> manuscripts = new ArrayList<Manuscript>();
+		ArrayList<Library> libraries;
 
 		//filter by none, country, or country and libSiglum.
-		if( !(country == null) ) {
+		//This is probably fricked up.
+		//'tries' to get the list of libraries with a certain countryID and then get all the manuscripts from there.
+		if( !(countryID == null) ) {
 			namesToValues = new HashMap<String, String>();
-			namesToValues.put("country", country);
-			if(!(libSiglum == null)) {
-				namesToValues.put("libSiglum", libSiglum);
+			libraries = LibraryController.getLibraries(countryID);
+			
+			for(Library l : libraries) {
+				libSig = l.getlibSiglum();
+				if(libSiglum == null || libSig == libSiglum) {
+					namesToValues.put("libSiglum", libSig);
+					query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
+					resultSet = SpgController.getResultSet(query);
+					
+					while (resultSet.next()) {
+						ms = new Manuscript(resultSet);
+						manuscriptsAll.add(ms);
+					}
+				}
 			}
 		}
-		
-		query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
-		
-		resultSet = SpgController.getResultSet(query);
-		
-		ArrayList<Manuscript> manuscripts = new ArrayList<Manuscript>();
-		Manuscript ms;
-		
-		while (resultSet.next()) {
-			ms = new Manuscript(resultSet);
-			manuscripts.add(ms);
+		else {
+			query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
+			
+			resultSet = SpgController.getResultSet(query);
+			
+			while (resultSet.next()) {
+				ms = new Manuscript(resultSet);
+				manuscripts.add(ms);
+			}
 		}
 		
 		return manuscripts;
