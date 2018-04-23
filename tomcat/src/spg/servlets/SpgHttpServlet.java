@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -60,7 +61,11 @@ public abstract class SpgHttpServlet extends HttpServlet {
 			JSONObject j = new JSONObject(sb.toString());
 			Set<String> keys = j.keySet();
 			for (String k : keys) {
-				map.put(k, j.getString(k));
+				try {
+					map.put(k, j.getString(k));
+				}
+				catch (JSONException e) {
+				}
 			}
 		}
 		else {

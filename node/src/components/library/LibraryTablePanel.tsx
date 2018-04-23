@@ -150,6 +150,12 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 				rowGetter={this.state.rowGetter}
 			>
 				<Column
+					label="Siglum"
+					dataKey="libSiglum"
+					width={120}
+				/>
+
+				<Column
 					label="Library"
 					dataKey="library"
 					width={this.state.columnWidth}
@@ -162,19 +168,19 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 				<Column
 					label="View"
 					dataKey=""
-					width={this.state.columnWidth}
+					width={60}
 					cellRenderer={this.viewBtnRenderer}
 				/>
 				<Column
 					label="Edit"
 					dataKey=""
-					width={this.state.columnWidth}
+					width={60}
 					cellRenderer={this.editBtnRenderer}
 				/>
 				<Column
 					label="Delete"
 					dataKey=""
-					width={this.state.columnWidth}
+					width={60}
 					cellRenderer={this.deleteBtnRenderer}
 				/>
 			</Table>),

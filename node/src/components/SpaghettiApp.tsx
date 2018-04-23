@@ -1,13 +1,13 @@
 import * as React from 'react';
+import {
+	Button
+} from 'react-bootstrap';
 
 import Header from '@src/components/common/Header.tsx';
 
-import { Country } from '@src/models/country.ts';
+import { App } from '@src/index.tsx';
 
-export enum App {
-	INIT=0, // this
-	LIB=1
-}
+import { Country } from '@src/models/country.ts';
 
 interface P {
 	onSelect: (a:App) => void
@@ -23,8 +23,17 @@ export default class SpaghettiApp extends React.Component<P,S> {
 	render() {
 		return [
 			<Header key="header">Select a page to load</Header>,
-			(<div key="pages">
-				<a onClick={() => this.props.onSelect(App.LIB)}>Library</a>
+			(<div key="apps" className="apps">
+				<Button
+					bsStyle="primary"
+					className="mt20 db"
+					onClick={() => this.props.onSelect(App.LIB)}
+				>Library</Button>
+				<Button
+					bsStyle="primary"
+					className="mt20 db"
+					onClick={() => this.props.onSelect(App.MS)}
+				>Manuscript</Button>
 			</div>)
 		];
 	}

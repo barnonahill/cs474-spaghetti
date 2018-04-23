@@ -7,6 +7,30 @@ export default class ManuScriptProxy extends SpgProxy {
 		super('manuscript');
 	}
 
+	getManuscripts(countryID:string, libSiglum:string, callback: (manuscripts: Array<ms.Manuscript>, err?: string) => void) {
+		var params = {
+			action: 'GetManuscripts',
+			countryID: countryID || null,
+			libSiglum: libSiglum || null
+		};
+
+		super.doPost(params, (res:any) => {
+			var d = res.data;
+			if (d.err) {
+				SpgProxy.callbackError(callback, res.err);
+			}
+			else if (d.constructor === Array) {
+				var manuscripts: Array<ms.Manuscript> = d.map((p:ms.Properties) => {
+					return new ms.Manuscript(p);
+				});
+				callback(manuscripts, null);
+			}
+			else {
+				SpgProxy.callbackError(callback, null);
+			}
+		});
+	}
+
 	createMsType(props: mst.Properties, callback: (mt: mst.MsType, err?: string) => void) {
 		var params = {
 			action: 'CreateMsType',
@@ -130,28 +154,6 @@ export default class ManuScriptProxy extends SpgProxy {
 			}
 			else {
 				callback(new ms.Manuscript(d as ms.Properties), null);
-			}
-		});
-	}
-
-	getManuscripts(callback: (manuscripts: Array<ms.Manuscript>, err?: string) => void) {
-		var params = {
-			action: 'GetManuscripts'
-		};
-
-		super.doPost(params, (res:any) => {
-			if (res.err) {
-				SpgProxy.callbackError(callback, res.err);
-			}
-			else if (res.constructor === Array) {
-				var manuscripts: Array<ms.Manuscript> = [];
-				for (let i = 0; i < res.length; i++) {
-					manuscripts.push(new ms.Manuscript(res[i] as ms.Properties));
-				}
-				callback(manuscripts, null);
-			}
-			else {
-				SpgProxy.callbackError(callback, null);
 			}
 		});
 	}

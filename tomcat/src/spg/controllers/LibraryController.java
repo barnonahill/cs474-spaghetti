@@ -154,7 +154,7 @@ public class LibraryController {
 
 		pkNamesToValues.put("libSiglum", libSiglum);
 		
-		query = SpgController.createDeleteQuery(LIBRARY, pkNamesToValues);
+		query = SpgController.buildDeleteQuery(LIBRARY, pkNamesToValues);
 		
 		SpgController.executeSQL(query);
 				

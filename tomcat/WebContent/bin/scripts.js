@@ -36797,12 +36797,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
 var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
-var App;
-(function (App) {
-    App[App["INIT"] = 0] = "INIT";
-    App[App["LIB"] = 1] = "LIB";
-})(App = exports.App || (exports.App = {}));
+var index_tsx_1 = __webpack_require__(/*! @src/index.tsx */ "./src/index.tsx");
 var SpaghettiApp = (function (_super) {
     __extends(SpaghettiApp, _super);
     function SpaghettiApp(p) {
@@ -36812,8 +36809,9 @@ var SpaghettiApp = (function (_super) {
         var _this = this;
         return [
             React.createElement(Header_tsx_1.default, { key: "header" }, "Select a page to load"),
-            (React.createElement("div", { key: "pages" },
-                React.createElement("a", { onClick: function () { return _this.props.onSelect(App.LIB); } }, "Library")))
+            (React.createElement("div", { key: "apps", className: "apps" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "mt20 db", onClick: function () { return _this.props.onSelect(index_tsx_1.App.LIB); } }, "Library"),
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "mt20 db", onClick: function () { return _this.props.onSelect(index_tsx_1.App.MS); } }, "Manuscript")))
         ];
     };
     return SpaghettiApp;
@@ -37510,16 +37508,266 @@ var LibraryTablePanel = (function (_super) {
                 React.createElement(react_bootstrap_1.Button, { key: "new", bsStyle: "primary", onClick: this.props.onClick.bind(this, null, ButtonType.EDIT), className: "ml15" }, "New"),
                 React.createElement(react_bootstrap_1.Button, { key: "refresh", bsStyle: "primary", onClick: this.props.onRefresh, className: "fr" }, "Refresh"))),
             (React.createElement(react_virtualized_1.Table, { key: "table", height: this.state.tabHeight, width: this.state.tabWidth, headerHeight: 40, rowHeight: 40, rowCount: this.props.libraries.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_virtualized_1.Column, { label: "Siglum", dataKey: "libSiglum", width: 120 }),
                 React.createElement(react_virtualized_1.Column, { label: "Library", dataKey: "library", width: this.state.columnWidth }),
                 React.createElement(react_virtualized_1.Column, { label: "City", dataKey: "city", width: this.state.columnWidth }),
-                React.createElement(react_virtualized_1.Column, { label: "View", dataKey: "", width: this.state.columnWidth, cellRenderer: this.viewBtnRenderer }),
-                React.createElement(react_virtualized_1.Column, { label: "Edit", dataKey: "", width: this.state.columnWidth, cellRenderer: this.editBtnRenderer }),
-                React.createElement(react_virtualized_1.Column, { label: "Delete", dataKey: "", width: this.state.columnWidth, cellRenderer: this.deleteBtnRenderer }))),
+                React.createElement(react_virtualized_1.Column, { label: "View", dataKey: "", width: 60, cellRenderer: this.viewBtnRenderer }),
+                React.createElement(react_virtualized_1.Column, { label: "Edit", dataKey: "", width: 60, cellRenderer: this.editBtnRenderer }),
+                React.createElement(react_virtualized_1.Column, { label: "Delete", dataKey: "", width: 60, cellRenderer: this.deleteBtnRenderer }))),
         ];
     };
     return LibraryTablePanel;
 }(React.Component));
 exports.default = LibraryTablePanel;
+
+
+/***/ }),
+
+/***/ "./src/components/manuscript/ManuscriptApp.tsx":
+/*!*****************************************************!*\
+  !*** ./src/components/manuscript/ManuscriptApp.tsx ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var ManuscriptInitPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptInitPanel.tsx */ "./src/components/manuscript/ManuscriptInitPanel.tsx");
+var ManuscriptFilterPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptFilterPanel.tsx */ "./src/components/manuscript/ManuscriptFilterPanel.tsx");
+var ms = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var Panel;
+(function (Panel) {
+    Panel[Panel["INIT"] = 0] = "INIT";
+    Panel[Panel["FILTER"] = 1] = "FILTER";
+    Panel[Panel["TABLE"] = 2] = "TABLE";
+})(Panel = exports.Panel || (exports.Panel = {}));
+var ManuscriptApp = (function (_super) {
+    __extends(ManuscriptApp, _super);
+    function ManuscriptApp(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            panel: Panel.INIT
+        };
+        _this.changePanel = _this.changePanel.bind(_this);
+        _this.onInitSelect = _this.onInitSelect.bind(_this);
+        _this.onFilterLoad = _this.onFilterLoad.bind(_this);
+        return _this;
+    }
+    ManuscriptApp.prototype.onInitSelect = function (p) {
+        var _this = this;
+        switch (p) {
+            case Panel.FILTER:
+            default:
+                this.setState(function (s) {
+                    s.panel = p;
+                    return s;
+                });
+                break;
+            case Panel.TABLE:
+                ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(null, null, function (manuscripts, e) {
+                    if (e) {
+                        alert(e);
+                    }
+                    else {
+                        _this.setState(function (s) {
+                            s.panel = p;
+                            if (s.manuscripts) {
+                                ms.Manuscript.destroyArray(s.manuscripts);
+                            }
+                            s.manuscripts = manuscripts;
+                            return s;
+                        });
+                    }
+                });
+                break;
+        }
+    };
+    ManuscriptApp.prototype.onFilterLoad = function (c, l) {
+        var _this = this;
+        var countryID = c.countryID;
+        var libSiglum = l ? l.libSiglum : null;
+        ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(countryID, libSiglum, function (manuscripts, e) {
+            if (e) {
+                alert(e);
+            }
+            else {
+                _this.setState(function (s) {
+                    s.panel = Panel.TABLE;
+                    if (s.manuscripts) {
+                        ms.Manuscript.destroyArray(s.manuscripts);
+                    }
+                    s.manuscripts = manuscripts;
+                    return s;
+                });
+            }
+        });
+    };
+    ManuscriptApp.prototype.changePanel = function (p) {
+        this.setState(function (s) {
+            s.panel = p;
+            return s;
+        });
+    };
+    ManuscriptApp.prototype.render = function () {
+        var _this = this;
+        switch (this.state.panel) {
+            case Panel.INIT:
+            default:
+                return (React.createElement(ManuscriptInitPanel_tsx_1.default, { onBack: this.props.onBack, onSelect: this.onInitSelect }));
+            case Panel.FILTER:
+                return (React.createElement(ManuscriptFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSelect: this.onFilterLoad }));
+        }
+    };
+    return ManuscriptApp;
+}(React.Component));
+exports.default = ManuscriptApp;
+
+
+/***/ }),
+
+/***/ "./src/components/manuscript/ManuscriptFilterPanel.tsx":
+/*!*************************************************************!*\
+  !*** ./src/components/manuscript/ManuscriptFilterPanel.tsx ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_select_1 = __webpack_require__(/*! react-select */ "./node_modules/react-select/dist/react-select.es.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
+var ManuscriptFilterPanel = (function (_super) {
+    __extends(ManuscriptFilterPanel, _super);
+    function ManuscriptFilterPanel(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            countryOptions: _this.props.countries.map(function (c) {
+                return { label: c.country, value: c.countryID };
+            }),
+            countryOption: null,
+            libraries: null,
+            libraryOptions: null,
+            libraryOption: null,
+            loadDisabled: true
+        };
+        _this.onCountrySelect = _this.onCountrySelect.bind(_this);
+        _this.onLibrarySelect = _this.onLibrarySelect.bind(_this);
+        return _this;
+    }
+    ManuscriptFilterPanel.prototype.onCountrySelect = function (o) {
+        this.setState(function (s) {
+            s.countryOption = o;
+            s.loadDisabled = o === null;
+            if (s.loadDisabled) {
+                s.libraryOption = null;
+                s.libraryOptions = null;
+                if (s.libraries) {
+                    library_ts_1.Library.destroyArray(s.libraries);
+                }
+            }
+            return s;
+        });
+    };
+    ManuscriptFilterPanel.prototype.onLibrarySelect = function (o) {
+        this.setState(function (s) {
+            s.libraryOption = o;
+        });
+    };
+    ManuscriptFilterPanel.prototype.render = function () {
+        return [
+            React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Filter Manuscripts"),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
+            (React.createElement(react_bootstrap_1.Alert, { bsStyle: "info", className: "mb20 mr15p ml15p text-center", key: "alert" },
+                React.createElement("strong", null, "Filter manuscripts by country and library."))),
+            React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_select_1.default, { name: "countryID", value: this.state.countryOption, options: this.state.countryOptions, onChange: this.onCountrySelect }))))
+        ];
+    };
+    return ManuscriptFilterPanel;
+}(React.Component));
+exports.default = ManuscriptFilterPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/manuscript/ManuscriptInitPanel.tsx":
+/*!***********************************************************!*\
+  !*** ./src/components/manuscript/ManuscriptInitPanel.tsx ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var ManuscriptApp_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptApp.tsx */ "./src/components/manuscript/ManuscriptApp.tsx");
+var ManuscriptInitPanel = (function (_super) {
+    __extends(ManuscriptInitPanel, _super);
+    function ManuscriptInitPanel(p) {
+        return _super.call(this, p) || this;
+    }
+    ManuscriptInitPanel.prototype.render = function () {
+        var _this = this;
+        return [
+            React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Manuscripts"),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
+            (React.createElement(react_bootstrap_1.Row, { key: "row" },
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 6 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.FILTER); } }, "Filter by Country and Library")),
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 6 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.TABLE); } }, "Load all Manuscripts"))))
+        ];
+    };
+    return ManuscriptInitPanel;
+}(React.Component));
+exports.default = ManuscriptInitPanel;
 
 
 /***/ }),
@@ -37538,22 +37786,42 @@ var React = __webpack_require__(/*! react */ "react");
 var ReactDOM = __webpack_require__(/*! react-dom */ "react-dom");
 var SpaghettiApp_tsx_1 = __webpack_require__(/*! @src/components/SpaghettiApp.tsx */ "./src/components/SpaghettiApp.tsx");
 var LibraryApp_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryApp.tsx */ "./src/components/library/LibraryApp.tsx");
+var ManuscriptApp_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptApp.tsx */ "./src/components/manuscript/ManuscriptApp.tsx");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var App;
+(function (App) {
+    App[App["INIT"] = 0] = "INIT";
+    App[App["LIB"] = 1] = "LIB";
+    App[App["MS"] = 2] = "MS";
+})(App = exports.App || (exports.App = {}));
 var Spaghetti = (function () {
     function Spaghetti(container) {
+        var _this = this;
         this.container = container;
         this.stack = [];
         this.appContainer = container.getElementsByTagName('section')[0];
         this.onSelect = this.onSelect.bind(this);
+        ProxyFactory_ts_1.default.getLibraryProxy().getCountries(function (c, e) {
+            if (e) {
+                alert(e);
+            }
+            else {
+                _this.countries = c;
+                _this.renderInitApp();
+            }
+        });
     }
     Spaghetti.prototype.onSelect = function (a) {
         switch (a) {
-            case SpaghettiApp_tsx_1.App.INIT:
+            case App.INIT:
             default:
                 this.renderInitApp();
                 break;
-            case SpaghettiApp_tsx_1.App.LIB:
+            case App.LIB:
                 this.renderLibraryApp();
+                break;
+            case App.MS:
+                this.renderManuscriptApp();
                 break;
         }
     };
@@ -37562,13 +37830,11 @@ var Spaghetti = (function () {
     };
     Spaghetti.prototype.renderLibraryApp = function () {
         var _this = this;
-        ProxyFactory_ts_1.default.getLibraryProxy().getCountries(function (countries, e) {
-            if (e) {
-                alert(e);
-                return;
-            }
-            ReactDOM.render((React.createElement(LibraryApp_tsx_1.default, { stack: _this.stack, countries: countries, onBack: function () { return _this.onSelect(SpaghettiApp_tsx_1.App.INIT); } })), _this.appContainer);
-        });
+        ReactDOM.render((React.createElement(LibraryApp_tsx_1.default, { stack: this.stack, countries: this.countries, onBack: function () { return _this.onSelect(App.INIT); } })), this.appContainer);
+    };
+    Spaghetti.prototype.renderManuscriptApp = function () {
+        var _this = this;
+        ReactDOM.render((React.createElement(ManuscriptApp_tsx_1.default, { countries: this.countries, onBack: function () { return _this.onSelect(App.INIT); } })), this.appContainer);
     };
     return Spaghetti;
 }());
@@ -37982,31 +38248,55 @@ var ManuScriptProxy = (function (_super) {
     function ManuScriptProxy() {
         return _super.call(this, 'manuscript') || this;
     }
-    ManuScriptProxy.prototype.createMsType = function (msType, callback) {
+    ManuScriptProxy.prototype.getManuscripts = function (countryID, libSiglum, callback) {
         var params = {
-            action: 'CreateMsType',
-            msType: msType.toProperties()
+            action: 'GetManuscripts',
+            countryID: countryID || null,
+            libSiglum: libSiglum || null
         };
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
+            var d = res.data;
+            if (d.err) {
                 SpgProxy_ts_1.default.callbackError(callback, res.err);
             }
+            else if (d.constructor === Array) {
+                var manuscripts = d.map(function (p) {
+                    return new ms.Manuscript(p);
+                });
+                callback(manuscripts, null);
+            }
             else {
-                callback(new mst.MsType(res), null);
+                SpgProxy_ts_1.default.callbackError(callback, null);
             }
         });
     };
-    ManuScriptProxy.prototype.updateMsType = function (msType, callback) {
+    ManuScriptProxy.prototype.createMsType = function (props, callback) {
         var params = {
-            action: 'UpdateMsType',
-            msType: msType.toProperties()
+            action: 'CreateMsType',
         };
+        Object.assign(params, props);
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
+            var data = res.data;
+            if (data.err) {
+                SpgProxy_ts_1.default.callbackError(callback, data.err);
             }
             else {
-                callback(new mst.MsType(res), null);
+                callback(new mst.MsType(data), null);
+            }
+        });
+    };
+    ManuScriptProxy.prototype.updateMsType = function (props, callback) {
+        var params = {
+            action: 'UpdateMsType',
+        };
+        Object.assign(params, props);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var data = res.data;
+            if (data.err) {
+                SpgProxy_ts_1.default.callbackError(callback, data.err);
+            }
+            else {
+                callback(new mst.MsType(data), null);
             }
         });
     };
@@ -38016,11 +38306,12 @@ var ManuScriptProxy = (function (_super) {
             msType: msType
         };
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
+            var d = res.data;
+            if (d.err) {
+                SpgProxy_ts_1.default.callbackError(callback, d.err);
             }
             else {
-                callback(new mst.MsType(res), null);
+                callback(new mst.MsType(d), null);
             }
         });
     };
@@ -38029,15 +38320,15 @@ var ManuScriptProxy = (function (_super) {
             action: 'GetMsTypes'
         };
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
+            var d = res.data;
+            if (d.err) {
+                SpgProxy_ts_1.default.callbackError(callback, d.err);
             }
-            else if (res.constructor === Array) {
-                var msTypes = [];
-                for (var i = 0; i < res.length; i++) {
-                    msTypes.push(new mst.MsType(res));
-                    callback(msTypes, null);
-                }
+            else if (d.constructor === Array) {
+                var msTypes = d.map(function (p) {
+                    return new mst.MsType(p);
+                });
+                callback(msTypes, null);
             }
             else {
                 SpgProxy_ts_1.default.callbackError(callback, null);
@@ -38047,28 +38338,30 @@ var ManuScriptProxy = (function (_super) {
     ManuScriptProxy.prototype.createManuscript = function (props, callback) {
         var params = {
             action: 'CreateManuscript',
-            manuscript: props
         };
+        Object.assign(params, props);
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
+            var d = res.data;
+            if (d.err) {
+                SpgProxy_ts_1.default.callbackError(callback, d.err);
             }
             else {
-                callback(new ms.Manuscript(res), null);
+                callback(new ms.Manuscript(d), null);
             }
         });
     };
     ManuScriptProxy.prototype.updateManuscript = function (props, callback) {
         var params = {
             action: 'UpdateManuscript',
-            manuscript: props
         };
+        Object.assign(params, props);
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
+            var d = res.data;
+            if (d.err) {
+                SpgProxy_ts_1.default.callbackError(callback, d.err);
             }
             else {
-                callback(new ms.Manuscript(res), null);
+                callback(new ms.Manuscript(d), null);
             }
         });
     };
@@ -38079,31 +38372,12 @@ var ManuScriptProxy = (function (_super) {
             msSiglum: msSiglum
         };
         _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
+            var d = res.data;
+            if (d.err) {
+                SpgProxy_ts_1.default.callbackError(callback, d.err);
             }
             else {
-                callback(new ms.Manuscript(res), null);
-            }
-        });
-    };
-    ManuScriptProxy.prototype.getManuscripts = function (callback) {
-        var params = {
-            action: 'GetManuscripts'
-        };
-        _super.prototype.doPost.call(this, params, function (res) {
-            if (res.err) {
-                SpgProxy_ts_1.default.callbackError(callback, res.err);
-            }
-            else if (res.constructor === Array) {
-                var manuscripts = [];
-                for (var i = 0; i < res.length; i++) {
-                    manuscripts.push(new ms.Manuscript(res[i]));
-                }
-                callback(manuscripts, null);
-            }
-            else {
-                SpgProxy_ts_1.default.callbackError(callback, null);
+                callback(new ms.Manuscript(d), null);
             }
         });
     };
