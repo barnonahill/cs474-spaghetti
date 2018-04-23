@@ -206,7 +206,6 @@ public class ManuscriptController {
 		String libSig;
 		ResultSet resultSet;
 		Manuscript ms;
-		ArrayList<Manuscript> manuscriptsAll = new ArrayList<Manuscript>();
 		ArrayList<Manuscript> manuscripts = new ArrayList<Manuscript>();
 		ArrayList<Library> libraries;
 
@@ -226,7 +225,7 @@ public class ManuscriptController {
 					
 					while (resultSet.next()) {
 						ms = new Manuscript(resultSet);
-						manuscriptsAll.add(ms);
+						manuscripts.add(ms);
 					}
 				}
 			}
