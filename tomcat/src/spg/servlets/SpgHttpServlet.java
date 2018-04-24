@@ -88,11 +88,23 @@ public abstract class SpgHttpServlet extends HttpServlet {
 	 * @return value of parameter
 	 * @throws Exception the parameter is not in the map.
 	 */
-	public String getParameter(Map<String, String> m, String p) throws Exception {
+	public String getRequiredParameter(Map<String, String> m, String p) throws Exception {
 		String s = m.get(p);
 		if (s == null || s.isEmpty()) {
 			throw new Exception("Missing " + p + " parameter.");
 		}
+		return s;
+	}
+	
+	/**
+	 * get non primary keys or actions. (aka null values are ok.)
+	 * @param m
+	 * @param p
+	 * @return
+	 * @throws Exception
+	 */
+	public String getParameter(Map<String, String> m, String p) throws Exception {
+		String s = m.get(p);
 		return s;
 	}
 	

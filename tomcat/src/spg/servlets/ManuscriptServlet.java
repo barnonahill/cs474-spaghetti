@@ -40,18 +40,18 @@ public class ManuscriptServlet extends SpgHttpServlet{
 		try 
 		{
 			Map<String, String> params = super.getParameters(req);
-			String action = super.getParameter(params, "action").toLowerCase();
+			String action = super.getRequiredParameter(params, "action").toLowerCase();
 			String msg = null;
 			if(action.equalsIgnoreCase(CREATE_MSTYPE))
             {
-                String msType = super.getParameter(params, "msType");
+                String msType = super.getRequiredParameter(params, "msType");
 				String msTypeName = super.getParameter(params, "msTypeName");
 				msg = this.createMSType(msType, msTypeName);
             }
 
             else if (action.equalsIgnoreCase(UPDATE_MSTYPE))
             {
-                String updateMSType = super.getParameter(params, "msType");
+                String updateMSType = super.getRequiredParameter(params, "msType");
                 String updateMSTypeName = super.getParameter(params, "msTypeName");
                 msg = this.updateMSType(updateMSType, updateMSTypeName);    
             }
@@ -63,15 +63,15 @@ public class ManuscriptServlet extends SpgHttpServlet{
 
             else if (action.equalsIgnoreCase(DELETE_MSTYPE))
             {
-                String deleteMSType = super.getParameter(params, "msType");
+                String deleteMSType = super.getRequiredParameter(params, "msType");
 				String deleteMSTypeName = super.getParameter(params, "msTypeName");
 				msg = this.deleteMSType(deleteMSType, deleteMSTypeName);  
             }
 
             else if (action.equalsIgnoreCase(CREATE_MANUSCRIPT))
             {
-                String createLibSiglum = super.getParameter(params, "libSiglum");
-				String createMSSiglum = super.getParameter(params, "msSiglum");
+                String createLibSiglum = super.getRequiredParameter(params, "libSiglum");
+				String createMSSiglum = super.getRequiredParameter(params, "msSiglum");
 				String createMSType = super.getParameter(params, "msType");
 				String createDimensions = super.getParameter(params, "dimensions");
 				String createLeaves = super.getParameter(params, "leaves");
@@ -89,8 +89,8 @@ public class ManuscriptServlet extends SpgHttpServlet{
 
             else if (action.equalsIgnoreCase(UPDATE_MANUSCRIPT))
             {
-				String updateLibSiglum = super.getParameter(params, "libSiglum");
-				String updateMSSiglum = super.getParameter(params, "msSiglum");
+				String updateLibSiglum = super.getRequiredParameter(params, "libSiglum");
+				String updateMSSiglum = super.getRequiredParameter(params, "msSiglum");
 				String updateMSType = super.getParameter(params, "msType");
 				String updateDimensions = super.getParameter(params, "dimensions");
 				String updateLeaves = super.getParameter(params, "leaves");
@@ -108,24 +108,21 @@ public class ManuscriptServlet extends SpgHttpServlet{
             
             else if (action.equalsIgnoreCase(GET_MANUSCRIPT))
             {
-				String getLibSiglum = super.getParameter(params, "libSiglum");
-				String getMSSiglum = super.getParameter(params, "msSiglum");
+				String getLibSiglum = super.getRequiredParameter(params, "libSiglum");
+				String getMSSiglum = super.getRequiredParameter(params, "msSiglum");
 				msg = this.getManuscript(getLibSiglum, getMSSiglum);
             }
             else if (action.equalsIgnoreCase(GET_MANUSCRIPTS))
             {
-            	String getLibSiglums = null;
-            	try {
-            		getLibSiglums = super.getParameter(params, "libSiglum");
-            	}
-            	catch(Exception e){}
+            	//not required b/c we sometimes need all, and sometimes filter.
+            	String getLibSiglums = super.getParameter(params, "libSiglum");
 				msg = this.getManuscripts(getLibSiglums);
             }
             
             else if(action.equalsIgnoreCase(DELETE_MANUSCRIPT))
             {
-				String deleteLibSiglum = super.getParameter(params, "libSiglum");
-				String deleteMSSiglum = super.getParameter(params, "msSiglum");
+				String deleteLibSiglum = super.getRequiredParameter(params, "libSiglum");
+				String deleteMSSiglum = super.getRequiredParameter(params, "msSiglum");
 				msg = this.deleteManuscript(deleteLibSiglum, deleteMSSiglum);
             }
             else

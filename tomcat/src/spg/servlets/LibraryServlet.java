@@ -44,7 +44,7 @@ public class LibraryServlet extends SpgHttpServlet {
 		try 
 		{
 			Map<String, String> params = super.getParameters(req);
-			String action = super.getParameter(params, "action").toLowerCase();
+			String action = super.getRequiredParameter(params, "action").toLowerCase();
 			String msg = null;
 			
 			// Actions are in node/src/proxies/LibraryProxy.ts
@@ -81,11 +81,11 @@ public class LibraryServlet extends SpgHttpServlet {
 					// TODO
 					break;
 				case GET_LIBRARIES:
-					String countryID = super.getParameter(params, "countryID");
+					String countryID = super.getRequiredParameter(params, "countryID");
 					msg = this.getLibraries(countryID);
 					break;
 				case DELETE_LIBRARY:
-					String libSiglum = super.getParameter(params, "libSiglum");
+					String libSiglum = super.getRequiredParameter(params, "libSiglum");
 					msg = this.deleteLibrary(libSiglum);
 					break;
 				default:
