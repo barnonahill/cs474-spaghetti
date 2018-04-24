@@ -37753,6 +37753,7 @@ var ManuscriptApp = (function (_super) {
         _this.loadManuscripts = _this.loadManuscripts.bind(_this);
         _this.loadMsTypes = _this.loadMsTypes.bind(_this);
         _this.reloadManuscripts = _this.reloadManuscripts.bind(_this);
+        _this.saveManuscript = _this.saveManuscript.bind(_this);
         return _this;
     }
     ManuscriptApp.prototype.componentDidMount = function () {
@@ -37779,7 +37780,7 @@ var ManuscriptApp = (function (_super) {
             case Panel.ENTITY:
                 return (React.createElement(ManuscriptEntityPanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscript: this.state.manuscript, msType: this.state.msType, onBack: this.onEntityBack }));
             case Panel.EDIT:
-                return (React.createElement(ManuscriptEditPanel_tsx_1.default, { country: this.state.country, countries: this.props.countries, library: this.state.library, msTypes: this.state.msTypes, manuscript: this.state.manuscript, onBack: function () { return _this.changePanel(Panel.TABLE); } }));
+                return (React.createElement(ManuscriptEditPanel_tsx_1.default, { country: this.state.country, countries: this.props.countries, library: this.state.library, msTypes: this.state.msTypes, manuscript: this.state.manuscript, onBack: function () { return _this.changePanel(Panel.TABLE); }, onSubmit: this.saveManuscript }));
             case Panel.MST:
                 return (React.createElement(MsTypeApp_tsx_1.default, { onBack: function () { return _this.changePanel(Panel.MST); } }));
         }
@@ -38009,6 +38010,41 @@ var ManuscriptApp = (function (_super) {
             return state;
         });
     };
+    ManuscriptApp.prototype.saveManuscript = function (props, isNew) {
+        var _this = this;
+        if (isNew) {
+            ProxyFactory_ts_1.default.getManuscriptProxy().createManuscript(props, function (man, e) {
+                if (e) {
+                    alert(e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        s.manuscripts.push(man);
+                        s.panel = Panel.TABLE;
+                        return s;
+                    });
+                }
+            });
+        }
+        else {
+            ProxyFactory_ts_1.default.getManuscriptProxy().updateManuscript(props, function (man, e) {
+                if (e) {
+                    alert(e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        var i = s.manuscripts.findIndex(function (m) {
+                            return man.libSiglum === m.libSiglum &&
+                                man.msSiglum === m.libSiglum;
+                        });
+                        s.manuscripts[i].destroy();
+                        s.manuscripts[i] = man;
+                        return s;
+                    });
+                }
+            });
+        }
+    };
     return ManuscriptApp;
 }(React.Component));
 exports.default = ManuscriptApp;
@@ -38050,11 +38086,11 @@ var ManuscriptEditPanel = (function (_super) {
         var msTypeOptions = p.msTypes.map(function (m) {
             return { label: m.msTypeName, value: m.msType };
         });
-        var isNew = Boolean(p.manuscript);
+        var isNew = !Boolean(p.manuscript);
         var state = {
             isNew: isNew,
-            opts: {},
-            val: { msType: null, msTypes: msTypeOptions }
+            opts: { msType: null, msTypes: msTypeOptions },
+            val: { msType: null }
         };
         state.opts.msTypeOptions = p.msTypes.map(function (m) {
             return { label: m.msType, value: m.msTypeName };
@@ -38065,7 +38101,7 @@ var ManuscriptEditPanel = (function (_super) {
                 msSiglum: '',
                 msType: '',
                 dimensions: '',
-                leaves: null,
+                leaves: '',
                 foliated: false,
                 vellum: false,
                 binding: '',
@@ -38098,9 +38134,13 @@ var ManuscriptEditPanel = (function (_super) {
         _this.getCountryIDFormGroup = _this.getCountryIDFormGroup.bind(_this);
         _this.getLibSiglumFormGroup = _this.getLibSiglumFormGroup.bind(_this);
         _this.getMsSiglumFormGroup = _this.getMsSiglumFormGroup.bind(_this);
+        _this.onCheckboxChange = _this.onCheckboxChange.bind(_this);
         _this.onCountrySelect = _this.onCountrySelect.bind(_this);
         _this.onLibrarySelect = _this.onLibrarySelect.bind(_this);
+        _this.onMsTypeSelect = _this.onMsTypeSelect.bind(_this);
+        _this.onNumberInputChange = _this.onNumberInputChange.bind(_this);
         _this.onTextInputChange = _this.onTextInputChange.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
         return _this;
     }
     ManuscriptEditPanel.prototype.render = function () {
@@ -38109,10 +38149,49 @@ var ManuscriptEditPanel = (function (_super) {
         x.push(React.createElement(Header_tsx_1.default, { min: true, key: "header" }, h));
         x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
             React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
-        x.push(React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
+        x.push(React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form", onSubmit: this.onSubmit },
             this.getCountryIDFormGroup(),
             this.getLibSiglumFormGroup(),
-            this.getMsSiglumFormGroup()));
+            this.getMsSiglumFormGroup(),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "msType", validationState: this.state.val.msType },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Manuscript Type:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_select_1.default, { name: "countryID", value: this.state.opts.msType, options: this.state.opts.msTypes, className: this.state.val.msType === null ? '' : 'has-error', onChange: this.onMsTypeSelect }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "dimensions" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Dimensions:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.msProps.dimensions, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "leaves" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Number of Leaves:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "number", value: this.state.msProps.leaves, onChange: this.onNumberInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "foliated" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Foliated:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.Checkbox, { id: "foliated", checked: this.state.msProps.foliated, onChange: this.onCheckboxChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "vellum" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Vellum:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.Checkbox, { id: "vellum", checked: this.state.msProps.vellum, onChange: this.onCheckboxChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "binding" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Binding:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.msProps.binding, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "sourceNotes" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Source Notes:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { componentClass: "textarea", value: this.state.msProps.sourceNotes, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "summary" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Summary:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { componentClass: "textarea", value: this.state.msProps.summary, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "bibliography" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Bibliography:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { componentClass: "textarea", value: this.state.msProps.bibliography, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))));
         return x;
     };
     ManuscriptEditPanel.prototype.getCountryIDFormGroup = function () {
@@ -38135,7 +38214,7 @@ var ManuscriptEditPanel = (function (_super) {
         if (this.state.isNew) {
             label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Library:"));
             value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4 },
-                React.createElement(react_select_1.default, { name: "libSiglum", value: this.state.opts.library, options: this.state.opts.libraries, className: this.state.val.countryID === null ? '' : 'has-error', onChange: this.onLibrarySelect, disabled: !Boolean(this.state.opts.country) })));
+                React.createElement(react_select_1.default, { name: "libSiglum", value: this.state.opts.library, options: this.state.opts.libraries, className: this.state.val.libSiglum === null ? '' : 'has-error', onChange: this.onLibrarySelect, disabled: !Boolean(this.state.opts.country) })));
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library:"));
@@ -38184,7 +38263,7 @@ var ManuscriptEditPanel = (function (_super) {
                 if (s.isNew) {
                     s.opts.library = null;
                     s.ents.library = null;
-                    s.msProps.libSiglum = null;
+                    s.msProps.libSiglum = '';
                 }
                 else {
                     s.ents.library = libs.find(function (l) { return s.msProps.libSiglum === l.libSiglum; });
@@ -38193,6 +38272,15 @@ var ManuscriptEditPanel = (function (_super) {
                     return callback(s);
                 return s;
             });
+        });
+    };
+    ManuscriptEditPanel.prototype.onCheckboxChange = function (e) {
+        var target = e.target;
+        var k = target.id;
+        var v = target.checked;
+        this.setState(function (s) {
+            s.msProps[k] = v;
+            return s;
         });
     };
     ManuscriptEditPanel.prototype.onCountrySelect = function (c) {
@@ -38229,12 +38317,61 @@ var ManuscriptEditPanel = (function (_super) {
             return s;
         });
     };
+    ManuscriptEditPanel.prototype.onMsTypeSelect = function (mt) {
+        var _this = this;
+        this.setState(function (s) {
+            s.opts.msType = mt;
+            if (mt) {
+                s.ents.msType = _this.props.msTypes.find(function (m) { return mt.value === m.msTypeName; });
+                s.msProps.msType = mt.value;
+            }
+            else {
+                s.ents.msType = null;
+                s.msProps.msType = '';
+            }
+            return s;
+        });
+    };
+    ManuscriptEditPanel.prototype.onNumberInputChange = function (e) {
+        var target = e.target;
+        var k = target.id;
+        var v = target.value;
+        this.setState(function (s) {
+            s.msProps[k] = Number.parseInt(v);
+            return s;
+        });
+    };
     ManuscriptEditPanel.prototype.onTextInputChange = function (e) {
         var target = e.target;
         var k = target.id;
         var v = target.value;
         this.setState(function (s) {
             s.msProps[k] = v;
+            return s;
+        });
+    };
+    ManuscriptEditPanel.prototype.onSubmit = function (e) {
+        var _this = this;
+        e.preventDefault();
+        var val = {
+            msType: this.state.msProps.msType ? null : 'error'
+        };
+        if (this.state.isNew) {
+            val.countryID = this.state.ents.country ? null : 'error';
+            val.libSiglum = this.state.msProps.libSiglum ? null : 'error';
+            val.msSiglum = this.state.msProps.msSiglum ? null : 'error';
+        }
+        for (var k in val) {
+            if (val[k] !== null) {
+                return this.setState(function (s) {
+                    s.val = val;
+                    return s;
+                });
+            }
+        }
+        this.setState(function (s) {
+            s.val = val;
+            _this.props.onSubmit(s.msProps, s.isNew);
             return s;
         });
     };

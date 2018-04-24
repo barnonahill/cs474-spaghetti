@@ -1,12 +1,13 @@
 import * as React from 'react';
 import {
 	Button,
+	Checkbox,
 	Col,
 	ControlLabel,
 	InputGroup,
 	Form,
 	FormControl,
-	FormGroup,
+	FormGroup
 } from 'react-bootstrap';
 import {
 	default as Select,
@@ -30,6 +31,7 @@ interface P {
 	msTypes: MsType[]
 	manuscript: ms.Manuscript
 	onBack: () => void
+	onSubmit: (props: ms.Properties, isNew: boolean) => void
 }
 interface S {
 	isNew: boolean
@@ -67,8 +69,8 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 		var isNew = !Boolean(p.manuscript);
 		var state: any = {
 			isNew: isNew,
-			opts: {},
-			val: {msType:null, msTypes: msTypeOptions}
+			opts: {msType: null, msTypes: msTypeOptions},
+			val: {msType:null}
 		};
 
 		state.opts.msTypeOptions = p.msTypes.map((m:MsType) => {
@@ -81,7 +83,7 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 				msSiglum: '',
 				msType: '',
 				dimensions: '',
-				leaves: null,
+				leaves: '',
 				foliated: false,
 				vellum: false,
 				binding: '',
@@ -123,9 +125,14 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 		this.getLibSiglumFormGroup = this.getLibSiglumFormGroup.bind(this);
 		this.getMsSiglumFormGroup = this.getMsSiglumFormGroup.bind(this);
 
+		this.onCheckboxChange = this.onCheckboxChange.bind(this);
 		this.onCountrySelect = this.onCountrySelect.bind(this);
 		this.onLibrarySelect = this.onLibrarySelect.bind(this);
+		this.onMsTypeSelect = this.onMsTypeSelect.bind(this);
+		this.onNumberInputChange = this.onNumberInputChange.bind(this);
 		this.onTextInputChange = this.onTextInputChange.bind(this);
+
+		this.onSubmit = this.onSubmit.bind(this);
 	}
 
 	render() {
@@ -140,12 +147,153 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 			>Back</Button>
 		</PanelMenu>);
 
-		x.push(<Form horizontal key="form">
+		x.push(<Form horizontal key="form" onSubmit={this.onSubmit}>
 			{this.getCountryIDFormGroup()}
 
 			{this.getLibSiglumFormGroup()}
 
 			{this.getMsSiglumFormGroup()}
+
+			<FormGroup
+				controlId="msType"
+				validationState={this.state.val.msType}
+			>
+				<Col
+					sm={3}
+					componentClass={ControlLabel}
+					className="required"
+				>Manuscript Type:</Col>
+				<Col sm={4}>
+					<Select
+						name="countryID"
+						value={this.state.opts.msType}
+						options={this.state.opts.msTypes}
+						className={this.state.val.msType === null ? '' : 'has-error'}
+						onChange={this.onMsTypeSelect}
+					/>
+				</Col>
+			</FormGroup>
+
+			<FormGroup controlId="dimensions">
+				<Col
+					sm={3}
+					componentClass={ControlLabel}
+				>Dimensions:</Col>
+				<Col sm={4}>
+					<FormControl
+						type="text"
+						value={this.state.msProps.dimensions}
+						onChange={this.onTextInputChange}
+					/>
+				</Col>
+			</FormGroup>
+
+			<FormGroup controlId="leaves">
+				<Col
+					sm={3}
+					componentClass={ControlLabel}
+				>Number of Leaves:</Col>
+				<Col sm={4}>
+					<FormControl
+						type="number"
+						value={this.state.msProps.leaves}
+						onChange={this.onNumberInputChange}
+					/>
+				</Col>
+			</FormGroup>
+
+			<FormGroup controlId="foliated">
+				<Col
+					sm={3}
+					componentClass={ControlLabel}
+				>Foliated:</Col>
+				<Col sm={4}>
+					<Checkbox
+						id="foliated"
+						checked={this.state.msProps.foliated}
+						onChange={this.onCheckboxChange}
+					/>
+				</Col>
+			</FormGroup>
+
+			<FormGroup controlId="vellum">
+				<Col
+					sm={3}
+					componentClass={ControlLabel}
+				>Vellum:</Col>
+				<Col sm={4}>
+					<Checkbox
+						id="vellum"
+						checked={this.state.msProps.vellum}
+						onChange={this.onCheckboxChange}
+					/>
+				</Col>
+			</FormGroup>
+
+			<FormGroup controlId="binding">
+				<Col
+					sm={3}
+					componentClass={ControlLabel}
+				>Binding:</Col>
+				<Col sm={4}>
+					<FormControl
+						type="text"
+						value={this.state.msProps.binding}
+						onChange={this.onTextInputChange}
+					/>
+				</Col>
+			</FormGroup>
+
+			<FormGroup controlId="sourceNotes">
+				<Col
+					sm={3}
+					componentClass={ControlLabel}
+				>Source Notes:</Col>
+				<Col sm={4}>
+					<FormControl
+						componentClass="textarea"
+						value={this.state.msProps.sourceNotes}
+						onChange={this.onTextInputChange}
+					/>
+				</Col>
+			</FormGroup>
+
+			<FormGroup controlId="summary">
+				<Col
+					sm={3}
+					componentClass={ControlLabel}
+				>Summary:</Col>
+				<Col sm={4}>
+					<FormControl
+						componentClass="textarea"
+						value={this.state.msProps.summary}
+						onChange={this.onTextInputChange}
+					/>
+				</Col>
+			</FormGroup>
+
+			<FormGroup controlId="bibliography">
+				<Col
+					sm={3}
+					componentClass={ControlLabel}
+				>Bibliography:</Col>
+				<Col sm={4}>
+					<FormControl
+						componentClass="textarea"
+						value={this.state.msProps.bibliography}
+						onChange={this.onTextInputChange}
+					/>
+				</Col>
+			</FormGroup>
+
+			<FormGroup>
+				<Col smOffset={3} sm={4}>
+					<Button
+						bsStyle="success"
+						type="submit"
+					>Save</Button>
+				</Col>
+			</FormGroup>
 		</Form>);
 		return x;
 	}
@@ -208,7 +356,7 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 					name="libSiglum"
 					value={this.state.opts.library}
 					options={this.state.opts.libraries}
-					className={this.state.val.countryID === null ? '' : 'has-error'}
+					className={this.state.val.libSiglum === null ? '' : 'has-error'}
 					onChange={this.onLibrarySelect}
 					disabled={!Boolean(this.state.opts.country)}
 				/>
@@ -305,7 +453,7 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 				if (s.isNew) {
 					s.opts.library = null;
 					s.ents.library = null;
-					s.msProps.libSiglum = null;
+					s.msProps.libSiglum = '';
 				}
 				else {
 					s.ents.library = libs.find(l => s.msProps.libSiglum === l.libSiglum);
@@ -314,6 +462,16 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 				if (callback) return callback(s);
 				return s;
 			});
+		})
+	}
+
+	onCheckboxChange(e: React.FormEvent<Checkbox>) {
+		const target = e.target as HTMLInputElement;
+		const k = target.id;
+		const v = target.checked;
+		this.setState(s => {
+			s.msProps[k] = v;
+			return s;
 		})
 	}
 
@@ -352,12 +510,65 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 		});
 	}
 
+	onMsTypeSelect(mt:Option) {
+		this.setState(s => {
+			s.opts.msType = mt;
+			if (mt) {
+				s.ents.msType = this.props.msTypes.find(m => mt.value === m.msTypeName);
+				s.msProps.msType = mt.value as string;
+			}
+			else {
+				s.ents.msType = null;
+				s.msProps.msType = '';
+			}
+			return s;
+		});
+	}
+
+	onNumberInputChange(e:React.FormEvent<FormControl>) {
+		const target = e.target as HTMLInputElement;
+		const k = target.id;
+		const v = target.value;
+		this.setState((s:S) => {
+			s.msProps[k] = Number.parseInt(v);
+			return s;
+		});
+	}
+
 	onTextInputChange(e:React.FormEvent<FormControl>) {
 		const target = e.target as HTMLInputElement;
 		const k = target.id;
 		const v = target.value;
 		this.setState((s:S) => {
 			s.msProps[k] = v;
+			return s;
+		});
+	}
+
+	onSubmit(e:React.FormEvent<Form>) {
+		e.preventDefault();
+		var val:any = {
+			msType: this.state.msProps.msType ? null : 'error'
+		};
+
+		if (this.state.isNew) {
+			val.countryID = this.state.ents.country ? null : 'error';
+			val.libSiglum = this.state.msProps.libSiglum ? null : 'error';
+			val.msSiglum = this.state.msProps.msSiglum ? null : 'error';
+		}
+
+		for (let k in val) {
+			if (val[k] !== null) {
+				return this.setState((s:S) => {
+					s.val = val;
+					return s;
+				});
+			}
+		}
+
+		this.setState((s:S) => {
+			s.val = val;
+			this.props.onSubmit(s.msProps, s.isNew);
 			return s;
 		});
 	}

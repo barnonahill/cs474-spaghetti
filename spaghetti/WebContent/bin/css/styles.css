@@ -126,7 +126,7 @@
 /*
  * react-select error
  */
-.Select-control.has-error {
+.has-error > .Select-control {
 	border-color: #a94442;
 }
 
