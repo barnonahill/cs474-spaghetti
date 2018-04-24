@@ -94,10 +94,25 @@ public class ManuscriptController {
 	
 	
 	
-	public static boolean deleteMSType(String mSType2, String mSTypeName) {
-		// TODO Auto-generated method stub
+	/**
+	 * Deletes an MSType.
+	 * @param msType - 
+	 * @param msTypeName -
+	 * @return -
+	 * @throws Exception -
+	 */
+	public static boolean deleteMSType(String msType, String msTypeName) throws Exception {
+		String query;
+		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
+
+		pkNamesToValues.put("msType", msType);
+		pkNamesToValues.put("msTypeName", msTypeName);
 		
-		return false;
+		query = SpgController.buildDeleteQuery(MSTYPE, pkNamesToValues);
+		
+		SpgController.executeSQL(query);
+				
+		return true;
 	}
 	
 	
