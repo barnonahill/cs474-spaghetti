@@ -37737,12 +37737,15 @@ var ManuscriptApp = (function (_super) {
             manuscripts: null,
             manuscript: null,
             msTypes: null,
-            msType: null
+            msType: null,
+            tempCountry: false,
+            tempLibrary: false
         };
         _this.changePanel = _this.changePanel.bind(_this);
         _this.confirmDelete = _this.confirmDelete.bind(_this);
         _this.onFilterLoad = _this.onFilterLoad.bind(_this);
         _this.onInitSelect = _this.onInitSelect.bind(_this);
+        _this.onEntityBack = _this.onEntityBack.bind(_this);
         _this.openEditPanel = _this.openEditPanel.bind(_this);
         _this.openEntityPanel = _this.openEntityPanel.bind(_this);
         _this.loadLibraries = _this.loadLibraries.bind(_this);
@@ -37773,7 +37776,7 @@ var ManuscriptApp = (function (_super) {
             case Panel.TABLE:
                 return (React.createElement(ManuscriptTablePanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscripts: this.state.manuscripts, onBack: function () { return _this.changePanel(Panel.INIT); }, onRefresh: this.reloadManuscripts, onEdit: this.openEditPanel, onDelete: this.confirmDelete, onView: this.openEntityPanel }));
             case Panel.ENTITY:
-                return (React.createElement(ManuscriptEntityPanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscript: this.state.manuscript, msType: this.state.msType, onBack: function () { return _this.changePanel(Panel.TABLE); } }));
+                return (React.createElement(ManuscriptEntityPanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscript: this.state.manuscript, msType: this.state.msType, onBack: this.onEntityBack }));
             case Panel.MST:
                 return (React.createElement(MsTypeApp_tsx_1.default, { onBack: function () { return _this.changePanel(Panel.MST); } }));
         }
@@ -37848,6 +37851,18 @@ var ManuscriptApp = (function (_super) {
                 break;
         }
     };
+    ManuscriptApp.prototype.onEntityBack = function () {
+        this.setState(function (s) {
+            if (s.tempCountry) {
+                s.country = null;
+            }
+            if (s.tempLibrary) {
+                s.library = null;
+            }
+            s.panel = Panel.TABLE;
+            return s;
+        });
+    };
     ManuscriptApp.prototype.openEditPanel = function (manuscript) {
         this.setState(function (s) {
             s.panel = Panel.EDIT;
@@ -37861,6 +37876,8 @@ var ManuscriptApp = (function (_super) {
             s.loadMessage = 'Loading Manuscript...';
             s.manuscript = manuscript;
         });
+        var tempCountry = false;
+        var tempLibrary = false;
         var msType;
         if (!(this.state.msType && manuscript.msType === this.state.msType.msType)) {
             msType = this.state.msTypes.find(function (m) {
@@ -37871,9 +37888,11 @@ var ManuscriptApp = (function (_super) {
             msType = this.state.msType;
         }
         if (!(this.state.library && manuscript.libSiglum === this.state.library.libSiglum)) {
+            tempLibrary = true;
             var country;
             if (!(this.state.country &&
                 manuscript.libSiglum.indexOf(this.state.country.countryID) === -1)) {
+                tempCountry = true;
                 var i = manuscript.libSiglum.indexOf('-');
                 var countryID = manuscript.libSiglum.slice(0, i);
                 country = this.props.countries.find(function (c) {
@@ -37892,6 +37911,8 @@ var ManuscriptApp = (function (_super) {
                     return manuscript.libSiglum === l.libSiglum;
                 });
                 state.msType = msType;
+                state.tempCountry = tempCountry;
+                state.tempLibrary = tempLibrary;
                 state.panel = Panel.ENTITY;
                 return state;
             });
@@ -37899,6 +37920,8 @@ var ManuscriptApp = (function (_super) {
         else {
             this.setState(function (s) {
                 s.msType = msType;
+                s.tempCountry = tempCountry;
+                s.tempLibrary = tempLibrary;
                 s.panel = Panel.ENTITY;
                 return s;
             });

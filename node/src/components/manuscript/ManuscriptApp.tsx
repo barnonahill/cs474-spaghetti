@@ -37,6 +37,8 @@ interface S {
 	manuscript: ms.Manuscript
 	msType: MsType
 	msTypes: Array<MsType>
+	tempCountry: boolean
+	tempLibrary: boolean
 	[x: string]: any
 }
 
@@ -53,7 +55,9 @@ export default class ManuscriptApp extends React.Component<P,S> {
 			manuscripts: null,
 			manuscript: null,
 			msTypes: null,
-			msType: null
+			msType: null,
+			tempCountry: false,
+			tempLibrary: false
 		};
 
 		this.changePanel = this.changePanel.bind(this);
@@ -61,6 +65,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 
 		this.onFilterLoad = this.onFilterLoad.bind(this);
 		this.onInitSelect = this.onInitSelect.bind(this);
+		this.onEntityBack = this.onEntityBack.bind(this);
 
 		this.openEditPanel = this.openEditPanel.bind(this);
 		this.openEntityPanel = this.openEntityPanel.bind(this);
@@ -117,7 +122,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					library={this.state.library}
 					manuscript={this.state.manuscript}
 					msType={this.state.msType}
-					onBack={() => this.changePanel(Panel.TABLE)}
+					onBack={this.onEntityBack}
 				/>);
 			case Panel.MST:
 				return (<MsTypeApp
@@ -207,6 +212,19 @@ export default class ManuscriptApp extends React.Component<P,S> {
 		}
 	}
 
+	onEntityBack() {
+		this.setState((s:S) => {
+			if (s.tempCountry) {
+				s.country = null;
+			}
+			if (s.tempLibrary) {
+				s.library = null;
+			}
+			s.panel = Panel.TABLE;
+			return s;
+		});
+	}
+
 	openEditPanel(manuscript:ms.Manuscript) {
 		this.setState((s:S) => {
 			s.panel = Panel.EDIT;
@@ -222,6 +240,8 @@ export default class ManuscriptApp extends React.Component<P,S> {
 			s.manuscript = manuscript;
 		});
 
+		var tempCountry = false;
+		var tempLibrary = false;
 		var msType: MsType;
 		if (!(this.state.msType && manuscript.msType === this.state.msType.msType)) {
 			// Find the correct msType
@@ -234,11 +254,13 @@ export default class ManuscriptApp extends React.Component<P,S> {
 		}
 
 		if (!(this.state.library && manuscript.libSiglum === this.state.library.libSiglum)) {
+			tempLibrary = true;
 			// Get the correct library
 			var country: Country;
 			if (!(this.state.country &&
 				manuscript.libSiglum.indexOf(this.state.country.countryID) === -1))
 			{
+				tempCountry = true;
 				// Find the correct country
 				var i = manuscript.libSiglum.indexOf('-');
 				var countryID = manuscript.libSiglum.slice(0, i);
@@ -260,7 +282,10 @@ export default class ManuscriptApp extends React.Component<P,S> {
 				state.library = libraries.find((l:Library) => {
 					return manuscript.libSiglum === l.libSiglum;
 				});
+
 				state.msType = msType;
+				state.tempCountry = tempCountry;
+				state.tempLibrary = tempLibrary;
 				state.panel = Panel.ENTITY;
 				return state;
 			});
@@ -268,6 +293,8 @@ export default class ManuscriptApp extends React.Component<P,S> {
 		else {
 			this.setState((s:S) => {
 				s.msType = msType;
+				s.tempCountry = tempCountry;
+				s.tempLibrary = tempLibrary;
 				s.panel = Panel.ENTITY;
 				return s;
 			});
