@@ -113,14 +113,10 @@ private static final long serialVersionUID = 1L;
             
             else if(action.equalsIgnoreCase("DELETE_SECTION"))
             {
-				String deleteLibSiglum = super.getParameter(params, "libSiglum");
-				String deleteMSSiglum = super.getParameter(params, "msSiglum");
-<<<<<<< HEAD:tomcat/src/spg/servlets/SectionServlet.java
-				msg = this.deleteSection(deleteLibSiglum, deleteMSSiglum);
-=======
-				String deletesectionID = super.getParameter(params, "sectionID");
-				msg = this.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
->>>>>>> 7a1927ce55bc3b3840e2bc42d5ea08ff7816d325:spaghetti/src/spg/servlets/SectionServlet.java
+				String libSiglum = super.getParameter(params, "libSiglum");
+				String msSiglum = super.getParameter(params, "msSiglum");
+				String sectionID = super.getParameter(params, "sectionID");
+				msg = this.deleteSection(libSiglum, msSiglum, sectionID);
             }
             else
             {

@@ -87,7 +87,7 @@ export default class ManuscriptEntityPanel extends React.Component<P,S> {
 						Leaves:
 					</Col>
 					<Col sm={4} className="pt7">
-						{this.props.manuscript.leaves || 'NULL'}
+						{typeof this.props.manuscript.leaves === 'number' ? this.props.manuscript.leaves : 'NULL'}
 					</Col>
 				</FormGroup>
 				<FormGroup>

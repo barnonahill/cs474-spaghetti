@@ -38371,6 +38371,24 @@ var ManuscriptEditPanel = (function (_super) {
         }
         this.setState(function (s) {
             s.val = val;
+            if (typeof s.msProps.leaves === 'string') {
+                s.msProps.leaves = 0;
+            }
+            if (!s.msProps.dimensions) {
+                s.msProps.dimensions = null;
+            }
+            if (!s.msProps.binding) {
+                s.msProps.binding = null;
+            }
+            if (!s.msProps.sourceNotes) {
+                s.msProps.sourceNotes = null;
+            }
+            if (!s.msProps.summary) {
+                s.msProps.summary = null;
+            }
+            if (!s.msProps.bibliography) {
+                s.msProps.bibliography = null;
+            }
             _this.props.onSubmit(s.msProps, s.isNew);
             return s;
         });
@@ -38436,7 +38454,7 @@ var ManuscriptEntityPanel = (function (_super) {
                     React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.manuscript.dimensions || 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Leaves:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.manuscript.leaves || 'NULL')),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, typeof this.props.manuscript.leaves === 'number' ? this.props.manuscript.leaves : 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Foliated:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.manuscript.foliated ? 'Yes' : 'No')),
@@ -39238,10 +39256,13 @@ var Manuscript = (function (_super) {
         var _this = _super.call(this) || this;
         for (var k in props) {
             if (k === 'libSiglum' || k === 'msSiglum') {
-                if (props[k] === null) {
+                if (!props[k]) {
                     throw Error(k + ' cannot be empty');
                 }
                 _this[k] = props[k];
+            }
+            else if (k === 'leaves') {
+                _this[k] = (typeof props[k] === 'number' ? props[k] : 0);
             }
             else {
                 _this[k] = props[k] || null;
@@ -39660,7 +39681,7 @@ exports.default = factory;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-var BASE_SERVICES = "http://localhost:8080/tomcat";
+var BASE_SERVICES = "http://localhost:8080/spaghetti";
 var SpgProxy = (function () {
     function SpgProxy(service) {
         this.service = service;

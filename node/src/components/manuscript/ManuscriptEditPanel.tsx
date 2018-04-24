@@ -568,6 +568,25 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 
 		this.setState((s:S) => {
 			s.val = val;
+			if (typeof s.msProps.leaves === 'string') {
+				s.msProps.leaves = 0;
+			}
+			if (!s.msProps.dimensions) {
+				s.msProps.dimensions = null;
+			}
+			if (!s.msProps.binding) {
+				s.msProps.binding = null;
+			}
+			if (!s.msProps.sourceNotes) {
+				s.msProps.sourceNotes = null;
+			}
+			if (!s.msProps.summary) {
+				s.msProps.summary = null;
+			}
+			if (!s.msProps.bibliography) {
+				s.msProps.bibliography = null;
+			}
+
 			this.props.onSubmit(s.msProps, s.isNew);
 			return s;
 		});

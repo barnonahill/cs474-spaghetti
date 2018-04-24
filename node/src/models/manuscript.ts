@@ -47,10 +47,13 @@ export class Manuscript extends SpgModel implements Properties {
 		super();
 		for (let k in props) {
 			if (k === 'libSiglum' || k === 'msSiglum') {
-				if (props[k] === null) {
+				if (!props[k]) {
 					throw Error(k + ' cannot be empty');
 				}
 				this[k] = props[k];
+			}
+			else if (k === 'leaves') {
+				this[k] = (typeof props[k] === 'number' ? props[k] : 0);
 			}
 			else {
 				this[k] = props[k] || null;
