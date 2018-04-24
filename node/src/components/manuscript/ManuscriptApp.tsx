@@ -56,15 +56,6 @@ export default class ManuscriptApp extends React.Component<P,S> {
 			msType: null
 		};
 
-		// Async, uses proxy.
-		this.loadMsTypes((state:S, msTypes:Array<MsType>) => {
-			state.msType = null;
-			MsType.destroyArray(state.msTypes);
-
-			state.panel = Panel.INIT;
-			return state;
-		});
-
 		this.changePanel = this.changePanel.bind(this);
 		this.confirmDelete = this.confirmDelete.bind(this);
 
@@ -77,6 +68,20 @@ export default class ManuscriptApp extends React.Component<P,S> {
 		this.loadLibraries = this.loadLibraries.bind(this);
 		this.loadManuscripts = this.loadManuscripts.bind(this);
 		this.loadMsTypes = this.loadMsTypes.bind(this);
+
+		this.reloadManuscripts = this.reloadManuscripts.bind(this);
+	}
+
+	componentDidMount() {
+		// Async, uses proxy.
+		this.loadMsTypes((state:S, msTypes:Array<MsType>) => {
+			state.msType = null;
+			MsType.destroyArray(state.msTypes);
+
+			state.panel = Panel.INIT;
+			state.msTypes = msTypes;
+			return state;
+		});
 	}
 
 	render() {
@@ -101,9 +106,10 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					library={this.state.library}
 					manuscripts={this.state.manuscripts}
 					onBack={() => this.changePanel(Panel.INIT)}
-					onRefresh={() => this.loadManuscripts(null,null,true,null)}
+					onRefresh={this.reloadManuscripts}
 					onEdit={this.openEditPanel}
 					onDelete={this.confirmDelete}
+					onView={this.openEntityPanel}
 				/>);
 			case Panel.ENTITY:
 				return (<EntityPanel
@@ -210,6 +216,12 @@ export default class ManuscriptApp extends React.Component<P,S> {
 	}
 
 	openEntityPanel(manuscript:ms.Manuscript) {
+		this.setState((s:S) => {
+			s.panel = Panel.LOADER;
+			s.loadMessage = 'Loading Manuscript...';
+			s.manuscript = manuscript;
+		});
+
 		var msType: MsType;
 		if (!(this.state.msType && manuscript.msType === this.state.msType.msType)) {
 			// Find the correct msType
@@ -249,8 +261,15 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					return manuscript.libSiglum === l.libSiglum;
 				});
 				state.msType = msType;
-
+				state.panel = Panel.ENTITY;
 				return state;
+			});
+		}
+		else {
+			this.setState((s:S) => {
+				s.msType = msType;
+				s.panel = Panel.ENTITY;
+				return s;
 			});
 		}
 	}
@@ -323,6 +342,22 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					}
 				});
 			}
+		});
+	}
+
+	reloadManuscripts() {
+		this.setState((s:S) => {
+			s.panel = Panel.LOADER;
+			s.loadMessage = 'Loading Manuscripts...';
+			return s;
+		});
+
+		this.loadManuscripts(null, null, true, (state:S, manuscripts:ms.Manuscript[]) => {
+			ms.Manuscript.destroyArray(state.manuscripts);
+
+			state.panel = Panel.TABLE;
+			state.manuscripts = manuscripts;
+			return state;
 		});
 	}
 }

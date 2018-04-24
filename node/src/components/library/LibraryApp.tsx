@@ -241,7 +241,7 @@ export default class LibraryApp extends React.Component<Properties, State> {
 		}
 	}
 
-	reloadLibraries(callback: (libraries: lib.Library[]) => void) {
+	reloadLibraries() {
 		this.setState((s:State) => {
 			s.view = View.LOADER;
 			s.loadingMessage = 'Loading ' + s.country.country + ' Libraries...';
@@ -260,7 +260,6 @@ export default class LibraryApp extends React.Component<Properties, State> {
 
 					s.view = View.TABLE;
 					s.libraries = libraries;
-					callback(libraries);
 					return s;
 				});
 			}

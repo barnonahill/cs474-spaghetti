@@ -25,9 +25,10 @@ interface P {
 	library: Library
 	manuscripts: Array<Manuscript>
 	onBack: () => void
-	onRefresh: () => void
+	onRefresh: (callback: (manuscripts: Manuscript[]) => void) => void
 	onEdit: (ms:Manuscript) => void
 	onDelete: (ms:Manuscript) => void
+	onView: (ms:Manuscript) => void
 }
 interface S {
 	rowGetter: (i:Index) => Manuscript
@@ -48,6 +49,8 @@ export default class ManuscriptTablePanel extends React.Component<P,S> {
 		};
 
 		this.getHeader = this.getHeader.bind(this);
+		this.refreshManuscripts = this.refreshManuscripts.bind(this);
+
 		this.renderView = this.renderView.bind(this);
 		this.renderEdit = this.renderEdit.bind(this);
 		this.renderDelete = this.renderDelete.bind(this);
@@ -93,7 +96,7 @@ export default class ManuscriptTablePanel extends React.Component<P,S> {
 						<Button
 							bsStyle="primary"
 							className="fr"
-							onClick={this.props.onRefresh}
+							onClick={() => this.props.onRefresh(this.refreshManuscripts)}
 						>Refresh</Button>
 					</Col>
 				</Row>
@@ -149,13 +152,12 @@ export default class ManuscriptTablePanel extends React.Component<P,S> {
 		];
 	}
 
-	renderView(p:TableCellProps) {
-		var ms: Manuscript = p.rowData;
-		return (<Button
-			bsStyle="info"
-			bsSize="small"
-			className="w100p"
-		>View</Button>);
+	refreshManuscripts(manuscripts: Manuscript[]) {
+		this.setState((s:S) => {
+			Manuscript.destroyArray(s.manuscripts);
+			s.manuscripts = manuscripts;
+			return s;
+		});
 	}
 
 	renderEdit(p:TableCellProps) {
@@ -176,6 +178,16 @@ export default class ManuscriptTablePanel extends React.Component<P,S> {
 			className="w100p"
 			onClick={() => this.props.onDelete(ms)}
 		>Delete</Button>);
+	}
+
+	renderView(p:TableCellProps) {
+		var ms: Manuscript = p.rowData;
+		return (<Button
+			bsStyle="info"
+			bsSize="small"
+			className="w100p"
+			onClick={() => this.props.onView(ms)}
+		>View</Button>);
 	}
 
 	filter(v:string) {

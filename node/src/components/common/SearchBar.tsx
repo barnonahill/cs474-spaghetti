@@ -39,7 +39,7 @@ export default class SearchBar extends React.Component<P,S> {
 		if (e.key === 'Enter') {
 			this.setState((s:S) => {
 				s.isFiltered = this.state.value ? true : false;
-				this.props.onSubmit(this.state.value);
+				this.props.onSubmit(this.state.value.toLowerCase());
 				return s;
 			});
 		}
