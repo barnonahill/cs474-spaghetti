@@ -1,6 +1,7 @@
 package spg.servlets;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -78,7 +79,8 @@ public class LibraryServlet extends SpgHttpServlet {
 							updateAddress1,updateAddress2,updatePostCode);
 					break;
 				case GET_LIBRARY:
-					// TODO
+					String getLibSiglum = super.getRequiredParameter(params, "libSiglum");
+					msg = this.getLibrary(getLibSiglum);
 					break;
 				case GET_LIBRARIES:
 					String countryID = super.getRequiredParameter(params, "countryID");
@@ -101,6 +103,8 @@ public class LibraryServlet extends SpgHttpServlet {
 		}
 	}
 	
+
+
 	/**
 	 * getCountries - handles getting and returning countries.
 	 * @return - A JSONArray filled with countries. 
@@ -125,6 +129,10 @@ public class LibraryServlet extends SpgHttpServlet {
 	 */
 	public String createLibrary(String libSiglum, String countryID, String city,
 			String library, String address1, String address2, String postCode) throws Exception {
+		//Check if it already exists:
+		if(LibraryController.getLibraryTester(libSiglum) != null) {
+			throw new Exception("Library with same libSiglum already exists.");
+		}
 		
 		Library lib = LibraryController.createLibrary(libSiglum, countryID, city, library, address1, address2, postCode);
 		return lib.toJSON().toString();
@@ -145,6 +153,18 @@ public class LibraryServlet extends SpgHttpServlet {
 			String Library, String Address1, String Address2, String PostCode) throws Exception {
 		Library lib = LibraryController.updateLibrary(LibSiglum, CountryID, City, Library, Address1, Address2, PostCode);
 		return lib.toJSON().toString();
+	}
+	
+	
+	/**
+	 * gets a single Library.
+	 * @param libSiglum
+	 * @return
+	 * @throws Exception
+	 */
+	private String getLibrary(String libSiglum) throws Exception {
+		Library l = LibraryController.getLibrary(libSiglum);
+		return l.toJSON().toString();
 	}
 	
 	

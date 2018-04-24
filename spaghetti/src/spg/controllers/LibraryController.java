@@ -1,11 +1,15 @@
 package spg.controllers;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.servlet.http.HttpServletResponse;
+
 import spg.models.Country;
 import spg.models.Library;
+import spg.servlets.SpgHttpServlet;
 
 /**
  * LibraryController - Static methods used for handling Library and Country sql commands.
@@ -115,7 +119,51 @@ public class LibraryController {
 		return l;
 	}
 	
+	
+	/**
+	 * is used ONLY for testing if a library already exists!!!!!!!!!!!!!!!!!!
+	 * @param libSiglum
+	 * @return
+	 * @throws Exception
+	 */
+	public static Library getLibraryTester(String libSiglum) throws Exception {
+		HashMap<String, String> pkNamesToValues = new HashMap<String, String>();
+		Library l = null;
+		ResultSet resultSet;
+		String query;
 		
+		pkNamesToValues.put("libSiglum", libSiglum);
+		query = SpgController.buildSelectQuery(LIBRARY, pkNamesToValues);
+		try {
+			resultSet = SpgController.getResultSet(query);
+			
+			resultSet.next();
+			l = new Library(resultSet);
+		} catch (Exception e) {
+			//Catch and do nothing.
+			//Because this is meant to return null if there is no library with the libSiglum
+		}
+		
+		return l;
+	}
+	
+	public static Library getLibrary(String libSiglum) throws Exception {
+		HashMap<String, String> pkNamesToValues = new HashMap<String, String>();
+		Library l = null;
+		ResultSet resultSet;
+		String query;
+		
+		pkNamesToValues.put("libSiglum", libSiglum);
+		query = SpgController.buildSelectQuery(LIBRARY, pkNamesToValues);
+		resultSet = SpgController.getResultSet(query);
+			
+		resultSet.next();
+		l = new Library(resultSet);
+		
+		return l;
+	}
+	
+	
 	/**
 	 * getLibraries - gets an array list of all the Libraries. 
 	 * @return - Arraylist of Library objects.
@@ -160,6 +208,8 @@ public class LibraryController {
 				
 		return true; //currently unused.
 	}
+
+
 	
 	
 	
