@@ -1,7 +1,6 @@
 package spg.servlets;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -130,7 +129,7 @@ public class LibraryServlet extends SpgHttpServlet {
 	public String createLibrary(String libSiglum, String countryID, String city,
 			String library, String address1, String address2, String postCode) throws Exception {
 		//Check if it already exists:
-		if(LibraryController.getLibraryTester(libSiglum) != null) {
+		if(LibraryController.getLibraryOrNull(libSiglum) != null) {
 			throw new Exception("Library with same libSiglum already exists.");
 		}
 		

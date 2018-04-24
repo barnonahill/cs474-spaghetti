@@ -1,15 +1,12 @@
 package spg.controllers;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.servlet.http.HttpServletResponse;
 
 import spg.models.Country;
 import spg.models.Library;
-import spg.servlets.SpgHttpServlet;
 
 /**
  * LibraryController - Static methods used for handling Library and Country sql commands.
@@ -126,7 +123,7 @@ public class LibraryController {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Library getLibraryTester(String libSiglum) throws Exception {
+	public static Library getLibraryOrNull(String libSiglum){
 		HashMap<String, String> pkNamesToValues = new HashMap<String, String>();
 		Library l = null;
 		ResultSet resultSet;

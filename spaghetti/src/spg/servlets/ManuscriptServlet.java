@@ -51,9 +51,9 @@ public class ManuscriptServlet extends SpgHttpServlet{
 
             else if (action.equalsIgnoreCase(UPDATE_MSTYPE))
             {
-                String updateMSType = super.getRequiredParameter(params, "msType");
-                String updateMSTypeName = super.getParameter(params, "msTypeName");
-                msg = this.updateMSType(updateMSType, updateMSTypeName);    
+            	String msType = super.getRequiredParameter(params, "msType");
+				String msTypeName = super.getParameter(params, "msTypeName");
+                msg = this.updateMSType(msType, msTypeName);    
             }
 
             else if (action.equalsIgnoreCase(GET_MSTYPES))
@@ -63,67 +63,65 @@ public class ManuscriptServlet extends SpgHttpServlet{
 
             else if (action.equalsIgnoreCase(DELETE_MSTYPE))
             {
-                String deleteMSType = super.getRequiredParameter(params, "msType");
-				String deleteMSTypeName = super.getParameter(params, "msTypeName");
-				msg = this.deleteMSType(deleteMSType, deleteMSTypeName);  
+                String msType = super.getRequiredParameter(params, "msType");
+				String msTypeName = super.getParameter(params, "msTypeName");
+				msg = this.deleteMSType(msType, msTypeName);  
             }
 
             else if (action.equalsIgnoreCase(CREATE_MANUSCRIPT))
             {
-                String createLibSiglum = super.getRequiredParameter(params, "libSiglum");
-				String createMSSiglum = super.getRequiredParameter(params, "msSiglum");
-				String createMSType = super.getParameter(params, "msType");
-				String createDimensions = super.getParameter(params, "dimensions");
-				String createLeaves = super.getParameter(params, "leaves");
-				String createFoliated = super.getParameter(params, "foliated");
-				String createVellum = super.getParameter(params, "vellum");
-				String createBinding = super.getParameter(params, "binding");
-				String createSourceNotes = super.getParameter(params, "sourceNotes");
-				String createSummary = super.getParameter(params, "summary");
-				String createBibliography = super.getParameter(params, "bibliography");
+                String libSiglum = super.getRequiredParameter(params, "libSiglum");
+				String msSiglum = super.getRequiredParameter(params, "msSiglum");
+				String msType = super.getParameter(params, "msType");
+				String dimensions = super.getParameter(params, "dimensions");
+				String leaves = super.getParameter(params, "leaves");
+				String foliated = super.getParameter(params, "foliated");
+				String vellum = super.getParameter(params, "vellum");
+				String binding = super.getParameter(params, "binding");
+				String sourceNotes = super.getParameter(params, "sourceNotes");
+				String summary = super.getParameter(params, "summary");
+				String bibliography = super.getParameter(params, "bibliography");
 					
-				msg = this.createManuscript(createLibSiglum, createMSSiglum, createMSType, createDimensions,
-						createLeaves, createFoliated, createVellum, createBinding, createSourceNotes,
-						createSummary, createBibliography);
+				msg = this.createManuscript(libSiglum, msSiglum, msType, dimensions,
+						leaves, foliated, vellum, binding, sourceNotes, summary, bibliography);
             }
 
             else if (action.equalsIgnoreCase(UPDATE_MANUSCRIPT))
             {
-				String updateLibSiglum = super.getRequiredParameter(params, "libSiglum");
-				String updateMSSiglum = super.getRequiredParameter(params, "msSiglum");
-				String updateMSType = super.getParameter(params, "msType");
-				String updateDimensions = super.getParameter(params, "dimensions");
-				String updateLeaves = super.getParameter(params, "leaves");
-				String updateFoliated = super.getParameter(params, "foliated");
-				String updateVellum = super.getParameter(params, "vellum");
-				String updateBinding = super.getParameter(params, "binding");
-				String updateSourceNotes = super.getParameter(params, "sourceNotes");
-				String updateSummary = super.getParameter(params, "summary");
-				String updateBibliography = super.getParameter(params, "bibliography");
+                String libSiglum = super.getRequiredParameter(params, "libSiglum");
+				String msSiglum = super.getRequiredParameter(params, "msSiglum");
+				String msType = super.getParameter(params, "msType");
+				String dimensions = super.getParameter(params, "dimensions");
+				String leaves = super.getParameter(params, "leaves");
+				String foliated = super.getParameter(params, "foliated");
+				String vellum = super.getParameter(params, "vellum");
+				String binding = super.getParameter(params, "binding");
+				String sourceNotes = super.getParameter(params, "sourceNotes");
+				String summary = super.getParameter(params, "summary");
+				String bibliography = super.getParameter(params, "bibliography");
 					
-				msg = this.updateManuscript(updateLibSiglum, updateMSSiglum, updateMSType, updateDimensions,
-						updateLeaves, updateFoliated, updateVellum, updateBinding, updateSourceNotes,
-						updateSummary, updateBibliography);
+				msg = this.updateManuscript(libSiglum, msSiglum, msType, dimensions,
+						leaves, foliated, vellum, binding, sourceNotes, summary, bibliography);
             }
             
             else if (action.equalsIgnoreCase(GET_MANUSCRIPT))
             {
-				String getLibSiglum = super.getRequiredParameter(params, "libSiglum");
-				String getMSSiglum = super.getRequiredParameter(params, "msSiglum");
-				msg = this.getManuscript(getLibSiglum, getMSSiglum);
+            	String libSiglum = super.getRequiredParameter(params, "libSiglum");
+				String msSiglum = super.getRequiredParameter(params, "msSiglum");
+				msg = this.getManuscript(libSiglum, msSiglum);
             }
             else if (action.equalsIgnoreCase(GET_MANUSCRIPTS))
             {
             	//not required b/c we sometimes need all, and sometimes filter.
-            	String getLibSiglums = super.getParameter(params, "libSiglum");
-				msg = this.getManuscripts(getLibSiglums);
+            	String libSiglums = super.getParameter(params, "libSiglum");
+				msg = this.getManuscripts(libSiglums);
             }
             
             else if(action.equalsIgnoreCase(DELETE_MANUSCRIPT))
             {
-				String deleteLibSiglum = super.getRequiredParameter(params, "libSiglum");
-				String deleteMSSiglum = super.getRequiredParameter(params, "msSiglum");
-				msg = this.deleteManuscript(deleteLibSiglum, deleteMSSiglum);
+				String libSiglum = super.getRequiredParameter(params, "libSiglum");
+				String msSiglum = super.getRequiredParameter(params, "msSiglum");
+				msg = this.deleteManuscript(libSiglum, msSiglum);
             }
             else
             {
@@ -283,12 +281,15 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	 * @return -
 	 * @throws Exception -
 	 */
-	private String createManuscript(String createLibSiglum, String createMSSiglum, String createMSType,
-			String createDimensions, String createLeaves, String createFoliated, String createVellum,
-			String createBinding, String createSourceNotes, String createSummary, String createBibliography) throws Exception {
-		Manuscript ms = ManuscriptController.createManuscript(createLibSiglum, createMSSiglum, createMSType, createDimensions,
-				createLeaves, createFoliated, createVellum, createBinding, createSourceNotes,
-				createSummary, createBibliography);
+	private String createManuscript(String libSiglum, String msSiglum, String msType,
+			String dimensions, String leaves, String foliated, String vellum,
+			String binding, String sourceNotes, String summary, String bibliography) throws Exception {
+		if(ManuscriptController.getManuscriptOrNull(libSiglum, msSiglum) != null) {
+			throw new Exception("Manuscript with same libSiglum and msType already exists.");
+		}
+		
+		Manuscript ms = ManuscriptController.createManuscript(libSiglum, msSiglum, msType, dimensions,
+				leaves, foliated, vellum, binding, sourceNotes, summary, bibliography);
 		return ms.toJSON().toString();
 	}
 	
