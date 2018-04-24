@@ -33,7 +33,7 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	public static final String UPDATE_MANUSCRIPT 	= "updatemanuscript";
 	public static final String GET_MANUSCRIPT 		= "getmanuscript";
 	public static final String GET_MANUSCRIPTS 		= "getmanuscripts";
-	public static final String DELETE_MANUSCRIPT	= "deletemanuscripts";
+	public static final String DELETE_MANUSCRIPT	= "deletemanuscript";
 	
 	@Override
 	public void handleRequest(HttpServletRequest req, HttpServletResponse res) throws IOException {
