@@ -39,83 +39,186 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	public void handleRequest(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		try 
 		{
-			Map<String, String> params = super.getParameters(req);
+			Map<String, String> params = super.getParameter(params, req);
 			String action = super.getParameter(params, "action").toLowerCase();
 			String msg = null;
-			
+			if(action.equalsIgnoreCase("CREATE_MSTYPE"))
+            {
+                String msType = super.getParameter(params, "msType");
+				String msTypeName = super.getParameter(params, "msTypeName");
+				msg = this.createMSType(msType, msTypeName);
+            }
+
+            else if (action.equalsIgnoreCase("UPDATE_MSTYPE"))
+            {
+                String updateMSType = super.getParameter(params, "msType");
+                String updateMSTypeName = super.getParameter(params, "msTypeName");
+                msg = this.updateMSType(updateMSType, updateMSTypeName);    
+            }
+
+            else if (action.equalsIgnoreCase("GET_MSTYPES"))
+            {
+                String getMSTypes = super.getParameter(params, "msType");
+                String getMSTypeNames = super.getParameter(params, "msTypeName");
+                msg = this.getMSType(getMSType, getMSTypeNames);   
+            }
+
+            else if (action.equalsIgnoreCase("DELETE_MSTYPE"))
+            {
+                String deleteMSType = super.getParameter(params, "msType");
+				String deleteMSTypeName = super.getParameter(params, "msTypeName");
+				msg = this.deleteMSType(deleteMSType, deleteMSTypeName);  
+            }
+
+            else if (action.equalsIgnoreCase("CREATE_MANUSCRIPT"))
+            {
+                String createLibSiglum = super.getParameter(params, "libSiglum");
+				String createMSSiglum = super.getParameter(params, "msSiglum");
+				String createMSType = super.getParameter(params, "msType");
+				String createDimensions = super.getParameter(params, "dimensions");
+				String createLeaves = super.getParameter(params, "leaves");
+				String createFoliated = super.getParameter(params, "foliated");
+				String createVellum = super.getParameter(params, "vellum");
+				String createBinding = super.getParameter(params, "binding");
+				String createSourceNotes = super.getParameter(params, "sourceNotes");
+				String createSummary = super.getParameter(params, "summary");
+				String createBibliography = super.getParameter(params, "bibliography");
+					
+				msg = this.createManuscript(createLibSiglum, createMSSiglum, createMSType, createDimensions,
+						createLeaves, createFoliated, createVellum, createBinding, createSourceNotes,
+						createSummary, createBibliography);
+            }
+
+            else if (action.equalsIgnoreCase("UPDATE_MANUSCRIPT"))
+            {
+				String updateLibSiglum = super.getParameter(params, "libSiglum");
+				String updateMSSiglum = super.getParameter(params, "msSiglum");
+				String updateMSType = super.getParameter(params, "msType");
+				String updateDimensions = super.getParameter(params, "dimensions");
+				String updateLeaves = super.getParameter(params, "leaves");
+				String updateFoliated = super.getParameter(params, "foliated");
+				String updateVellum = super.getParameter(params, "vellum");
+				String updateBinding = super.getParameter(params, "binding");
+				String updateSourceNotes = super.getParameter(params, "sourceNotes");
+				String updateSummary = super.getParameter(params, "summary");
+				String updateBibliography = super.getParameter(params, "bibliography");
+					
+				msg = this.updateManuscript(updateLibSiglum, updateMSSiglum, updateMSType, updateDimensions,
+						updateLeaves, updateFoliated, updateVellum, updateBinding, updateSourceNotes,
+						updateSummary, updateBibliography);
+            }
+            
+            else if (action.equalsIgnoreCase("GET_MANUSCRIPT"))
+            {
+				String getLibSiglum = super.getParameter(params, "libSiglum");
+				String getMSSiglum = super.getParameter(params, "msSiglum");
+				msg = this.getManuscript(getLibSiglum, getMSSiglum);
+            }
+            else if (action.equalsIgnoreCase("GET_MANUSCRIPT"))
+            {
+			    String getLibSiglum = super.getParameter(params, "libSiglum");
+				String getMSSiglum = super.getParameter(params, "msSiglum");
+				msg = this.getManuscript(getLibSiglum, getMSSiglum);
+            }
+            else if (action.equalsIgnoreCase("GET_MANUSCRIPTS"))
+            {
+				String getLibSiglums = super.getParameter(params, "libSiglum");
+				String getCountries = super.getParameter(params, "country");
+				msg = this.getManuscripts(getLibSiglums, getCountries);
+            }
+            
+            else if(action.equalsIgnoreCase("DELETE_MANUSCRIPT")
+            {
+				String deleteLibSiglum = super.getParameter(params, "libSiglum");
+				String deleteMSSiglum = super.getParameter(params, "msSiglum");
+				msg = this.deleteManuscript(deleteLibSiglum, deleteMSSiglum);
+            }
+            else
+            {
+                throw new Exception("Invalid action parameter.");
+            }
+
+            if (msg != null) {
+				super.writeResponse(res, msg);
+			}
+
+            }
+            catch (Exception e) {
+			    super.writeResponse(res, e);
+		    }
 			// Actions are in node/src/proxies/ManuscriptProxy.ts
 			switch (action) 
 			{
 				case CREATE_MSTYPE:
-					String MSTypeMSType = params.get("msType");
-					String MSTypeMSTypeName = params.get("msTypeName");
+					String MSTypeMSType = super.getParameter(params, "msType");
+					String MSTypeMSTypeName = super.getParameter(params, "msTypeName");
 					msg = this.createMSType(MSTypeMSType, MSTypeMSTypeName);
 					break;
 				case UPDATE_MSTYPE:
-				    String updateMSTypeMSType = params.get("msType");
-                    String updateMSTypeMSTypeName = params.get("msTypeName");
+				    String updateMSTypeMSType = super.getParameter(params, "msType");
+                    String updateMSTypeMSTypeName = super.getParameter(params, "msTypeName");
                     msg = this.updateMSType(updateMSTypeMSType, updateMSTypeMSTypeName);
 					break;
 				case GET_MSTYPES:
 					// TODO should return array of all MsTypes - Paul
-					String getMSTypeMSType = params.get("msType");
-                    String getMSTypeMSTypeName = params.get("msTypeName");
+					String getMSTypeMSType = super.getParameter(params, "msType");
+                    String getMSTypeMSTypeName = super.getParameter(params, "msTypeName");
                     msg = this.getMSType(getMSTypeMSType, getMSTypeMSTypeName);
 					break;
 				case DELETE_MSTYPE:
-					String deleteMSType = params.get("msType");
-					String deleteMSTypeName = params.get("msTypeName");
+					String deleteMSType = super.getParameter(params, "msType");
+					String deleteMSTypeName = super.getParameter(params, "msTypeName");
 					
 					msg = this.deleteMSType(deleteMSType, deleteMSTypeName);
 					break;
 				case CREATE_MANUSCRIPT:
-					String createLibSiglum = params.get("libSiglum");
-					String createMSSiglum = params.get("msSiglum");
-					String createMSType = params.get("msType");
-					String createDimensions = params.get("dimensions");
-					String createLeaves = params.get("leaves");
-					String createFoliated = params.get("foliated");
-					String createVellum = params.get("vellum");
-					String createBinding = params.get("binding");
-					String createSourceNotes = params.get("sourceNotes");
-					String createSummary = params.get("summary");
-					String createBibliography = params.get("bibliography");
+					String createLibSiglum = super.getParameter(params, "libSiglum");
+					String createMSSiglum = super.getParameter(params, "msSiglum");
+					String createMSType = super.getParameter(params, "msType");
+					String createDimensions = super.getParameter(params, "dimensions");
+					String createLeaves = super.getParameter(params, "leaves");
+					String createFoliated = super.getParameter(params, "foliated");
+					String createVellum = super.getParameter(params, "vellum");
+					String createBinding = super.getParameter(params, "binding");
+					String createSourceNotes = super.getParameter(params, "sourceNotes");
+					String createSummary = super.getParameter(params, "summary");
+					String createBibliography = super.getParameter(params, "bibliography");
 					
 					msg = this.createManuscript(createLibSiglum, createMSSiglum, createMSType, createDimensions,
 							createLeaves, createFoliated, createVellum, createBinding, createSourceNotes,
 							createSummary, createBibliography);
 					break;
 				case UPDATE_MANUSCRIPT:
-					String updateLibSiglum = params.get("libSiglum");
-					String updateMSSiglum = params.get("msSiglum");
-					String updateMSType = params.get("msType");
-					String updateDimensions = params.get("dimensions");
-					String updateLeaves = params.get("leaves");
-					String updateFoliated = params.get("foliated");
-					String updateVellum = params.get("vellum");
-					String updateBinding = params.get("binding");
-					String updateSourceNotes = params.get("sourceNotes");
-					String updateSummary = params.get("summary");
-					String updateBibliography = params.get("bibliography");
+					String updateLibSiglum = super.getParameter(params, "libSiglum");
+					String updateMSSiglum = super.getParameter(params, "msSiglum");
+					String updateMSType = super.getParameter(params, "msType");
+					String updateDimensions = super.getParameter(params, "dimensions");
+					String updateLeaves = super.getParameter(params, "leaves");
+					String updateFoliated = super.getParameter(params, "foliated");
+					String updateVellum = super.getParameter(params, "vellum");
+					String updateBinding = super.getParameter(params, "binding");
+					String updateSourceNotes = super.getParameter(params, "sourceNotes");
+					String updateSummary = super.getParameter(params, "summary");
+					String updateBibliography = super.getParameter(params, "bibliography");
 					
 					msg = this.updateManuscript(updateLibSiglum, updateMSSiglum, updateMSType, updateDimensions,
 							updateLeaves, updateFoliated, updateVellum, updateBinding, updateSourceNotes,
 							updateSummary, updateBibliography);
 					break;
 				case GET_MANUSCRIPT:
-					String getLibSiglum = params.get("libSiglum");
-					String getMSSiglum = params.get("msSiglum");
+					String getLibSiglum = super.getParameter(params, "libSiglum");
+					String getMSSiglum = super.getParameter(params, "msSiglum");
 					
 					msg = this.getManuscript(getLibSiglum, getMSSiglum);
 					break;
 				case GET_MANUSCRIPTS:
-					String getLibSiglums = params.get("libSiglum");
-					String getCountries = params.get("country");
+					String getLibSiglums = super.getParameter(params, "libSiglum");
+					String getCountries = super.getParameter(params, "country");
 					msg = this.getManuscripts(getLibSiglums, getCountries);
 					break;
 				case DELETE_MANUSCRIPT:
-					String deleteLibSiglum = params.get("libSiglum");
-					String deleteMSSiglum = params.get("msSiglum");
+					String deleteLibSiglum = super.getParameter(params, "libSiglum");
+					String deleteMSSiglum = super.getParameter(params, "msSiglum");
 					
 					msg = this.deleteManuscript(deleteLibSiglum, deleteMSSiglum);
 					break;
