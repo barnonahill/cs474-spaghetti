@@ -37063,6 +37063,7 @@ var LibraryApp = (function (_super) {
         _this.onCountrySelect = _this.onCountrySelect.bind(_this);
         _this.onTableClick = _this.onTableClick.bind(_this);
         _this.onEditSubmit = _this.onEditSubmit.bind(_this);
+        _this.reloadLibraries = _this.reloadLibraries.bind(_this);
         return _this;
     }
     LibraryApp.prototype.onCountrySelect = function (c) {
@@ -37203,6 +37204,28 @@ var LibraryApp = (function (_super) {
             case View.LOADER:
                 return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadingMessage });
         }
+    };
+    LibraryApp.prototype.reloadLibraries = function (callback) {
+        var _this = this;
+        this.setState(function (s) {
+            s.view = View.LOADER;
+            s.loadingMessage = 'Loading ' + s.country.country + ' Libraries...';
+            return s;
+        });
+        ProxyFactory_ts_1.default.getLibraryProxy().getLibraries(this.state.country.countryID, function (libraries, e) {
+            if (e) {
+                alert(e);
+            }
+            else {
+                _this.setState(function (s) {
+                    lib.Library.destroyArray(s.libraries);
+                    s.view = View.TABLE;
+                    s.libraries = libraries;
+                    callback(libraries);
+                    return s;
+                });
+            }
+        });
     };
     return LibraryApp;
 }(React.Component));
@@ -37578,6 +37601,7 @@ __webpack_require__(/*! react-virtualized/styles.css */ "./node_modules/react-vi
 var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
 var SearchBar_tsx_1 = __webpack_require__(/*! @src/components/common/SearchBar.tsx */ "./src/components/common/SearchBar.tsx");
+var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var index_tsx_1 = __webpack_require__(/*! @src/index.tsx */ "./src/index.tsx");
 var ButtonType;
 (function (ButtonType) {
@@ -37594,6 +37618,7 @@ var LibraryTablePanel = (function (_super) {
             libraries: _this.props.libraries,
         };
         _this.filter = _this.filter.bind(_this);
+        _this.refreshLibraries = _this.refreshLibraries.bind(_this);
         _this.renderView = _this.renderView.bind(_this);
         _this.renderEdit = _this.renderEdit.bind(_this);
         _this.renderDelete = _this.renderDelete.bind(_this);
@@ -37613,7 +37638,7 @@ var LibraryTablePanel = (function (_super) {
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
                         React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by name, city, and siglum...", onSubmit: this.filter })),
                     React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
-                        React.createElement(react_bootstrap_1.Button, { key: "refresh", bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
+                        React.createElement(react_bootstrap_1.Button, { key: "refresh", bsStyle: "primary", className: "fr", onClick: function () { return _this.props.onRefresh(_this.refreshLibraries); } }, "Refresh"))))),
             (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.libraries.length, rowGetter: this.state.rowGetter },
                 React.createElement(react_virtualized_1.Column, { label: "Siglum", dataKey: "libSiglum", width: 100 }),
                 React.createElement(react_virtualized_1.Column, { label: "Name", dataKey: "library", width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 480 }),
@@ -37623,10 +37648,11 @@ var LibraryTablePanel = (function (_super) {
                 React.createElement(react_virtualized_1.Column, { dataKey: "", width: 60, cellRenderer: this.renderDelete })))
         ];
     };
-    LibraryTablePanel.prototype.filter = function (v) {
+    LibraryTablePanel.prototype.filter = function (val) {
         var _this = this;
         this.setState(function (s) {
-            if (v) {
+            if (val) {
+                var v = val.toLowerCase();
                 s.libraries = _this.props.libraries.filter(function (l) {
                     return l.libSiglum.toLowerCase().indexOf(v) !== -1 ||
                         l.library.toLowerCase().indexOf(v) !== -1 ||
@@ -37636,6 +37662,13 @@ var LibraryTablePanel = (function (_super) {
             else {
                 s.libraries = _this.props.libraries;
             }
+            return s;
+        });
+    };
+    LibraryTablePanel.prototype.refreshLibraries = function (libraries) {
+        this.setState(function (s) {
+            library_ts_1.Library.destroyArray(s.libraries);
+            s.libraries = libraries;
             return s;
         });
     };

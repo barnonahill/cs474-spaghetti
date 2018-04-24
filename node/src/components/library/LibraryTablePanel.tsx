@@ -30,7 +30,7 @@ interface Properties {
 	country: Country
 	libraries: Array<Library>
 	onClick: (l:Library,t:ButtonType) => void
-	onRefresh: () => void
+	onRefresh: any
 	onBack: () => void
 }
 
@@ -49,6 +49,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 		};
 
 		this.filter = this.filter.bind(this);
+		this.refreshLibraries = this.refreshLibraries.bind(this);
 		this.renderView = this.renderView.bind(this);
 		this.renderEdit = this.renderEdit.bind(this);
 		this.renderDelete = this.renderDelete.bind(this);
@@ -80,7 +81,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 						<Button key="refresh"
 							bsStyle="primary"
 							className="fr"
-							onClick={this.props.onRefresh}
+							onClick={() => this.props.onRefresh(this.refreshLibraries)}
 						>Refresh</Button>
 					</Col>
 				</Row>
@@ -131,9 +132,10 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 		];
 	}
 
-	filter(v: string) {
+	filter(val: string) {
 		this.setState((s:State) => {
-			if (v) {
+			if (val) {
+				var v = val.toLowerCase();
 				s.libraries = this.props.libraries.filter((l:Library) => {
 					return l.libSiglum.toLowerCase().indexOf(v) !== -1 ||
 						l.library.toLowerCase().indexOf(v) !== -1 ||
@@ -143,6 +145,14 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 			else {
 				s.libraries = this.props.libraries;
 			}
+			return s;
+		});
+	}
+
+	refreshLibraries(libraries: Array<Library>) {
+		this.setState((s:State) => {
+			Library.destroyArray(s.libraries);
+			s.libraries = libraries;
 			return s;
 		});
 	}

@@ -66,6 +66,7 @@ export default class LibraryApp extends React.Component<Properties, State> {
 		this.onCountrySelect = this.onCountrySelect.bind(this);
 		this.onTableClick = this.onTableClick.bind(this);
 		this.onEditSubmit = this.onEditSubmit.bind(this);
+		this.reloadLibraries = this.reloadLibraries.bind(this);
 	}
 
 	onCountrySelect(c: Country) {
@@ -238,5 +239,31 @@ export default class LibraryApp extends React.Component<Properties, State> {
 			case View.LOADER:
 				return <PageLoader inner={this.state.loadingMessage} />
 		}
+	}
+
+	reloadLibraries(callback: (libraries: lib.Library[]) => void) {
+		this.setState((s:State) => {
+			s.view = View.LOADER;
+			s.loadingMessage = 'Loading ' + s.country.country + ' Libraries...';
+			return s;
+		});
+
+		proxyFactory.getLibraryProxy().getLibraries(this.state.country.countryID,
+		(libraries: lib.Library[], e?:string) =>
+		{
+			if (e) {
+				alert(e);
+			}
+			else {
+				this.setState((s:State) => {
+					lib.Library.destroyArray(s.libraries);
+
+					s.view = View.TABLE;
+					s.libraries = libraries;
+					callback(libraries);
+					return s;
+				});
+			}
+		});
 	}
 }
