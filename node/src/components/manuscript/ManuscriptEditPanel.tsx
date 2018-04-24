@@ -64,7 +64,7 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 			return {label: m.msTypeName, value: m.msType};
 		});
 
-		var isNew = Boolean(p.manuscript);
+		var isNew = !Boolean(p.manuscript);
 		var state: any = {
 			isNew: isNew,
 			opts: {},

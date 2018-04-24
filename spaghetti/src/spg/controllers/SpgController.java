@@ -20,9 +20,10 @@ import javax.servlet.http.HttpServlet;
 public abstract class SpgController extends HttpServlet{
 	
 	public static final String DATABASE_ADDR = 
-			//"jdbc:mysql://mysql.cs.jmu.edu/BarnhillButtsClermontTran_Manuscript";
-			"jdbc:mysql://127.0.0.1/Manuscript2018";
+			"jdbc:mysql://mysql.cs.jmu.edu/BarnhillButtsClermontTran_Manuscript";
+			//"jdbc:mysql://127.0.0.1/Manuscript2018";
 	public static final String USER = "clermocj";
+	//public static final String USER = "root";
 	public static final String DB_PASS = "cs474";	
 	
 	/**
@@ -38,8 +39,10 @@ public abstract class SpgController extends HttpServlet{
 		ResultSet resultSet;
 		try {
 			Properties p = new Properties();
-			p.setProperty("user", "root");
+			//p.setProperty("user", "root");
 			p.setProperty("port", "3306");
+			p.setProperty("user", USER);
+			p.setProperty("password", DB_PASS);
 			Class.forName("com.mysql.jdbc.Driver");
 			connection = DriverManager.getConnection(DATABASE_ADDR, p);
 			//connection = DriverManager.getConnection(DATABASE_ADDR, USER, DB_PASS);
@@ -65,7 +68,8 @@ public abstract class SpgController extends HttpServlet{
 		int rows;
 		try {
 			Properties p = new Properties();
-			p.setProperty("user", "root");
+			p.setProperty("user", USER);
+			p.setProperty("password", DB_PASS);
 			p.setProperty("port", "3306");
 			Class.forName("com.mysql.jdbc.Driver");
 			connection = DriverManager.getConnection(DATABASE_ADDR, p);
