@@ -6,14 +6,16 @@ import Header from '@src/components/common/Header.tsx';
 import InitApp from '@src/components/SpaghettiApp.tsx';
 import LibraryApp from '@src/components/library/LibraryApp.tsx';
 import ManuscriptApp from '@src/components/manuscript/ManuscriptApp.tsx';
+import PageLoader from '@src/components/common/PageLoader.tsx';
 
 import { Country } from '@src/models/country.ts';
 import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
 export enum App {
-	INIT=0, // this
-	LIB=1,
-	MS=2
+	LOADER=0,
+	INIT=1,
+	LIB=2,
+	MS=3
 }
 
 /**
@@ -28,6 +30,13 @@ class Spaghetti {
 		this.stack = [];
 		this.appContainer = container.getElementsByTagName('section')[0];
 		this.onSelect = this.onSelect.bind(this);
+
+		// Render loading panel if we haven't loaded countries within 400ms
+		window.setTimeout(() => {
+			if (!this.countries) {
+				this.renderLoader();
+			}
+		}, 400);
 
 		proxyFactory.getLibraryProxy().getCountries((c:Array<Country>, e?:string) => {
 			if (e) {
@@ -53,6 +62,13 @@ class Spaghetti {
 				this.renderManuscriptApp();
 				break;
 		}
+	}
+
+	renderLoader() {
+		ReactDOM.render(
+			<PageLoader inner="Loading Countries..." />,
+			this.appContainer
+		);
 	}
 
 	renderInitApp() {
@@ -86,5 +102,13 @@ class Spaghetti {
 	}
 }
 
+export const TABLE_CONSTANTS = {
+	HEIGHT: window.innerHeight - 85,
+	WIDTH: window.innerWidth - 50,
+	CLASS: "mb5",
+	ROW_CLASS: "tr",
+	ROW_HEIGHT: 50,
+	HEADER_HEIGHT: 40
+};
+
 const spg: Spaghetti = new Spaghetti(document.querySelector('main'));
-spg.renderInitApp();
