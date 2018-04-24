@@ -124,6 +124,13 @@
 }
 
 /*
+ * react-select error
+ */
+.Select-control.has-error {
+	border-color: #a94442;
+}
+
+/*
  * Loader and h3 container
  */
 .full-page-loader {

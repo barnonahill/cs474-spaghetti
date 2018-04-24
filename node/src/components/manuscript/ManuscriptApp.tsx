@@ -4,6 +4,7 @@ import InitPanel from '@src/components/manuscript/ManuscriptInitPanel.tsx';
 import FilterPanel from '@src/components/manuscript/ManuscriptFilterPanel.tsx';
 import TablePanel from '@src/components/manuscript/ManuscriptTablePanel.tsx';
 import EntityPanel from '@src/components/manuscript/ManuscriptEntityPanel.tsx';
+import EditPanel from '@src/components/manuscript/ManuscriptEditPanel.tsx';
 import MsTypeApp from '@src/components/manuscript/MsTypeApp.tsx';
 import PageLoader from '@src/components/common/PageLoader.tsx';
 
@@ -123,6 +124,15 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					manuscript={this.state.manuscript}
 					msType={this.state.msType}
 					onBack={this.onEntityBack}
+				/>);
+			case Panel.EDIT:
+				return (<EditPanel
+					country={this.state.country}
+					countries={this.props.countries}
+					library={this.state.library}
+					msTypes={this.state.msTypes}
+					manuscript={this.state.manuscript}
+					onBack={() => this.changePanel(Panel.TABLE)}
 				/>);
 			case Panel.MST:
 				return (<MsTypeApp

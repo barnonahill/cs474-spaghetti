@@ -8,11 +8,6 @@ import {
 	FormControl,
 	FormGroup,
 } from 'react-bootstrap';
-import {
-	default as Select,
-	Options,
-	Option
-} from 'react-select';
 
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
 
