@@ -225,7 +225,7 @@ public class ManuscriptController {
 	 * @throws Exception
 	 */
 	public static ArrayList<Manuscript> getManuscripts(String libSiglum) throws Exception {
-		HashMap<String, String> namesToValues = new HashMap<String, String>();;
+		HashMap<String, String> namesToValues = null;
 		String query;
 		ResultSet resultSet;
 		Manuscript ms;
@@ -254,7 +254,10 @@ public class ManuscriptController {
 //		}
 //		else {
 //		}
-		namesToValues.put("libSiglum", libSiglum);
+		if(libSiglum != null) {
+			namesToValues = new HashMap<String, String>();
+			namesToValues.put("libSiglum", libSiglum);
+		}
 		query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
 		
 		resultSet = SpgController.getResultSet(query);
