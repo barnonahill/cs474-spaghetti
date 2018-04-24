@@ -165,17 +165,17 @@ public class ManuscriptServlet extends SpgHttpServlet{
     public String getMSType(String getMSTypeMSType, String getMSTypeMSTypeName) throws Exception
     {
         JSONArray msTypes = new JSONArray();
-		ArrayList<Manuscript> results = ManuscriptController.getMSType(getMSTypeMSType, getMSTypeMSTypeName);
+		ArrayList<MSType> results = ManuscriptController.getMSTypes(getMSTypeMSType, getMSTypeMSTypeName);
 		
-		for(msType m : results) {
+		for(MSType m : results) {
 			msTypes.put(m.toJSON());
 		}
 				
 		return msTypes.toString();
 	}
 
-    private String deleteMSType(String deletMSType, String deleteMSTypeName) throws Exception {
-		ManuscriptController.deleteMSType(deleteMSType, deleteMSTypeName);
+    private String deleteMSType(String MSType, String MSTypeName) throws Exception {
+		ManuscriptController.deleteMSType(MSType, MSTypeName);
 		JSONObject j = new JSONObject();
         j.put("success", true);
 		return j.toString();

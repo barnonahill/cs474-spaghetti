@@ -73,7 +73,7 @@ public class ManuscriptController {
 	}
 
 	
-	public static ArrayList<MSType> getMSType(String msType, String msTypeName) throws Exception {
+	public static ArrayList<MSType> getMSTypes(String msType, String msTypeName) throws Exception {
 		HashMap<String, String> namesToValues = new HashMap<String, String>();
 		ArrayList<MSType> msts = new ArrayList<MSType>();
 		String query;
