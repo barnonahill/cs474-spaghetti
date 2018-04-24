@@ -17,7 +17,7 @@ import spg.models.Manuscript;
 
 /**
  * 
- * @author Carl Clermont & Zach Butts
+ * @author Carl Clermont, Kyle Tran, & Zach Butts
  *
  */
 @WebServlet(name="ManuscriptServices", urlPatterns= {"/manuscript"})
@@ -111,12 +111,6 @@ public class ManuscriptServlet extends SpgHttpServlet{
             else if (action.equalsIgnoreCase("GET_MANUSCRIPT"))
             {
 				String getLibSiglum = super.getParameter(params, "libSiglum");
-				String getMSSiglum = super.getParameter(params, "msSiglum");
-				msg = this.getManuscript(getLibSiglum, getMSSiglum);
-            }
-            else if (action.equalsIgnoreCase("GET_MANUSCRIPT"))
-            {
-			    String getLibSiglum = super.getParameter(params, "libSiglum");
 				String getMSSiglum = super.getParameter(params, "msSiglum");
 				msg = this.getManuscript(getLibSiglum, getMSSiglum);
             }
