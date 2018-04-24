@@ -42,19 +42,7 @@ public class ManuscriptServlet extends SpgHttpServlet{
 			Map<String, String> params = super.getParameters(req);
 			String action = super.getParameter(params, "action").toLowerCase();
 			String msg = null;
-			if(action == "CREATE_MSTYPE")
-            {
-                String MSTypeMSType = params.get("msType");
-				String MSTypeMSTypeName = params.get("msTypeName");
-				msg = this.createMSType(MSTypeMSType, MSTypeMSTypeName);
-            }
-
-            else if (action == "UPDATE_MSTYPE")
-            {
-                String updateMSTypeMSType = params.get("msType");
-                String updateMSTypeMSTypeName = params.get("msTypeName");
-                msg = this.updateMSType(updateMSTypeMSType, updateMSTypeMSTypeName);    
-            }
+			
 			// Actions are in node/src/proxies/ManuscriptProxy.ts
 			switch (action) 
 			{
