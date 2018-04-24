@@ -1,9 +1,9 @@
 package spg.controllers;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import spg.models.Manuscript;
 import spg.models.Section;
 
 public class SectionController {
@@ -34,9 +34,30 @@ public class SectionController {
 	}
 	
 	
-	public static Section getSection(String getLibSiglum, String getMSSiglum, String deletesectionID) {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 * getSection = gets one Section.
+	 * @params = primary keys to find a single section
+	 * @return = one section
+	 * @throws Exception = anything.
+	 */
+	public static Section getSection(String libSiglum, String msSiglum, String sectionID) throws Exception {
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+		Section s;
+		String query;
+		ResultSet resultSet;
+		
+		namesToValues.put("libSiglum", libSiglum);
+		namesToValues.put("msSiglum", msSiglum);
+		namesToValues.put("sectionID", sectionID);
+		
+		
+		query = SpgController.buildSelectQuery(SECTION, namesToValues);
+		resultSet = SpgController.getResultSet(query);
+		
+		resultSet.next();
+		s = new Section(resultSet);
+		
+		return s;
 	}
 	
 	
@@ -46,6 +67,12 @@ public class SectionController {
 		return null;
 	}
 	
+	/**
+	 * deleteSection = deletes a Section.
+	 * @params = the primary keys.
+	 * @return = true/exception.
+	 * @throws Exception = anything.
+	 */
 	public static boolean deleteSection(String sectionID, String libSiglum, String msSiglum) throws Exception {
 		String query;
 		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();

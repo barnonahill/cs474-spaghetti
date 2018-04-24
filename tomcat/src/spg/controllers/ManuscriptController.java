@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import spg.models.Library;
 import spg.models.MSType;
 import spg.models.Manuscript;
 

@@ -11,10 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import spg.controllers.ManuscriptController;
 import spg.controllers.SectionController;
-import spg.models.MSType;
-import spg.models.Manuscript;
 import spg.models.Section;
 
 /**
