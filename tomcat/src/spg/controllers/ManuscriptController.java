@@ -73,15 +73,13 @@ public class ManuscriptController {
 	}
 
 	
-	public static ArrayList<MSType> getMSTypes(String msType, String msTypeName) throws Exception {
-		HashMap<String, String> namesToValues = new HashMap<String, String>();
+	public static ArrayList<MSType> getMSTypes() throws Exception {
 		ArrayList<MSType> msts = new ArrayList<MSType>();
 		String query;
 		ResultSet resultSet;
 		MSType mst;
 		
-		namesToValues.put("msType", msType);
-		query = SpgController.buildSelectQuery(MSTYPE, namesToValues);
+		query = SpgController.buildSelectQuery(MSTYPE, null);
 		resultSet = SpgController.getResultSet(query);
 		
 		while (resultSet.next()) {

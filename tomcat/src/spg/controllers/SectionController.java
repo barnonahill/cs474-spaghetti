@@ -29,10 +29,15 @@ public class SectionController {
 	}
 	
 	
-	public static Section updateSection(String countryID, String libSiglum, String msSiglum ) throws Exception{
+	public static Section getSections(String countryID, String libSiglum, String msSiglum ) throws Exception{
 		
 		//get from r to l only the ones that are in that. (msSiglum if given, else lib if given, then countryID if given).
 		return null;
+	}
+	
+	public static boolean deleteSection(String sectionID, String libSiglum, String msSiglum) {
+		
+		return false;
 	}
 	
 	

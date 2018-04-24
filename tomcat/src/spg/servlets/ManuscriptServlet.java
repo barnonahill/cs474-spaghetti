@@ -58,9 +58,7 @@ public class ManuscriptServlet extends SpgHttpServlet{
 
             else if (action.equalsIgnoreCase(GET_MSTYPES))
             {
-                String getMSTypes = super.getParameter(params, "msType");
-                String getMSTypeNames = super.getParameter(params, "msTypeName");
-                msg = this.getMSTypes(getMSTypes, getMSTypeNames);   
+                msg = this.getMSTypes();   
             }
 
             else if (action.equalsIgnoreCase(DELETE_MSTYPE))
@@ -259,10 +257,10 @@ public class ManuscriptServlet extends SpgHttpServlet{
      *@param getMSTypeMSTypeName
      *@return
      */
-    public String getMSTypes(String getMSTypeMSType, String getMSTypeMSTypeName) throws Exception
+    public String getMSTypes() throws Exception
     {
         JSONArray msTypes = new JSONArray();
-		ArrayList<MSType> results = ManuscriptController.getMSTypes(getMSTypeMSType, getMSTypeMSTypeName);
+		ArrayList<MSType> results = ManuscriptController.getMSTypes();
 		
 		for(MSType m : results) {
 			msTypes.put(m.toJSON());
