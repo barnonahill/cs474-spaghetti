@@ -40,40 +40,38 @@ public class ManuscriptServlet extends SpgHttpServlet{
 		try 
 		{
 			Map<String, String> params = super.getParameters(req);
-			String action = super.getParameter(params, "action").toLowerCase();
+			String action = super.getRequiredParameter(params, "action").toLowerCase();
 			String msg = null;
-			if(action.equalsIgnoreCase("CREATE_MSTYPE"))
+			if(action.equalsIgnoreCase(CREATE_MSTYPE))
             {
-                String msType = super.getParameter(params, "msType");
+                String msType = super.getRequiredParameter(params, "msType");
 				String msTypeName = super.getParameter(params, "msTypeName");
 				msg = this.createMSType(msType, msTypeName);
             }
 
-            else if (action.equalsIgnoreCase("UPDATE_MSTYPE"))
+            else if (action.equalsIgnoreCase(UPDATE_MSTYPE))
             {
-                String updateMSType = super.getParameter(params, "msType");
+                String updateMSType = super.getRequiredParameter(params, "msType");
                 String updateMSTypeName = super.getParameter(params, "msTypeName");
                 msg = this.updateMSType(updateMSType, updateMSTypeName);    
             }
 
-            else if (action.equalsIgnoreCase("GET_MSTYPES"))
+            else if (action.equalsIgnoreCase(GET_MSTYPES))
             {
-                String getMSTypes = super.getParameter(params, "msType");
-                String getMSTypeNames = super.getParameter(params, "msTypeName");
-                msg = this.getMSTypes(getMSTypes, getMSTypeNames);   
+                msg = this.getMSTypes();   
             }
 
-            else if (action.equalsIgnoreCase("DELETE_MSTYPE"))
+            else if (action.equalsIgnoreCase(DELETE_MSTYPE))
             {
-                String deleteMSType = super.getParameter(params, "msType");
+                String deleteMSType = super.getRequiredParameter(params, "msType");
 				String deleteMSTypeName = super.getParameter(params, "msTypeName");
 				msg = this.deleteMSType(deleteMSType, deleteMSTypeName);  
             }
 
-            else if (action.equalsIgnoreCase("CREATE_MANUSCRIPT"))
+            else if (action.equalsIgnoreCase(CREATE_MANUSCRIPT))
             {
-                String createLibSiglum = super.getParameter(params, "libSiglum");
-				String createMSSiglum = super.getParameter(params, "msSiglum");
+                String createLibSiglum = super.getRequiredParameter(params, "libSiglum");
+				String createMSSiglum = super.getRequiredParameter(params, "msSiglum");
 				String createMSType = super.getParameter(params, "msType");
 				String createDimensions = super.getParameter(params, "dimensions");
 				String createLeaves = super.getParameter(params, "leaves");
@@ -89,10 +87,10 @@ public class ManuscriptServlet extends SpgHttpServlet{
 						createSummary, createBibliography);
             }
 
-            else if (action.equalsIgnoreCase("UPDATE_MANUSCRIPT"))
+            else if (action.equalsIgnoreCase(UPDATE_MANUSCRIPT))
             {
-				String updateLibSiglum = super.getParameter(params, "libSiglum");
-				String updateMSSiglum = super.getParameter(params, "msSiglum");
+				String updateLibSiglum = super.getRequiredParameter(params, "libSiglum");
+				String updateMSSiglum = super.getRequiredParameter(params, "msSiglum");
 				String updateMSType = super.getParameter(params, "msType");
 				String updateDimensions = super.getParameter(params, "dimensions");
 				String updateLeaves = super.getParameter(params, "leaves");
@@ -108,23 +106,31 @@ public class ManuscriptServlet extends SpgHttpServlet{
 						updateSummary, updateBibliography);
             }
             
-            else if (action.equalsIgnoreCase("GET_MANUSCRIPT"))
+            else if (action.equalsIgnoreCase(GET_MANUSCRIPT))
             {
-				String getLibSiglum = super.getParameter(params, "libSiglum");
-				String getMSSiglum = super.getParameter(params, "msSiglum");
+				String getLibSiglum = super.getRequiredParameter(params, "libSiglum");
+				String getMSSiglum = super.getRequiredParameter(params, "msSiglum");
 				msg = this.getManuscript(getLibSiglum, getMSSiglum);
             }
+<<<<<<< HEAD
             else if (action.equalsIgnoreCase("GET_MANUSCRIPTS"))
             {
 				String getLibSiglums = super.getParameter(params, "libSiglum");
 				String getCountries = super.getParameter(params, "country");
 				msg = this.getManuscripts(getLibSiglums, getCountries);
+=======
+            else if (action.equalsIgnoreCase(GET_MANUSCRIPTS))
+            {
+            	//not required b/c we sometimes need all, and sometimes filter.
+            	String getLibSiglums = super.getParameter(params, "libSiglum");
+				msg = this.getManuscripts(getLibSiglums);
+>>>>>>> 8913f3c66f020ec2f7508d7c05efae3de892777f
             }
             
-            else if(action.equalsIgnoreCase("DELETE_MANUSCRIPT"))
+            else if(action.equalsIgnoreCase(DELETE_MANUSCRIPT))
             {
-				String deleteLibSiglum = super.getParameter(params, "libSiglum");
-				String deleteMSSiglum = super.getParameter(params, "msSiglum");
+				String deleteLibSiglum = super.getRequiredParameter(params, "libSiglum");
+				String deleteMSSiglum = super.getRequiredParameter(params, "msSiglum");
 				msg = this.deleteManuscript(deleteLibSiglum, deleteMSSiglum);
             }
             else
@@ -260,10 +266,10 @@ public class ManuscriptServlet extends SpgHttpServlet{
      *@param getMSTypeMSTypeName
      *@return
      */
-    public String getMSTypes(String getMSTypeMSType, String getMSTypeMSTypeName) throws Exception
+    public String getMSTypes() throws Exception
     {
         JSONArray msTypes = new JSONArray();
-		ArrayList<MSType> results = ManuscriptController.getMSTypes(getMSTypeMSType, getMSTypeMSTypeName);
+		ArrayList<MSType> results = ManuscriptController.getMSTypes();
 		
 		for(MSType m : results) {
 			msTypes.put(m.toJSON());
@@ -329,9 +335,9 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	 * @throws Exception 
 	 * 
 	 */
-	private String getManuscripts(String libSiglum, String country) throws Exception {
+	private String getManuscripts(String libSiglum) throws Exception {
 		JSONArray manuscripts = new JSONArray();
-		ArrayList<Manuscript> results = ManuscriptController.getManuscripts(libSiglum, country);
+		ArrayList<Manuscript> results = ManuscriptController.getManuscripts(libSiglum);
 		
 		for(Manuscript m : results) {
 			manuscripts.put(m.toJSON());
