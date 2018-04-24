@@ -231,29 +231,6 @@ public class ManuscriptController {
 		Manuscript ms;
 		ArrayList<Manuscript> manuscripts = new ArrayList<Manuscript>();
 
-		//filter by none, country, or country and libSiglum.
-		//This is probably fricked up.
-		//'tries' to get the list of libraries with a certain countryID and then get all the manuscripts from there.
-//		if( countryID != null ) {
-//			namesToValues = new HashMap<String, String>();
-//			libraries = LibraryController.getLibraries(countryID);
-//			
-//			for(Library l : libraries) {
-//				libSig = l.getlibSiglum();
-//				if(libSiglum == null || libSig == libSiglum) {
-//					namesToValues.put("libSiglum", libSig);
-//					query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
-//					resultSet = SpgController.getResultSet(query);
-//					
-//					while (resultSet.next()) {
-//						ms = new Manuscript(resultSet);
-//						manuscripts.add(ms);
-//					}
-//				}
-//			}
-//		}
-//		else {
-//		}
 		if(libSiglum != null) {
 			namesToValues = new HashMap<String, String>();
 			namesToValues.put("libSiglum", libSiglum);
