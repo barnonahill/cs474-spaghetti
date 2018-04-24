@@ -114,12 +114,6 @@ public class ManuscriptServlet extends SpgHttpServlet{
 				String getMSSiglum = super.getParameter(params, "msSiglum");
 				msg = this.getManuscript(getLibSiglum, getMSSiglum);
             }
-            else if (action.equalsIgnoreCase("GET_MANUSCRIPT"))
-            {
-			    String getLibSiglum = super.getParameter(params, "libSiglum");
-				String getMSSiglum = super.getParameter(params, "msSiglum");
-				msg = this.getManuscript(getLibSiglum, getMSSiglum);
-            }
             else if (action.equalsIgnoreCase("GET_MANUSCRIPTS"))
             {
 				String getLibSiglums = super.getParameter(params, "libSiglum");
