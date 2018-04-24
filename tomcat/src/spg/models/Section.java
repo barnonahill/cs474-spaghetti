@@ -32,6 +32,10 @@ public class Section {
 	private final String sourceCompletenessID;
 	
 	
+	/**
+	 * from all normal values.
+	 * @params
+	 */
 	public Section(String libSiglum, String msSiglum, int sectionID, String sectionType,
 			String liturgicalOccassion, String notationID, int numGatherings, int numColumns,
 			int linesPerColumn, String scribe, String date, String centuryID, String cursusID,
@@ -56,7 +60,36 @@ public class Section {
 		this.inscription = inscription;
 		this.colophon = colophon;
 		this.sourceCompletenessID = sourceCompletenessID;
-		
+	}
+	
+	/**
+	 * from all strings.
+	 * @params
+	 */
+	public Section(String libSiglum, String msSiglum, String sectionID, String sectionType,
+			String liturgicalOccassion, String notationID, String numGatherings, String numColumns,
+			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
+			String provenanceID, String provenanceDetail, String commissioner,
+			String inscription, String colophon, String sourceCompletenessID) {
+		this.libSiglum = libSiglum;
+		this.msSiglum = msSiglum;
+		this.sectionID = Integer.parseInt(sectionID);
+		this.sectionType = sectionType;
+		this.liturgicalOccassion = liturgicalOccassion;
+		this.notationID = notationID;
+		this.numGatherings = Integer.parseInt(numGatherings);
+		this.numColumns = Integer.parseInt(numColumns);
+		this.linesPerColumn = Integer.parseInt(linesPerColumn);
+		this.scribe = scribe;
+		this.date = date;
+		this.centuryID = centuryID;
+		this.cursusID = cursusID;
+		this.provenanceID = provenanceID;
+		this.provenanceDetail = provenanceDetail;
+		this.commissioner = commissioner;
+		this.inscription = inscription;
+		this.colophon = colophon;
+		this.sourceCompletenessID = sourceCompletenessID;
 	}
 	
 	public Section(ResultSet resultSet) throws SQLException {

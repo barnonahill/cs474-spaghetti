@@ -103,20 +103,23 @@ private static final long serialVersionUID = 1L;
             {
 				String getLibSiglum = super.getParameter(params, "libSiglum");
 				String getMSSiglum = super.getParameter(params, "msSiglum");
-				msg = this.getSection(getLibSiglum, getMSSiglum);
+				String deletesectionID = super.getParameter(params, "sectionID");
+				msg = this.getSection(getLibSiglum, getMSSiglum, deletesectionID);
             }
             else if (action.equalsIgnoreCase("GET_SECTIONS"))
             {
 				String getLibSiglums = super.getParameter(params, "libSiglum");
 				String getSectionID = super.getParameter(params, "sectionID");
-				msg = this.getSections(getLibSiglums, getSectionID);
+				String deletesectionID = super.getParameter(params, "sectionID");
+				msg = this.getSections(getLibSiglums, getSectionID, deletesectionID);
             }
             
             else if(action.equalsIgnoreCase("DELETE_SECTION"))
             {
 				String deleteLibSiglum = super.getParameter(params, "libSiglum");
 				String deleteMSSiglum = super.getParameter(params, "msSiglum");
-				msg = this.deleteManuscript(deleteLibSiglum, deleteMSSiglum);
+				String deletesectionID = super.getParameter(params, "sectionID");
+				msg = this.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
             }
             else
             {
@@ -176,27 +179,29 @@ private static final long serialVersionUID = 1L;
 	 * getSection - 
 	 * @param getLibSiglum - 
 	 * @param getMSSiglum - 
+	 * @param deletesectionID 
 	 * @return - 
 	 * @throws Exception 
 	 */
-	private String getSection(String getLibSiglum, String getMSSiglum) throws Exception {
-		Section s = SectionController.getSection(getLibSiglum, getMSSiglum);
+	private String getSection(String getLibSiglum, String getMSSiglum, String deletesectionID) throws Exception {
+		Section s = SectionController.getSection(getLibSiglum, getMSSiglum, deletesectionID);
 		return s.toJSON().toString();
 	}
 	
 
 	/**
+	 * @param deletesectionID 
 	 * @param countries 
 	 * @param libSiglums 
 	 * @throws Exception 
 	 * 
 	 */
-	private String getSections(String libSiglum, String sectionID) throws Exception {
+	private String getSections(String libSiglum, String sectionID, String deletesectionID) throws Exception {
 		JSONArray sections = new JSONArray();
-		ArrayList<Section> results = SectionController.getSections(libSiglum, sectionID);
+		ArrayList<Section> results = SectionController.getSections(libSiglum, sectionID, deletesectionID);
 		
-		for(Section test : results) {
-			sections.put(test.toJSON());
+		for(Section s : results) {
+			sections.put(s.toJSON());
 		}
 				
 		return sections.toString();
@@ -207,11 +212,12 @@ private static final long serialVersionUID = 1L;
 	 * deleteManuscript - 
 	 * @param deleteLibSiglum -
 	 * @param deleteMSSiglum -
+	 * @param deletesectionID 
 	 * @return -
 	 * @throws Exception 
 	 */
-	private String deleteSection(String deleteLibSiglum, String deleteMSSiglum) throws Exception {
-		SectionController.deleteSection(deleteLibSiglum, deleteMSSiglum);
+	private String deleteSection(String deleteLibSiglum, String deleteMSSiglum, String deletesectionID) throws Exception {
+		SectionController.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
 		JSONObject j = new JSONObject();
         j.put("success", true);
 		return j.toString();
