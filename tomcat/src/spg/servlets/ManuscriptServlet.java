@@ -17,7 +17,7 @@ import spg.models.Manuscript;
 
 /**
  * 
- * @author Carl Clermont & Zach Butts
+ * @author Carl Clermont, Kyle Tran, & Zach Butts
  *
  */
 @WebServlet(name="ManuscriptServices", urlPatterns= {"/manuscript"})
@@ -112,11 +112,19 @@ public class ManuscriptServlet extends SpgHttpServlet{
 				String getMSSiglum = super.getRequiredParameter(params, "msSiglum");
 				msg = this.getManuscript(getLibSiglum, getMSSiglum);
             }
+<<<<<<< HEAD
+            else if (action.equalsIgnoreCase("GET_MANUSCRIPTS"))
+            {
+				String getLibSiglums = super.getParameter(params, "libSiglum");
+				String getCountries = super.getParameter(params, "country");
+				msg = this.getManuscripts(getLibSiglums, getCountries);
+=======
             else if (action.equalsIgnoreCase(GET_MANUSCRIPTS))
             {
             	//not required b/c we sometimes need all, and sometimes filter.
             	String getLibSiglums = super.getParameter(params, "libSiglum");
 				msg = this.getManuscripts(getLibSiglums);
+>>>>>>> 8913f3c66f020ec2f7508d7c05efae3de892777f
             }
             
             else if(action.equalsIgnoreCase(DELETE_MANUSCRIPT))
