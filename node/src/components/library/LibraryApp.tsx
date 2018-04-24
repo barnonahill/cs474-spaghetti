@@ -15,6 +15,7 @@ import {
 } from 'react-select';
 
 import Header from '@src/components/common/Header.tsx';
+import PageLoader from '@src/components/common/PageLoader.tsx';
 
 import CountryPanel from '@src/components/library/LibraryCountryPanel.tsx';
 import EntityPanel from '@src/components/library/LibraryEntityPanel.tsx';
@@ -33,6 +34,7 @@ enum View {
 	TABLE = 1,
 	ENTITY = 2,
 	EDIT = 3,
+	LOADER = 4
 }
 
 interface Properties {
@@ -46,6 +48,7 @@ interface State {
 	country?: Country
 	library?: lib.Library
 	libraries: Array<lib.Library>
+	loadingMessage: string
 	[x: string]: any
 }
 
@@ -56,7 +59,8 @@ export default class LibraryApp extends React.Component<Properties, State> {
 			view: View.INIT,
 			country: null,
 			library: null,
-			libraries: null
+			libraries: null,
+			loadingMessage: 'Loading Libraries...'
 		};
 
 		this.onCountrySelect = this.onCountrySelect.bind(this);
@@ -65,16 +69,21 @@ export default class LibraryApp extends React.Component<Properties, State> {
 	}
 
 	onCountrySelect(c: Country) {
+		this.setState((s:State) => {
+			s.view = View.LOADER;
+			s.loadingMessage = 'Loading ' + c.country + ' Libraries...';
+			return s;
+		});
+
 		proxyFactory.getLibraryProxy().getLibraries(c.countryID, (libs:Array<lib.Library>, e?:string) => {
 			if (e) {
 				alert(e);
 			}
 			else {
-				if (this.state.libraries) {
-					lib.Library.destroyArray(this.state.libraries);
-				}
-
 				this.setState((s:State) => {
+					s.library = null;
+					lib.Library.destroyArray(s.libraries);
+
 					s.view = View.TABLE;
 					s.country = c;
 					s.libraries = libs;
@@ -194,17 +203,14 @@ export default class LibraryApp extends React.Component<Properties, State> {
 					/>)
 				];
 			case View.TABLE:
-				return [
-					<Header key="header" min>Libraries - {this.state.country.country}</Header>,
-					(<TablePanel
+				return (<TablePanel
 						key="panel"
 						country={this.state.country}
 						libraries={this.state.libraries}
 						onClick={this.onTableClick}
 						onRefresh={() => this.onCountrySelect(this.state.country)}
 						onBack={() => this.changeView(View.INIT,{country:this.state.country})}
-					/>)
-				];
+					/>);
 			case View.ENTITY:
 				return [
 					<Header key="header" min>{this.state.library.library}</Header>,
@@ -229,6 +235,8 @@ export default class LibraryApp extends React.Component<Properties, State> {
 						onBack={() => this.changeView(View.TABLE,null)}
 					/>)
 				];
+			case View.LOADER:
+				return <PageLoader inner={this.state.loadingMessage} />
 		}
 	}
 }
