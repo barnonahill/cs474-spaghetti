@@ -1,0 +1,207 @@
+/* Utility Styling Classes */
+.dn {
+	display: none !important;
+}
+
+.db {
+	display: block !important;
+}
+
+.dib {
+  display: inline-block !important;
+}
+
+.fr {
+  float: right !important;
+}
+
+.blnr {
+	border-top-left-radius: 0 !important;
+	border-top-right-radius: 0 !important;
+}
+
+.mb5 {
+	margin-bottom: 5px !important;
+}
+
+.mt20 {
+	margin-top: 20px !important;
+}
+
+.mb10 {
+	margin-bottom: 10px !important;
+}
+
+.mb20 {
+  margin-bottom: 20px !important;
+}
+
+.mb40 {
+	margin-bottom: 40px !important;
+}
+
+.ml15 {
+  margin-left: 15px !important;
+}
+
+.ml5p {
+  margin-left: 5% !important;
+}
+
+.mr5p {
+  margin-right: 5% !important;
+}
+
+.ml15p {
+  margin-left: 15% !important;
+}
+
+.mr15p {
+  margin-right: 15% !important;
+}
+
+.pl0 {
+  padding-left: 0 !important;
+}
+
+.pt7 {
+  padding-top: 7px !important;
+}
+
+.pt15 {
+  padding-top: 15px !important;
+}
+
+.pb15 {
+  padding-bottom: 15px !important;
+}
+
+.pl26 {
+  padding-left: 26px !important;
+}
+
+.w100p {
+	width: 100% !important;
+}
+
+/* Specific Styling Classes */
+.panel-menu {
+  padding: 10px;
+  background-color: #f4f4f4;
+  border: 1px solid #eee;
+  margin-bottom: 20px;
+}
+
+/* Used with a panel-menu */
+.min-page-header {
+  margin-top: 40px;
+  margin-bottom: 0;
+  padding-bottom: 5px;
+}
+
+.input-delete {
+	position: absolute;
+	top: 9px;
+	right: 48px;
+	z-index: 100;
+	font-size: 12px;
+	color: #555;
+}
+
+/* Shade every other row in tables */
+.tr:nth-of-type(even) {
+	background-color: #f9f9f9;
+}
+
+/* Required input field */
+.control-label.required:after {
+	content: "*";
+	color: #f00;
+	position: absolute;
+	margin-left: 5px;
+	top: 7px;
+	font-size: 18px;
+}
+
+/*
+ * react-select error
+ */
+.has-error > .Select-control {
+	border-color: #a94442;
+}
+
+/*
+ * Loader and h3 container
+ */
+.full-page-loader {
+	width: 100%;
+	height: 100%;
+}
+
+/*
+ * Slightly modified from CSS loaders by @lukehaas
+ * https://projects.lukehaas.me/css-loaders/
+ */
+.loader {
+  font-size: 10px;
+  margin: 50px auto;
+  text-indent: -9999em;
+  width: 11em;
+  height: 11em;
+  border-radius: 50%;
+  background: #ffffff;
+  background: -moz-linear-gradient(left, #0275d8 10%, rgba(255, 255, 255, 0) 42%);
+  background: -webkit-linear-gradient(left, #0275d8 10%, rgba(255, 255, 255, 0) 42%);
+  background: -o-linear-gradient(left, #0275d8 10%, rgba(255, 255, 255, 0) 42%);
+  background: -ms-linear-gradient(left, #0275d8 10%, rgba(255, 255, 255, 0) 42%);
+  background: linear-gradient(to right, #0275d8 10%, rgba(255, 255, 255, 0) 42%);
+  position: relative;
+  -webkit-animation: load3 1.4s infinite linear;
+  animation: load3 1.4s infinite linear;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+}
+.loader:before {
+  width: 50%;
+  height: 50%;
+  background: #ffffff;
+  border-radius: 100% 0 0 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: '';
+}
+.loader:after {
+  background: #fff;
+  width: 75%;
+  height: 75%;
+  border-radius: 50%;
+  content: '';
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+@-webkit-keyframes load3 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes load3 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
