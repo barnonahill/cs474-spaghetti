@@ -117,8 +117,7 @@ public class ManuscriptServlet extends SpgHttpServlet{
             else if (action.equalsIgnoreCase(GET_MANUSCRIPTS))
             {
 				String getLibSiglums = super.getParameter(params, "libSiglum");
-				String getCountries = super.getParameter(params, "country");
-				msg = this.getManuscripts(getLibSiglums, getCountries);
+				msg = this.getManuscripts(getLibSiglums);
             }
             
             else if(action.equalsIgnoreCase(DELETE_MANUSCRIPT))
@@ -329,9 +328,9 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	 * @throws Exception 
 	 * 
 	 */
-	private String getManuscripts(String libSiglum, String country) throws Exception {
+	private String getManuscripts(String libSiglum) throws Exception {
 		JSONArray manuscripts = new JSONArray();
-		ArrayList<Manuscript> results = ManuscriptController.getManuscripts(libSiglum, country);
+		ArrayList<Manuscript> results = ManuscriptController.getManuscripts(libSiglum);
 		
 		for(Manuscript m : results) {
 			manuscripts.put(m.toJSON());
