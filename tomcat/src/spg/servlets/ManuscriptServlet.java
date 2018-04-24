@@ -42,35 +42,35 @@ public class ManuscriptServlet extends SpgHttpServlet{
 			Map<String, String> params = super.getParameters(req);
 			String action = super.getParameter(params, "action").toLowerCase();
 			String msg = null;
-			if(action.equalsIgnoreCase("CREATE_MSTYPE"))
+			if(action.equalsIgnoreCase(CREATE_MSTYPE))
             {
                 String msType = super.getParameter(params, "msType");
 				String msTypeName = super.getParameter(params, "msTypeName");
 				msg = this.createMSType(msType, msTypeName);
             }
 
-            else if (action.equalsIgnoreCase("UPDATE_MSTYPE"))
+            else if (action.equalsIgnoreCase(UPDATE_MSTYPE))
             {
                 String updateMSType = super.getParameter(params, "msType");
                 String updateMSTypeName = super.getParameter(params, "msTypeName");
                 msg = this.updateMSType(updateMSType, updateMSTypeName);    
             }
 
-            else if (action.equalsIgnoreCase("GET_MSTYPES"))
+            else if (action.equalsIgnoreCase(GET_MSTYPES))
             {
                 String getMSTypes = super.getParameter(params, "msType");
                 String getMSTypeNames = super.getParameter(params, "msTypeName");
                 msg = this.getMSTypes(getMSTypes, getMSTypeNames);   
             }
 
-            else if (action.equalsIgnoreCase("DELETE_MSTYPE"))
+            else if (action.equalsIgnoreCase(DELETE_MSTYPE))
             {
                 String deleteMSType = super.getParameter(params, "msType");
 				String deleteMSTypeName = super.getParameter(params, "msTypeName");
 				msg = this.deleteMSType(deleteMSType, deleteMSTypeName);  
             }
 
-            else if (action.equalsIgnoreCase("CREATE_MANUSCRIPT"))
+            else if (action.equalsIgnoreCase(CREATE_MANUSCRIPT))
             {
                 String createLibSiglum = super.getParameter(params, "libSiglum");
 				String createMSSiglum = super.getParameter(params, "msSiglum");
@@ -89,7 +89,7 @@ public class ManuscriptServlet extends SpgHttpServlet{
 						createSummary, createBibliography);
             }
 
-            else if (action.equalsIgnoreCase("UPDATE_MANUSCRIPT"))
+            else if (action.equalsIgnoreCase(UPDATE_MANUSCRIPT))
             {
 				String updateLibSiglum = super.getParameter(params, "libSiglum");
 				String updateMSSiglum = super.getParameter(params, "msSiglum");
@@ -108,20 +108,19 @@ public class ManuscriptServlet extends SpgHttpServlet{
 						updateSummary, updateBibliography);
             }
             
-            else if (action.equalsIgnoreCase("GET_MANUSCRIPT"))
+            else if (action.equalsIgnoreCase(GET_MANUSCRIPT))
             {
 				String getLibSiglum = super.getParameter(params, "libSiglum");
 				String getMSSiglum = super.getParameter(params, "msSiglum");
 				msg = this.getManuscript(getLibSiglum, getMSSiglum);
             }
-            else if (action.equalsIgnoreCase("GET_MANUSCRIPTS"))
+            else if (action.equalsIgnoreCase(GET_MANUSCRIPTS))
             {
 				String getLibSiglums = super.getParameter(params, "libSiglum");
-				String getCountries = super.getParameter(params, "country");
-				msg = this.getManuscripts(getLibSiglums, getCountries);
+				msg = this.getManuscripts(getLibSiglums);
             }
             
-            else if(action.equalsIgnoreCase("DELETE_MANUSCRIPT"))
+            else if(action.equalsIgnoreCase(DELETE_MANUSCRIPT))
             {
 				String deleteLibSiglum = super.getParameter(params, "libSiglum");
 				String deleteMSSiglum = super.getParameter(params, "msSiglum");
@@ -329,9 +328,9 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	 * @throws Exception 
 	 * 
 	 */
-	private String getManuscripts(String libSiglum, String country) throws Exception {
+	private String getManuscripts(String libSiglum) throws Exception {
 		JSONArray manuscripts = new JSONArray();
-		ArrayList<Manuscript> results = ManuscriptController.getManuscripts(libSiglum, country);
+		ArrayList<Manuscript> results = ManuscriptController.getManuscripts(libSiglum);
 		
 		for(Manuscript m : results) {
 			manuscripts.put(m.toJSON());
