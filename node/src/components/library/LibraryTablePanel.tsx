@@ -12,20 +12,13 @@ import {
 } from 'react-virtualized';
 import 'react-virtualized/styles.css'
 
+import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
 import SearchBar from '@src/components/common/SearchBar.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
 import { TABLE_CONSTANTS } from '@src/index.tsx';
-
-enum DataKey {
-	LIBRARY = 'library',
-	CITY = 'city',
-	VIEW = 'view',
-	EDIT = 'edit',
-	DELETE = 'delete'
-}
 
 export enum ButtonType {
 	VIEW=0,
@@ -63,6 +56,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 
 	render() {
 		return [
+			<Header key="header" min>Libraries - {this.props.country.country}</Header>,
 			(<PanelMenu key="panelMenu">
 				<Row>
 					<Col sm={4}>
@@ -133,7 +127,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 					width={60}
 					cellRenderer={this.renderDelete}
 				/>
-			</Table>),
+			</Table>)
 		];
 	}
 

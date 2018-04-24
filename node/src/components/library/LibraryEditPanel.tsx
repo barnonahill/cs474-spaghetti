@@ -28,6 +28,11 @@ interface P {
 interface S {
 	isNew: boolean
 	props: lib.Properties
+	valStates: {
+		libSiglum: any
+		library: any
+		city: any
+	}
 }
 
 export default class LibraryEditPanel extends React.Component<P,S> {
@@ -35,30 +40,36 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 		super(p);
 
 		var state: S;
+		var isNew: boolean;
+		var props: lib.Properties;
 
 		if (p.library) {
-			const l = p.library;
-			state = {
-				isNew: false,
-				props: l.toProperties()
-			};
+			isNew = false;
+			props = p.library.toProperties();
 		}
 		else {
-			state = {
-				isNew: true,
-				props: {
-					libSiglum: '',
-					countryID: p.country.countryID,
-					city: '',
-					library: '',
-					address1: '',
-					address2: '',
-					postCode: ''
-				}
+			isNew = true;
+			props = {
+				libSiglum: '',
+				countryID: p.country.countryID,
+				city: '',
+				library: '',
+				address1: '',
+				address2: '',
+				postCode: ''
 			};
 		}
 
-		this.state = state;
+		this.state = {
+			isNew: isNew,
+			props: props,
+			valStates: {
+				libSiglum: null,
+				library: null,
+				city: null,
+			}
+		};
+
 		this.onInputChange = this.onInputChange.bind(this);
 		this.onSubmit = this.onSubmit.bind(this);
 	}
@@ -76,6 +87,23 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 	onSubmit(e:React.FormEvent<Form>) {
 		e.preventDefault();
 		const props: lib.Properties = this.state.props;
+
+		var valStates:any = {
+			libSiglum: props.libSiglum ? null : 'error',
+			library: props.library ? null : 'error',
+			city: props.city ? null : 'error'
+		}
+		this.setState((s:S) => {
+			// Render validation states
+			s.valStates = valStates;
+			return s;
+		});
+		for (let k in valStates) {
+			if (valStates[k] === 'error') {
+				return;
+			}
+		}
+
 		const isNew: boolean = this.state.isNew;
 		if (isNew && props.libSiglum.indexOf(props.countryID + '-') !== 0) {
 			props.libSiglum = props.countryID + '-' + props.libSiglum;
@@ -92,10 +120,13 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 			</PanelMenu>),
 
 			(<Form horizontal onSubmit={this.onSubmit} key="form">
-				<FormGroup controlId="libSiglum">
-					<Col sm={3} componentClass={ControlLabel}>Library Siglum:</Col>
+				<FormGroup controlId="libSiglum" validationState={this.state.valStates.libSiglum}>
 					{this.state.isNew
-						? (<Col sm={4}>
+						? [(<Col sm={3} key="label"
+								componentClass={ControlLabel}
+								className="required"
+							>Library Siglum:</Col>),
+							(<Col sm={4} key="value">
 								<InputGroup>
 									<InputGroup.Addon>{this.props.country.countryID}-</InputGroup.Addon>
 									<FormControl
@@ -105,8 +136,14 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 										className="dib"
 									/>
 								</InputGroup>
-							</Col>)
-						: <Col sm={4} className="pt7 pl26">{this.state.props.libSiglum}</Col>
+							</Col>)]
+
+						: [(<Col
+								key="label"
+								sm={3}
+								componentClass={ControlLabel}
+							>Library Siglum:</Col>),
+							<Col key="value" sm={4} className="pt7 pl26">{this.state.props.libSiglum}</Col>]
 					}
 				</FormGroup>
 
@@ -115,8 +152,11 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 					<Col sm={4} className="pt7 pl26">{this.props.country.country}</Col>
 				</FormGroup>
 
-				<FormGroup controlId="library">
-					<Col sm={3} componentClass={ControlLabel}>Library Name:</Col>
+				<FormGroup
+					controlId="library"
+					validationState={this.state.valStates.library}
+				>
+					<Col sm={3} componentClass={ControlLabel} className="required">Library Name:</Col>
 					<Col sm={4}>
 						<FormControl
 							type="text"
@@ -126,8 +166,11 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 					</Col>
 				</FormGroup>
 
-				<FormGroup controlId="city">
-					<Col sm={3} componentClass={ControlLabel}>City:</Col>
+				<FormGroup
+					controlId="city"
+					validationState={this.state.valStates.city}
+				>
+					<Col sm={3} componentClass={ControlLabel} className="required">City:</Col>
 					<Col sm={4}>
 						<FormControl
 							type="text"
