@@ -116,7 +116,7 @@ private static final long serialVersionUID = 1L;
             {
 				String deleteLibSiglum = super.getParameter(params, "libSiglum");
 				String deleteMSSiglum = super.getParameter(params, "msSiglum");
-				msg = this.deleteManuscript(deleteLibSiglum, deleteMSSiglum);
+				msg = this.deleteSection(deleteLibSiglum, deleteMSSiglum);
             }
             else
             {
