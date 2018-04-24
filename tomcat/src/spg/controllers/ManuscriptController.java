@@ -73,20 +73,31 @@ public class ManuscriptController {
 	}
 
 	
-	public static MSType getMSType(String msType, String msTypeName) throws Exception {
+	public static ArrayList<MSType> getMSType(String msType, String msTypeName) throws Exception {
 		HashMap<String, String> namesToValues = new HashMap<String, String>();
-		MSType mst;
+		ArrayList<MSType> msts = new ArrayList<MSType>();
 		String query;
 		ResultSet resultSet;
+		MSType mst;
 		
 		namesToValues.put("msType", msType);
 		query = SpgController.buildSelectQuery(MSTYPE, namesToValues);
 		resultSet = SpgController.getResultSet(query);
 		
-		resultSet.next();
-		mst = new MSType(resultSet);
+		while (resultSet.next()) {
+			mst = new MSType(resultSet);
+			msts.add(mst);
+		}
 		
-		return mst;
+		return msts;
+	}
+	
+	
+	
+	public static boolean deleteMSType(String mSType2, String mSTypeName) {
+		// TODO Auto-generated method stub
+		
+		return false;
 	}
 	
 	
@@ -212,7 +223,7 @@ public class ManuscriptController {
 		//filter by none, country, or country and libSiglum.
 		//This is probably fricked up.
 		//'tries' to get the list of libraries with a certain countryID and then get all the manuscripts from there.
-		if( !(countryID == null) ) {
+		if( countryID != null ) {
 			namesToValues = new HashMap<String, String>();
 			libraries = LibraryController.getLibraries(countryID);
 			
@@ -264,6 +275,9 @@ public class ManuscriptController {
 				
 		return true;
 	}
+
+
+
 
 	
 }
