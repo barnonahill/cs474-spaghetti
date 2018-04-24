@@ -1,5 +1,6 @@
 import axios from 'axios';
-const BASE_SERVICES: string = "http://localhost:8080/tomcat";
+const BASE_SERVICES = "http://localhost:8080/spaghetti";
+//const BASE_SERVICES = "http://mysql.cs.jmu.edu/tomcat/spaghetti";
 
 /**
  * Abstract implementation of a proxy for service communication.

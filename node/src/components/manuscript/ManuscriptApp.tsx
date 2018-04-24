@@ -4,6 +4,7 @@ import InitPanel from '@src/components/manuscript/ManuscriptInitPanel.tsx';
 import FilterPanel from '@src/components/manuscript/ManuscriptFilterPanel.tsx';
 import TablePanel from '@src/components/manuscript/ManuscriptTablePanel.tsx';
 import EntityPanel from '@src/components/manuscript/ManuscriptEntityPanel.tsx';
+import EditPanel from '@src/components/manuscript/ManuscriptEditPanel.tsx';
 import MsTypeApp from '@src/components/manuscript/MsTypeApp.tsx';
 import PageLoader from '@src/components/common/PageLoader.tsx';
 
@@ -75,6 +76,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 		this.loadMsTypes = this.loadMsTypes.bind(this);
 
 		this.reloadManuscripts = this.reloadManuscripts.bind(this);
+		this.saveManuscript = this.saveManuscript.bind(this);
 	}
 
 	componentDidMount() {
@@ -123,6 +125,16 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					manuscript={this.state.manuscript}
 					msType={this.state.msType}
 					onBack={this.onEntityBack}
+				/>);
+			case Panel.EDIT:
+				return (<EditPanel
+					country={this.state.country}
+					countries={this.props.countries}
+					library={this.state.library}
+					msTypes={this.state.msTypes}
+					manuscript={this.state.manuscript}
+					onBack={() => this.changePanel(Panel.TABLE)}
+					onSubmit={this.saveManuscript}
 				/>);
 			case Panel.MST:
 				return (<MsTypeApp
@@ -386,5 +398,41 @@ export default class ManuscriptApp extends React.Component<P,S> {
 			state.manuscripts = manuscripts;
 			return state;
 		});
+	}
+
+	saveManuscript(props: ms.Properties, isNew: boolean) {
+		if (isNew) {
+			proxyFactory.getManuscriptProxy().createManuscript(props, (man, e?) => {
+				if (e) {
+					alert(e);
+				}
+				else {
+					this.setState((s:S) => {
+						s.manuscripts.push(man);
+						s.panel = Panel.TABLE;
+						return s;
+					});
+				}
+			});
+		}
+		else {
+			proxyFactory.getManuscriptProxy().updateManuscript(props, (man, e?) => {
+				if (e) {
+					alert(e);
+				}
+				else {
+					this.setState((s:S) => {
+						var i = s.manuscripts.findIndex(m => {
+							return man.libSiglum === m.libSiglum &&
+								man.msSiglum === m.libSiglum;
+						});
+
+						s.manuscripts[i].destroy();
+						s.manuscripts[i] = man;
+						return s;
+					})
+				}
+			});
+		}
 	}
 }

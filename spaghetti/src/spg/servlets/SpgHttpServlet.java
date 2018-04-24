@@ -65,6 +65,11 @@ public abstract class SpgHttpServlet extends HttpServlet {
 					map.put(k, j.getString(k));
 				}
 				catch (JSONException e) {
+					s = j.get(k).toString();
+					if (s.equals("null")) {
+						s = null;
+					}
+					map.put(k, s);
 				}
 			}
 		}

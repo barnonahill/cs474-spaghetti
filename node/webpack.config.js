@@ -7,12 +7,13 @@ const config = {
 	 * Basically prod. will compress our output file while dev. will not.
 	 */
 	mode: 'development',
+	//mode: 'production',
 
 	/*
 	 * Use source maps. They're only loaded if devtools is open, so they won't slow down end-users.
 	 */
 	devtool: 'source-map',
-	// devtool: 'nosources-source-map'
+	//devtool: 'nosources-source-map',
 
 	/*
 	 * index.ts represents the entry point to your web application. Webpack will
@@ -26,7 +27,7 @@ const config = {
 	 * the final bundled JavaScript file and where to store this file.
 	 */
 	output: {
-		path: path.join(__dirname, '..', 'tomcat', 'WebContent', 'bin'),
+		path: path.join(__dirname, '..', 'spaghetti', 'WebContent', 'bin'),
 		filename: 'scripts.js'
 	},
 

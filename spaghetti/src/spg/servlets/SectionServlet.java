@@ -40,71 +40,75 @@ private static final long serialVersionUID = 1L;
 			String msg = null;
 			if (action.equalsIgnoreCase("CREATE_SECTION"))
             {
-				String libSiglum = super.getParameter(params, "libSiglum");
-				String msSiglum = super.getParameter(params, "msSiglum");
-				String sectionID = super.getParameter(params, "sectionID");
-				String sectionType = super.getParameter(params, "sectionType");
-				String liturgicalOccassions = super.getParameter(params, "liturgicalOccassions");
-				String notationID = super.getParameter(params, "notationID");
-				String numGatherings = super.getParameter(params, "numGatherings");
-				String numColumns = super.getParameter(params, "numColumns");
-				String linesPerColumn = super.getParameter(params, "linesPerColumn");
-				String scribe = super.getParameter(params, "scribe");
-				String date = super.getParameter(params, "date");
-				String centuryID = super.getParameter(params, "centuryID");
-				String cursusID = super.getParameter(params, "cursusID");
-				String provenanceID = super.getParameter(params, "provenanceID");
-				String provenanceDetail = super.getParameter(params, "provenanceDetail");
-				String commissioner = super.getParameter(params, "commissioner");
-				String inscription = super.getParameter(params, "inscription");
-				String colophon = super.getParameter(params, "colophon");
-				String sourceCompletenessID = super.getParameter(params, "sourceCompletenessID");
+                String createLibSiglum = super.getParameter(params, "libSiglum");
+				String createMSSiglum = super.getParameter(params, "msSiglum");
+				String createSectionID = super.getParameter(params, "sectionID");
+				String createSectionType = super.getParameter(params, "sectionType");
+				String createLiturgicalOccassions = super.getParameter(params, "liturgicalOccassion");
+				String createNotationID = super.getParameter(params, "notationID");
+				String createNumGatherings = super.getParameter(params, "numGatherings");
+				String createNumColumns = super.getParameter(params, "numColumns");
+				String createLinesPerColumn = super.getParameter(params, "linesPerColumn");
+				String createScribe = super.getParameter(params, "scribe");
+				String createDate = super.getParameter(params, "date");
+				String createCenturyID = super.getParameter(params, "centuryID");
+				String createCursusID = super.getParameter(params, "cursusID");
+				String createProvenanceID = super.getParameter(params, "provenanceID");
+				String createProvenanceDetail = super.getParameter(params, "provenanceDetail");
+				String createCommissioner = super.getParameter(params, "commissioner");
+				String createInscription = super.getParameter(params, "inscription");
+				String createColophon = super.getParameter(params, "colophon");
+				String createSourceCompletenessID = super.getParameter(params, "sourceCompletenessID");
 					
-				msg = this.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassions, 
-						notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
-						provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
+				msg = this.createSection(createLibSiglum, createMSSiglum, createSectionID, createSectionType,
+						createLiturgicalOccassions, createNotationID, createNumGatherings, createNumColumns,
+						createLinesPerColumn, createScribe, createDate, createCenturyID, createCursusID,
+						createProvenanceID, createProvenanceDetail, createCommissioner, createInscription,
+						createColophon, createSourceCompletenessID);
             }
 
             else if (action.equalsIgnoreCase("UPDATE_SECTION"))
             {
-				String libSiglum = super.getParameter(params, "libSiglum");
-				String msSiglum = super.getParameter(params, "msSiglum");
-				String sectionID = super.getParameter(params, "sectionID");
-				String sectionType = super.getParameter(params, "sectionType");
-				String liturgicalOccassions = super.getParameter(params, "liturgicalOccassions");
-				String notationID = super.getParameter(params, "notationID");
-				String numGatherings = super.getParameter(params, "numGatherings");
-				String numColumns = super.getParameter(params, "numColumns");
-				String linesPerColumn = super.getParameter(params, "linesPerColumn");
-				String scribe = super.getParameter(params, "scribe");
-				String date = super.getParameter(params, "date");
-				String centuryID = super.getParameter(params, "centuryID");
-				String cursusID = super.getParameter(params, "cursusID");
-				String provenanceID = super.getParameter(params, "provenanceID");
-				String provenanceDetail = super.getParameter(params, "provenanceDetail");
-				String commissioner = super.getParameter(params, "commissioner");
-				String inscription = super.getParameter(params, "inscription");
-				String colophon = super.getParameter(params, "colophon");
-				String sourceCompletenessID = super.getParameter(params, "sourceCompletenessID");
+				String updateLibSiglum = super.getParameter(params, "libSiglum");
+				String updateMSSiglum = super.getParameter(params, "msSiglum");
+				String updateSectionID = super.getParameter(params, "sectionID");
+				String updateSectionType = super.getParameter(params, "sectionType");
+				String updateLiturgicalOccassions = super.getParameter(params, "liturgicalOccassions");
+				String updateNotationID = super.getParameter(params, "notationID");
+				String updateNumGatherings = super.getParameter(params, "numGatherings");
+				String updateNumColumns = super.getParameter(params, "numColumns");
+				String updateLinesPerColumn = super.getParameter(params, "linesPerColumn");
+				String updateScribe = super.getParameter(params, "scribe");
+				String updateDate = super.getParameter(params, "date");
+				String updateCenturyID = super.getParameter(params, "centuryID");
+				String updateCursusID = super.getParameter(params, "cursusID");
+				String updateProvenanceID = super.getParameter(params, "provenanceID");
+				String updateProvenanceDetail = super.getParameter(params, "provenanceDetail");
+				String updateCommissioner = super.getParameter(params, "commissioner");
+				String updateInscription = super.getParameter(params, "inscription");
+				String updateColophon = super.getParameter(params, "colophon");
+				String updateSourceCompletenessID = super.getParameter(params, "sourceCompletenessID");
 					
-				msg = this.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassions, 
-						notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
-						provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
+				msg = this.updateSection(updateLibSiglum, updateMSSiglum, updateSectionID, updateSectionType,
+						updateLiturgicalOccassions, updateNotationID, updateNumGatherings, updateNumColumns,
+						updateLinesPerColumn, updateScribe, updateDate, updateCenturyID, updateCursusID,
+						updateProvenanceID, updateProvenanceDetail, updateCommissioner, updateInscription,
+						updateColophon, updateSourceCompletenessID);
             }
             
             else if (action.equalsIgnoreCase("GET_SECTION"))
             {
-				String libSiglum = super.getParameter(params, "libSiglum");
-				String msSiglum = super.getParameter(params, "msSiglum");
-				String sectionID = super.getParameter(params, "sectionID");
-				msg = this.getSection(libSiglum, msSiglum, sectionID);
+				String getLibSiglum = super.getParameter(params, "libSiglum");
+				String getMSSiglum = super.getParameter(params, "msSiglum");
+				String deletesectionID = super.getParameter(params, "sectionID");
+				msg = this.getSection(getLibSiglum, getMSSiglum, deletesectionID);
             }
             else if (action.equalsIgnoreCase("GET_SECTIONS"))
             {
-				String libSiglum = super.getParameter(params, "libSiglum");
-				String msSiglum = super.getParameter(params, "msSiglum");
-				String sectionID = super.getParameter(params, "sectionID");
-				msg = this.getSections(libSiglum, msSiglum, sectionID);
+				String getLibSiglums = super.getParameter(params, "libSiglum");
+				String getSectionID = super.getParameter(params, "sectionID");
+				String deletesectionID = super.getParameter(params, "sectionID");
+				msg = this.getSections(getLibSiglums, getSectionID, deletesectionID);
             }
             
             else if(action.equalsIgnoreCase("DELETE_SECTION"))
@@ -135,14 +139,16 @@ private static final long serialVersionUID = 1L;
 	 * @return -
 	 * @throws Exception -
 	 */
-	private String createSection(String libSiglum, String msSiglum, String sectionID, String sectionType,
-			String liturgicalOccassion, String notationID, String numGatherings, String numColumns,
-			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
-			String provenanceID, String provenanceDetail, String commissioner,
-			String inscription, String colophon, String sourceCompletenessID) throws Exception {
-		Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, 
-				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
-				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
+	private String createSection(String createLibSiglum, String createMSSiglum, String createSectionID, String createSectionType,
+			String createLiturgicalOccassions, String createNotationID, String createNumGatherings, String createNumColumns,
+			String createLinesPerColumn, String createScribe, String createDate, String createCenturyID, String createCursusID,
+			String createProvenanceID, String createProvenanceDetail, String createCommissioner, String createInscription,
+			String createColophon, String createSourceCompletenessID) throws Exception {
+		Section s = SectionController.createSection(createLibSiglum, createMSSiglum, createSectionID, createSectionType,
+				createLiturgicalOccassions, createNotationID, createNumGatherings, createNumColumns,
+				createLinesPerColumn, createScribe, createDate, createCenturyID, createCursusID,
+				createProvenanceID, createProvenanceDetail, createCommissioner, createInscription,
+				createColophon, createSourceCompletenessID);
 		return s.toJSON().toString();
 	}
 	
@@ -153,14 +159,16 @@ private static final long serialVersionUID = 1L;
 	 * @return -
 	 * @throws Exception 
 	 */
-	private String updateSection(String libSiglum, String msSiglum, String sectionID, String sectionType,
-			String liturgicalOccassion, String notationID, String numGatherings, String numColumns,
-			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
-			String provenanceID, String provenanceDetail, String commissioner,
-			String inscription, String colophon, String sourceCompletenessID) throws Exception {
-		Section s = SectionController.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, 
-				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
-				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
+	private String updateSection(String updateLibSiglum, String updateMSSiglum, String updateSectionID, String updateSectionType,
+			String updateLiturgicalOccassions, String updateNotationID, String updateNumGatherings, String updateNumColumns,
+			String updateLinesPerColumn, String updateScribe, String updateDate, String updateCenturyID, String updateCursusID,
+			String updateProvenanceID, String updateProvenanceDetail, String updateCommissioner, String updateInscription,
+			String updateColophon, String updateSourceCompletenessID) throws Exception {
+		Section s = SectionController.updateSection(updateLibSiglum, updateMSSiglum, updateSectionID, updateSectionType,
+				updateLiturgicalOccassions, updateNotationID, updateNumGatherings, updateNumColumns,
+				updateLinesPerColumn, updateScribe, updateDate, updateCenturyID, updateCursusID,
+				updateProvenanceID, updateProvenanceDetail, updateCommissioner, updateInscription,
+				updateColophon, updateSourceCompletenessID);
 		return s.toJSON().toString();
 	}
 	
@@ -172,8 +180,8 @@ private static final long serialVersionUID = 1L;
 	 * @return - 
 	 * @throws Exception 
 	 */
-	private String getSection(String libSiglum, String msSiglum, String sectionID) throws Exception {
-		Section s = SectionController.getSection(libSiglum, msSiglum, sectionID);
+	private String getSection(String getLibSiglum, String getMSSiglum, String deletesectionID) throws Exception {
+		Section s = SectionController.getSection(getLibSiglum, getMSSiglum, deletesectionID);
 		return s.toJSON().toString();
 	}
 	

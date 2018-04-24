@@ -22,9 +22,8 @@ export default abstract class SpgModel {
 	 */
 	static destroyArray(arr: Array<SpgModel>) {
 		if (arr) {
-			for (let i = 0; i < arr.length; i++) {
-				arr[i].destroy();
-				arr[i] = null;
+			while (arr.length) {
+				arr.pop().destroy();
 			}
 			arr = null;
 		}
