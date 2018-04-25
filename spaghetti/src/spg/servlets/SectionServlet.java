@@ -17,7 +17,7 @@ import spg.models.Section;
 
 /**
  * 
- * @author Paul Barnhill, Carl Clermont, Kyle Tran
+ * @author Paul Barnhill, Carl Clermont, Kyle Tran, Zach Butts
  *
  */
 @WebServlet(name="SectionServices", urlPatterns= {"/section"})
@@ -122,6 +122,25 @@ private static final long serialVersionUID = 1L;
             {
             	msg = this.getCenturies();
             }
+			
+			else if (action.equalsIgnoreCase(GET_CURSUSES)
+			{
+				msg = this.getCursuses();
+			}
+			
+			else if (action.equalsIgnoreCase(GET_SOURCECOMPLETENESSES)
+			{
+				msg = this.getSourceCompletenesses();
+			}
+			
+			else if (action.equalsIgnoreCase(GET_PROVENANCES)
+			{
+				msg = this.getProvenances();
+			
+			else if (action.equalsNotation(GET_NOTATIONS)
+			{
+				msg = this.getNotations();
+			}
 			
             else
             {
@@ -239,7 +258,61 @@ private static final long serialVersionUID = 1L;
 		
 		return j.toString();
 	}
-
 	
-
+	private String getCursuses() throws Exception {
+		ArrayList<Cursus> cursuses = SectionController.getCursuses();
+		if (cursuses == null) {
+			throw new Exception("Could not load cursuses.");
+		}
+		
+		JSONArray j = new JSONArray();
+		for (Cursus c : cursuses) {
+			j.put(c.toJSON());
+		}
+		
+		return j.toString();
+	}
+	
+	private String getSourceCompletenesses() throws Exception {
+		ArrayList<SourceCompleteness> sc = SectionController.getSourceCompletenesses();
+		if (sc == null) {
+			throw new Exception("Could not load source completenesses");
+		}
+		
+		JSONArray j = new JSONArray();
+		for (SourceCompleteness s : sc) {
+			j.put(c.toJSON());
+		}
+		
+		return j.toString();
+	}
+	
+	private String getProvenances() throws Exception {
+		ArrayList<Provenance> prov = SectionController.getProvenances();
+		if (prov == null) {
+			throw new Exception("Could not load provenance");
+		}
+		
+		JSONArray j = new JSONArray();
+		for (Provenance p : prov) {
+			j.put(p.toJSON());
+		}
+		
+		return j.toString();
+	}
+	
+	private String getNotation() throws Exception {
+		ArrayList<Notation> note = SectionController.getNotation();
+		if (note == null) {
+			throw new Exception("Could not load notation");
+		}
+		
+		JSONArray j = new JSONArray();
+		for (Notation n : note) {
+			j.put(note.toJSON());
+		}
+		
+		return j.toString();
+	}
+			
 }
