@@ -162,7 +162,7 @@ public class SectionController {
 	 * @return - a list of all the selected Libraries
 	 * @throws Exception - anything (SQLEception, ...)
 	 */
-	public static ArrayList<Section> getSections(String countryID, String libSiglum, String msSiglum ) throws Exception{
+	public static ArrayList<Section> getSections(String libSiglum, String msSiglum ) throws Exception{
 		//get from r to l only the ones that are in that. (msSiglum if given, else lib if given, then countryID if given).
 		HashMap<String, String> namesToValues = null;
 		String query;

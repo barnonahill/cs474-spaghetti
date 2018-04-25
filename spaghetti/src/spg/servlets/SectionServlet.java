@@ -115,8 +115,7 @@ private static final long serialVersionUID = 1L;
             {
 				String libSiglum = super.getParameter(params, "libSiglum");
 				String msSiglum = super.getParameter(params, "msSiglum");
-				String sectionID = super.getParameter(params, "sectionID");
-				msg = this.getSections(libSiglum, msSiglum, sectionID);
+				msg = this.getSections(libSiglum, msSiglum);
             }
             
             else if (action.equalsIgnoreCase(DELETE_SECTION))
@@ -227,9 +226,9 @@ private static final long serialVersionUID = 1L;
 	 * @throws Exception 
 	 * 
 	 */
-	private String getSections(String libSiglum, String sectionID, String deletesectionID) throws Exception {
+	private String getSections(String libSiglum, String sectionID) throws Exception {
 		JSONArray sections = new JSONArray();
-		ArrayList<Section> results = SectionController.getSections(libSiglum, sectionID, deletesectionID);
+		ArrayList<Section> results = SectionController.getSections(libSiglum, sectionID);
 		
 		for (Section s : results) {
 			sections.put(s.toJSON());

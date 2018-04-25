@@ -4,6 +4,8 @@ import PageLoader from '@src/components/common/PageLoader.tsx';
 
 import InitPanel from '@src/components/section/SectionInitPanel.tsx';
 import FilterPanel from '@src/components/section/SectionFilterPanel.tsx';
+import TablePanel from '@src/components/section/SectionTablePanel.tsx';
+// import EditPanel from '@src/components/section/SectionEditPanel.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
@@ -15,6 +17,7 @@ import { Cursus } from '@src/models/cursus.ts';
 import { SourceCompleteness } from '@src/models/sourceCompleteness.ts';
 import { Provenance } from '@src/models/provenance.ts';
 import { Notation } from '@src/models/notation.ts';
+import { MsType } from '@src/models/msType.ts';
 import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
 export enum Panel {
@@ -49,6 +52,7 @@ interface S {
 		library?: Library
 		manuscript?: Manuscript
 		sections?: sn.Section[]
+		section?: sn.Section
 	}
 	supports: {
 		centuries?: Century[]
@@ -56,6 +60,7 @@ interface S {
 		srcComps?: SourceCompleteness[]
 		provs?: Provenance[]
 		notations?: Notation[]
+		msTypes?: MsType[]
 	}
 }
 export default class SectionApp extends React.Component<P,S> {
@@ -80,6 +85,7 @@ export default class SectionApp extends React.Component<P,S> {
 		this.loadSrcComps = this.loadSrcComps.bind(this);
 		this.loadProvenances = this.loadProvenances.bind(this);
 		this.loadNotations = this.loadNotations.bind(this);
+		this.loadMsTypes = this.loadMsTypes.bind(this);
 		this.loadSupports = this.loadSupports.bind(this);
 
 		this.loadSections = this.loadSections.bind(this);
@@ -89,6 +95,12 @@ export default class SectionApp extends React.Component<P,S> {
 
 		this.onInitSubmit = this.onInitSubmit.bind(this);
 		this.onFilterSubmit = this.onFilterSubmit.bind(this);
+
+		this.reloadSections = this.reloadSections.bind(this);
+		this.openEntity = this.openEntity.bind(this);
+		this.openEdit = this.openEdit.bind(this);
+		this.confirmDelete = this.confirmDelete.bind(this);
+		this.saveManuscript = this.saveManuscript.bind(this);
 	}
 
 	componentDidMount() {
@@ -103,7 +115,7 @@ export default class SectionApp extends React.Component<P,S> {
 			default:
 			case Panel.INIT:
 				return this.renderInit();
-			//
+
 			// case Panel.EDIT:
 			//  	return this.renderEdit();
 			//
@@ -112,9 +124,9 @@ export default class SectionApp extends React.Component<P,S> {
 
 			case Panel.FILTER:
 				return this.renderFilter();
-			//
-			// case Panel.TABLE:
-			// 	return this.renderTable();
+
+			case Panel.TABLE:
+				return this.renderTable();
 
 			case Panel.LOADER:
 				return this.renderLoader();
@@ -124,14 +136,19 @@ export default class SectionApp extends React.Component<P,S> {
 	renderInit() {
 		return (<InitPanel
 			onBack={this.props.onBack}
-			onSubmit={(p) => this.setState((s:S) => {
-				s.panel = p;
-				return s;
-			})}
+			onSubmit={this.onInitSubmit}
 		/>);
 	}
 
-	renderEdit() {}
+	renderEdit() {
+		// return (<EditPanel
+		// 	countries={this.props.countries}
+		// 	section={this.state.primaries.section}
+		// 	supports={this.state.supports as any}
+		// 	onBack={() => this.changePanel(Panel.TABLE)}
+		// 	onSubmit={this.saveManuscript}
+		// />)
+	}
 
 	renderEntity() {}
 
@@ -143,19 +160,26 @@ export default class SectionApp extends React.Component<P,S> {
 		/>);
 	}
 
-	renderTable() {}
+	renderTable() {
+		return (<TablePanel
+			library={this.state.primaries.library}
+			manuscript={this.state.primaries.manuscript}
+			sections={this.state.primaries.sections}
+			onBack={() => this.changePanel(Panel.INIT)}
+			onRefresh={this.reloadSections}
+			onEdit={this.openEdit}
+			onDelete={this.confirmDelete}
+			onView={this.openEntity}
+
+		/>);
+	}
 
 	renderLoader() {
 		return <PageLoader inner={this.state.loadMessage} />;
 	}
 
 	loadCenturies(callback: (a:Century[]) => void) {
-		this.setState((s:S) => {
-			s.panel = Panel.LOADER;
-			s.loadMessage = 'Loading Centuries...';
-			return s;
-		});
-
+		this.setLoader('Loading Centuries...');
 		proxyFactory.getSectionProxy().getCenturies((a, e?) => {
 			if (e) {
 				return alert(e);
@@ -165,12 +189,7 @@ export default class SectionApp extends React.Component<P,S> {
 	}
 
 	loadCursuses(callback: (a:Cursus[]) => void) {
-		this.setState((s:S) => {
-			s.panel = Panel.LOADER;
-			s.loadMessage = 'Loading Cursuses...';
-			return s;
-		});
-
+		this.setLoader('Loading Cursuses...');
 		proxyFactory.getSectionProxy().getCursuses((a, e?) => {
 			if (e) {
 				return alert(e);
@@ -180,12 +199,7 @@ export default class SectionApp extends React.Component<P,S> {
 	}
 
 	loadSrcComps(callback: (a:SourceCompleteness[]) => void) {
-		this.setState((s:S) => {
-			s.panel = Panel.LOADER;
-			s.loadMessage = 'Loading Source Completenesses...';
-			return s;
-		});
-
+		this.setLoader('Loading Source Completenesses...');
 		proxyFactory.getSectionProxy().getSourceCompletenesses((a, e?) => {
 			if (e) {
 				return alert(e);
@@ -195,12 +209,7 @@ export default class SectionApp extends React.Component<P,S> {
 	}
 
 	loadProvenances(callback: (a:Provenance[]) => void) {
-		this.setState((s:S) => {
-			s.panel = Panel.LOADER;
-			s.loadMessage = 'Loading Provenances...';
-			return s;
-		});
-
+		this.setLoader('Loading Provenances...');
 		proxyFactory.getSectionProxy().getProvenances((a, e?) => {
 			if (e) {
 				return alert(e);
@@ -210,12 +219,18 @@ export default class SectionApp extends React.Component<P,S> {
 	}
 
 	loadNotations(callback: (a:Notation[]) => void) {
-		this.setState((s:S) => {
-			s.panel = Panel.LOADER;
-			s.loadMessage = 'Loading Notations...';
-			return s;
-		});
+		this.setLoader('Loading Notations...');
 		proxyFactory.getSectionProxy().getNotations((a, e?) => {
+			if (e) {
+				return alert(e);
+			}
+			return callback(a);
+		})
+	}
+
+	loadMsTypes(callback: (a:MsType[]) => void) {
+		this.setLoader('Loading Manuscript Types...');
+		proxyFactory.getManuscriptProxy().getMsTypes((a, e?) => {
 			if (e) {
 				return alert(e);
 			}
@@ -234,21 +249,26 @@ export default class SectionApp extends React.Component<P,S> {
 					{
 						this.loadNotations((notations:Notation[]) =>
 						{
-							this.setState((s:S) => {
-								Century.destroyArray(s.supports.centuries);
-								Cursus.destroyArray(s.supports.cursuses);
-								SourceCompleteness.destroyArray(s.supports.srcComps);
-								Provenance.destroyArray(s.supports.provs);
-								Notation.destroyArray(s.supports.notations);
+							this.loadMsTypes((msTypes:MsType[]) =>
+							{
+								this.setState((s:S) => {
+									Century.destroyArray(s.supports.centuries);
+									Cursus.destroyArray(s.supports.cursuses);
+									SourceCompleteness.destroyArray(s.supports.srcComps);
+									Provenance.destroyArray(s.supports.provs);
+									Notation.destroyArray(s.supports.notations);
+									MsType.destroyArray(s.supports.msTypes);
 
-								s.supports.centuries = centuries;
-								s.supports.cursuses = cursuses;
-								s.supports.srcComps = srcComps;
-								s.supports.provs = provs;
-								s.supports.notations = notations;
+									s.supports.centuries = centuries;
+									s.supports.cursuses = cursuses;
+									s.supports.srcComps = srcComps;
+									s.supports.provs = provs;
+									s.supports.notations = notations;
+									s.supports.msTypes = msTypes;
 
-								if (callback) return callback(s);
-								else return s;
+									if (callback) return callback(s);
+									else return s;
+								});
 							});
 						});
 					});
@@ -306,8 +326,10 @@ export default class SectionApp extends React.Component<P,S> {
 			this.setState((s:S) => {
 				Library.destroyArray(s.primaries.libraries);
 				Manuscript.destroyArray(s.primaries.manuscripts);
+				sn.Section.destroyArray(s.primaries.sections);
 				s.primaries.library = null;
 				s.primaries.manuscript = null;
+				s.primaries.section = null;
 
 				s.primaries.libraries = ls;
 				s.primaries.manuscripts = ms;
@@ -319,5 +341,101 @@ export default class SectionApp extends React.Component<P,S> {
 				return s;
 			});
 		});
+	}
+
+	reloadSections() {
+		this.setLoader('Loading Sections...');
+
+		var libSiglum = (this.state.primaries.library
+			? this.state.primaries.library.libSiglum
+			: null);
+		var msSiglum = (this.state.primaries.manuscript
+			? this.state.primaries.manuscript.msSiglum
+			: null);
+
+		this.loadSections(libSiglum, msSiglum, ss => {
+				this.setState((s:S) => {
+					sn.Section.destroyArray(s.primaries.sections);
+					s.primaries.section = null;
+
+					s.primaries.sections = ss;
+					s.panel = Panel.TABLE;
+					return s;
+				});
+			});
+	}
+
+	openEntity(s:sn.Section) {}
+
+	openEdit(stn:sn.Section) {
+		this.setState((s:S) => {
+			s.primaries.section = stn;
+			s.panel = Panel.EDIT;
+			return s;
+		});
+	}
+
+	confirmDelete(section:sn.Section) {
+		var del = confirm('Delete ' + section.libSiglum + ' ' + section.msSiglum + ' ' + section.sectionID +
+			'? This will delete all children of this section as well!');
+
+		if (del) {
+			proxyFactory.getSectionProxy().deleteSection(section.libSiglum, section.msSiglum, section.sectionID,
+				(success, e?) =>
+			{
+				if (e) {
+					return alert(e);
+				}
+				if (!success) {
+					return alert('Failed to delete section.');
+				}
+
+				this.setState((s:S) => {
+					var i = s.primaries.sections.findIndex(sec => {
+						return section.libSiglum === sec.libSiglum && section.msSiglum === sec.msSiglum &&
+							section.sectionID === sec.sectionID;
+					});
+					s.primaries.sections[i].destroy();
+					s.primaries.sections.splice(i, 1);
+					return s;
+				});
+			})
+		}
+	}
+
+	saveManuscript(p:sn.Properties, isNew: boolean) {
+		this.setLoader('Saving Section...');
+		if (isNew) {
+			proxyFactory.getSectionProxy().createSection(p, (stn, e?) => {
+				if (e) {
+					return alert(e);
+				}
+
+				this.setState((s:S) => {
+					s.primaries.sections.push(stn);
+					s.panel = Panel.TABLE;
+					return s;
+				});
+			});
+		}
+		else {
+			proxyFactory.getSectionProxy().updateSection(p, (stn, e?) => {
+				if (e) {
+					return alert(e);
+				}
+
+				this.setState((s:S) => {
+					var i = s.primaries.sections.findIndex(o => {
+						return p.libSiglum === o.libSiglum && p.sectionID === o.sectionID
+							&& p.msSiglum === o.msSiglum;
+					});
+
+					s.primaries.sections[i].destroy();
+					s.primaries.sections[i] = stn;
+					s.panel = Panel.TABLE;
+					return s;
+				});
+			});
+		}
 	}
 }

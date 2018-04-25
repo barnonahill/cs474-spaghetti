@@ -30,7 +30,7 @@ export default class SectionInitPanel extends React.Component<P,{}> {
 				>Back</Button>
 			</PanelMenu>),
 
-			(<Row key="actions" className="mb60">
+			(<Row key="actions" className="mb30">
 				<Col xs={12} sm={4} smOffset={1}>
 					<Button
 						bsStyle="primary"
@@ -48,55 +48,6 @@ export default class SectionInitPanel extends React.Component<P,{}> {
 					>Load all Sections</Button>
 				</Col>
 			</Row>),
-
-			(<Row key="entities1" className="mb30">
-				<Col xs={12} sm={4}>
-					<Button
-						bsStyle="info"
-						bsSize="large"
-						className="w100p"
-						onClick={() => this.props.onSubmit(Panel.CENTURY)}
-					>Centuries</Button>
-				</Col>
-
-				<Col xs={12} sm={4}>
-					<Button
-						bsStyle="info"
-						bsSize="large"
-						className="w100p"
-						onClick={() => this.props.onSubmit(Panel.CURSUS)}
-					>Cursuses</Button>
-				</Col>
-
-				<Col xs={12} sm={4}>
-					<Button
-						bsStyle="info"
-						bsSize="large"
-						className="w100p"
-						onClick={() => this.props.onSubmit(Panel.SRC_COMP)}
-					>Source Completenesses</Button>
-				</Col>
-			</Row>),
-
-			(<Row key="entities2" className="mb30">
-				<Col xs={12} sm={4}>
-					<Button
-						bsStyle="info"
-						bsSize="large"
-						className="w100p"
-						onClick={() => this.props.onSubmit(Panel.PROVENANCE)}
-					>Provenances</Button>
-				</Col>
-
-				<Col xs={12} sm={4}>
-					<Button
-						bsStyle="info"
-						bsSize="large"
-						className="w100p"
-						onClick={() => this.props.onSubmit(Panel.NOTATION)}
-					>Notations</Button>
-				</Col>
-			</Row>)
 		];
 	}
 }

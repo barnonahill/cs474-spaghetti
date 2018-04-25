@@ -39279,13 +39279,16 @@ var React = __webpack_require__(/*! react */ "react");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
 var SectionInitPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionInitPanel.tsx */ "./src/components/section/SectionInitPanel.tsx");
 var SectionFilterPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionFilterPanel.tsx */ "./src/components/section/SectionFilterPanel.tsx");
+var SectionTablePanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionTablePanel.tsx */ "./src/components/section/SectionTablePanel.tsx");
 var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
+var sn = __webpack_require__(/*! @src/models/section.ts */ "./src/models/section.ts");
 var century_ts_1 = __webpack_require__(/*! @src/models/century.ts */ "./src/models/century.ts");
 var cursus_ts_1 = __webpack_require__(/*! @src/models/cursus.ts */ "./src/models/cursus.ts");
 var sourceCompleteness_ts_1 = __webpack_require__(/*! @src/models/sourceCompleteness.ts */ "./src/models/sourceCompleteness.ts");
 var provenance_ts_1 = __webpack_require__(/*! @src/models/provenance.ts */ "./src/models/provenance.ts");
 var notation_ts_1 = __webpack_require__(/*! @src/models/notation.ts */ "./src/models/notation.ts");
+var msType_ts_1 = __webpack_require__(/*! @src/models/msType.ts */ "./src/models/msType.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
 (function (Panel) {
@@ -39321,12 +39324,18 @@ var SectionApp = (function (_super) {
         _this.loadSrcComps = _this.loadSrcComps.bind(_this);
         _this.loadProvenances = _this.loadProvenances.bind(_this);
         _this.loadNotations = _this.loadNotations.bind(_this);
+        _this.loadMsTypes = _this.loadMsTypes.bind(_this);
         _this.loadSupports = _this.loadSupports.bind(_this);
         _this.loadSections = _this.loadSections.bind(_this);
         _this.changePanel = _this.changePanel.bind(_this);
         _this.setLoader = _this.setLoader.bind(_this);
         _this.onInitSubmit = _this.onInitSubmit.bind(_this);
         _this.onFilterSubmit = _this.onFilterSubmit.bind(_this);
+        _this.reloadSections = _this.reloadSections.bind(_this);
+        _this.openEntity = _this.openEntity.bind(_this);
+        _this.openEdit = _this.openEdit.bind(_this);
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.saveManuscript = _this.saveManuscript.bind(_this);
         return _this;
     }
     SectionApp.prototype.componentDidMount = function () {
@@ -39342,33 +39351,31 @@ var SectionApp = (function (_super) {
                 return this.renderInit();
             case Panel.FILTER:
                 return this.renderFilter();
+            case Panel.TABLE:
+                return this.renderTable();
             case Panel.LOADER:
                 return this.renderLoader();
         }
     };
     SectionApp.prototype.renderInit = function () {
-        var _this = this;
-        return (React.createElement(SectionInitPanel_tsx_1.default, { onBack: this.props.onBack, onSubmit: function (p) { return _this.setState(function (s) {
-                s.panel = p;
-                return s;
-            }); } }));
+        return (React.createElement(SectionInitPanel_tsx_1.default, { onBack: this.props.onBack, onSubmit: this.onInitSubmit }));
     };
-    SectionApp.prototype.renderEdit = function () { };
+    SectionApp.prototype.renderEdit = function () {
+    };
     SectionApp.prototype.renderEntity = function () { };
     SectionApp.prototype.renderFilter = function () {
         var _this = this;
         return (React.createElement(SectionFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSubmit: this.onFilterSubmit }));
     };
-    SectionApp.prototype.renderTable = function () { };
+    SectionApp.prototype.renderTable = function () {
+        var _this = this;
+        return (React.createElement(SectionTablePanel_tsx_1.default, { library: this.state.primaries.library, manuscript: this.state.primaries.manuscript, sections: this.state.primaries.sections, onBack: function () { return _this.changePanel(Panel.INIT); }, onRefresh: this.reloadSections, onEdit: this.openEdit, onDelete: this.confirmDelete, onView: this.openEntity }));
+    };
     SectionApp.prototype.renderLoader = function () {
         return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
     };
     SectionApp.prototype.loadCenturies = function (callback) {
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadMessage = 'Loading Centuries...';
-            return s;
-        });
+        this.setLoader('Loading Centuries...');
         ProxyFactory_ts_1.default.getSectionProxy().getCenturies(function (a, e) {
             if (e) {
                 return alert(e);
@@ -39377,11 +39384,7 @@ var SectionApp = (function (_super) {
         });
     };
     SectionApp.prototype.loadCursuses = function (callback) {
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadMessage = 'Loading Cursuses...';
-            return s;
-        });
+        this.setLoader('Loading Cursuses...');
         ProxyFactory_ts_1.default.getSectionProxy().getCursuses(function (a, e) {
             if (e) {
                 return alert(e);
@@ -39390,11 +39393,7 @@ var SectionApp = (function (_super) {
         });
     };
     SectionApp.prototype.loadSrcComps = function (callback) {
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadMessage = 'Loading Source Completenesses...';
-            return s;
-        });
+        this.setLoader('Loading Source Completenesses...');
         ProxyFactory_ts_1.default.getSectionProxy().getSourceCompletenesses(function (a, e) {
             if (e) {
                 return alert(e);
@@ -39403,11 +39402,7 @@ var SectionApp = (function (_super) {
         });
     };
     SectionApp.prototype.loadProvenances = function (callback) {
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadMessage = 'Loading Provenances...';
-            return s;
-        });
+        this.setLoader('Loading Provenances...');
         ProxyFactory_ts_1.default.getSectionProxy().getProvenances(function (a, e) {
             if (e) {
                 return alert(e);
@@ -39416,12 +39411,17 @@ var SectionApp = (function (_super) {
         });
     };
     SectionApp.prototype.loadNotations = function (callback) {
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadMessage = 'Loading Notations...';
-            return s;
-        });
+        this.setLoader('Loading Notations...');
         ProxyFactory_ts_1.default.getSectionProxy().getNotations(function (a, e) {
+            if (e) {
+                return alert(e);
+            }
+            return callback(a);
+        });
+    };
+    SectionApp.prototype.loadMsTypes = function (callback) {
+        this.setLoader('Loading Manuscript Types...');
+        ProxyFactory_ts_1.default.getManuscriptProxy().getMsTypes(function (a, e) {
             if (e) {
                 return alert(e);
             }
@@ -39435,21 +39435,25 @@ var SectionApp = (function (_super) {
                 _this.loadSrcComps(function (srcComps) {
                     _this.loadProvenances(function (provs) {
                         _this.loadNotations(function (notations) {
-                            _this.setState(function (s) {
-                                century_ts_1.Century.destroyArray(s.supports.centuries);
-                                cursus_ts_1.Cursus.destroyArray(s.supports.cursuses);
-                                sourceCompleteness_ts_1.SourceCompleteness.destroyArray(s.supports.srcComps);
-                                provenance_ts_1.Provenance.destroyArray(s.supports.provs);
-                                notation_ts_1.Notation.destroyArray(s.supports.notations);
-                                s.supports.centuries = centuries;
-                                s.supports.cursuses = cursuses;
-                                s.supports.srcComps = srcComps;
-                                s.supports.provs = provs;
-                                s.supports.notations = notations;
-                                if (callback)
-                                    return callback(s);
-                                else
-                                    return s;
+                            _this.loadMsTypes(function (msTypes) {
+                                _this.setState(function (s) {
+                                    century_ts_1.Century.destroyArray(s.supports.centuries);
+                                    cursus_ts_1.Cursus.destroyArray(s.supports.cursuses);
+                                    sourceCompleteness_ts_1.SourceCompleteness.destroyArray(s.supports.srcComps);
+                                    provenance_ts_1.Provenance.destroyArray(s.supports.provs);
+                                    notation_ts_1.Notation.destroyArray(s.supports.notations);
+                                    msType_ts_1.MsType.destroyArray(s.supports.msTypes);
+                                    s.supports.centuries = centuries;
+                                    s.supports.cursuses = cursuses;
+                                    s.supports.srcComps = srcComps;
+                                    s.supports.provs = provs;
+                                    s.supports.notations = notations;
+                                    s.supports.msTypes = msTypes;
+                                    if (callback)
+                                        return callback(s);
+                                    else
+                                        return s;
+                                });
                             });
                         });
                     });
@@ -39504,8 +39508,10 @@ var SectionApp = (function (_super) {
             _this.setState(function (s) {
                 library_ts_1.Library.destroyArray(s.primaries.libraries);
                 manuscript_ts_1.Manuscript.destroyArray(s.primaries.manuscripts);
+                sn.Section.destroyArray(s.primaries.sections);
                 s.primaries.library = null;
                 s.primaries.manuscript = null;
+                s.primaries.section = null;
                 s.primaries.libraries = ls;
                 s.primaries.manuscripts = ms;
                 s.primaries.library = l;
@@ -39515,6 +39521,90 @@ var SectionApp = (function (_super) {
                 return s;
             });
         });
+    };
+    SectionApp.prototype.reloadSections = function () {
+        var _this = this;
+        this.setLoader('Loading Sections...');
+        var libSiglum = (this.state.primaries.library
+            ? this.state.primaries.library.libSiglum
+            : null);
+        var msSiglum = (this.state.primaries.manuscript
+            ? this.state.primaries.manuscript.msSiglum
+            : null);
+        this.loadSections(libSiglum, msSiglum, function (ss) {
+            _this.setState(function (s) {
+                sn.Section.destroyArray(s.primaries.sections);
+                s.primaries.section = null;
+                s.primaries.sections = ss;
+                s.panel = Panel.TABLE;
+                return s;
+            });
+        });
+    };
+    SectionApp.prototype.openEntity = function (s) { };
+    SectionApp.prototype.openEdit = function (stn) {
+        this.setState(function (s) {
+            s.primaries.section = stn;
+            s.panel = Panel.EDIT;
+            return s;
+        });
+    };
+    SectionApp.prototype.confirmDelete = function (section) {
+        var _this = this;
+        var del = confirm('Delete ' + section.libSiglum + ' ' + section.msSiglum + ' ' + section.sectionID +
+            '? This will delete all children of this section as well!');
+        if (del) {
+            ProxyFactory_ts_1.default.getSectionProxy().deleteSection(section.libSiglum, section.msSiglum, section.sectionID, function (success, e) {
+                if (e) {
+                    return alert(e);
+                }
+                if (!success) {
+                    return alert('Failed to delete section.');
+                }
+                _this.setState(function (s) {
+                    var i = s.primaries.sections.findIndex(function (sec) {
+                        return section.libSiglum === sec.libSiglum && section.msSiglum === sec.msSiglum &&
+                            section.sectionID === sec.sectionID;
+                    });
+                    s.primaries.sections[i].destroy();
+                    s.primaries.sections.splice(i, 1);
+                    return s;
+                });
+            });
+        }
+    };
+    SectionApp.prototype.saveManuscript = function (p, isNew) {
+        var _this = this;
+        this.setLoader('Saving Section...');
+        if (isNew) {
+            ProxyFactory_ts_1.default.getSectionProxy().createSection(p, function (stn, e) {
+                if (e) {
+                    return alert(e);
+                }
+                _this.setState(function (s) {
+                    s.primaries.sections.push(stn);
+                    s.panel = Panel.TABLE;
+                    return s;
+                });
+            });
+        }
+        else {
+            ProxyFactory_ts_1.default.getSectionProxy().updateSection(p, function (stn, e) {
+                if (e) {
+                    return alert(e);
+                }
+                _this.setState(function (s) {
+                    var i = s.primaries.sections.findIndex(function (o) {
+                        return p.libSiglum === o.libSiglum && p.sectionID === o.sectionID
+                            && p.msSiglum === o.msSiglum;
+                    });
+                    s.primaries.sections[i].destroy();
+                    s.primaries.sections[i] = stn;
+                    s.panel = Panel.TABLE;
+                    return s;
+                });
+            });
+        }
     };
     return SectionApp;
 }(React.Component));
@@ -39739,28 +39829,138 @@ var SectionInitPanel = (function (_super) {
             React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Sections"),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
                 React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
-            (React.createElement(react_bootstrap_1.Row, { key: "actions", className: "mb60" },
+            (React.createElement(react_bootstrap_1.Row, { key: "actions", className: "mb30" },
                 React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 1 },
                     React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.FILTER); } }, "Filter Sections")),
                 React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 2 },
                     React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.TABLE); } }, "Load all Sections")))),
-            (React.createElement(react_bootstrap_1.Row, { key: "entities1", className: "mb30" },
-                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.CENTURY); } }, "Centuries")),
-                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.CURSUS); } }, "Cursuses")),
-                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.SRC_COMP); } }, "Source Completenesses")))),
-            (React.createElement(react_bootstrap_1.Row, { key: "entities2", className: "mb30" },
-                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.PROVENANCE); } }, "Provenances")),
-                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.NOTATION); } }, "Notations"))))
         ];
     };
     return SectionInitPanel;
 }(React.Component));
 exports.default = SectionInitPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/section/SectionTablePanel.tsx":
+/*!******************************************************!*\
+  !*** ./src/components/section/SectionTablePanel.tsx ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
+__webpack_require__(/*! react-virtualized/styles.css */ "./node_modules/react-virtualized/styles.css");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SearchBar_tsx_1 = __webpack_require__(/*! @src/components/common/SearchBar.tsx */ "./src/components/common/SearchBar.tsx");
+var index_tsx_1 = __webpack_require__(/*! @src/index.tsx */ "./src/index.tsx");
+var SectionTablePanel = (function (_super) {
+    __extends(SectionTablePanel, _super);
+    function SectionTablePanel(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            rowGetter: function (i) { return _this.state.sections[i.index]; },
+            sections: _this.props.sections,
+        };
+        _this.getHeader = _this.getHeader.bind(_this);
+        _this.refreshSections = _this.refreshSections.bind(_this);
+        _this.renderView = _this.renderView.bind(_this);
+        _this.renderEdit = _this.renderEdit.bind(_this);
+        _this.renderDelete = _this.renderDelete.bind(_this);
+        _this.filter = _this.filter.bind(_this);
+        return _this;
+    }
+    SectionTablePanel.prototype.getHeader = function () {
+        var h = 'Section';
+        if (this.props.manuscript) {
+            if (this.props.library) {
+                h += ' - ' + this.props.library.library + ' ' + this.props.manuscript.msSiglum;
+            }
+            else {
+                h += ' - ' + this.props.manuscript.msSiglum;
+            }
+        }
+        return h;
+    };
+    SectionTablePanel.prototype.render = function () {
+        var _this = this;
+        return [
+            React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.getHeader()),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Row, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "success", onClick: function () { return _this.props.onEdit(null); }, className: "ml15" }, "New")),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by libSiglum, msSiglum, and sectionID...", onSubmit: this.filter })),
+                    React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.sections.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_virtualized_1.Column, { label: "Lib Siglum", dataKey: "libSiglum", width: 100 }),
+                React.createElement(react_virtualized_1.Column, { label: "MS Siglum", dataKey: "msSiglum", width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 380 }),
+                React.createElement(react_virtualized_1.Column, { label: "Section ID", dataKey: "sectionID", width: 100 }),
+                React.createElement(react_virtualized_1.Column, { dataKey: "", width: 60, cellRenderer: this.renderView }),
+                React.createElement(react_virtualized_1.Column, { dataKey: "", width: 60, cellRenderer: this.renderEdit }),
+                React.createElement(react_virtualized_1.Column, { dataKey: "", width: 60, cellRenderer: this.renderDelete })))
+        ];
+    };
+    SectionTablePanel.prototype.refreshSections = function (ss) {
+        this.setState(function (s) {
+            s.sections = ss;
+            return s;
+        });
+    };
+    SectionTablePanel.prototype.renderEdit = function (p) {
+        var _this = this;
+        var s = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onEdit(s); } }, "Edit"));
+    };
+    SectionTablePanel.prototype.renderDelete = function (p) {
+        var _this = this;
+        var s = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onDelete(s); } }, "Delete"));
+    };
+    SectionTablePanel.prototype.renderView = function (p) {
+        var _this = this;
+        var s = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onView(s); } }, "View"));
+    };
+    SectionTablePanel.prototype.filter = function (v) {
+        var _this = this;
+        this.setState(function (s) {
+            if (v) {
+                s.sections = _this.props.sections.filter(function (s) {
+                    return s.libSiglum.toLowerCase().indexOf(v) !== -1 ||
+                        s.sectionID.toString().toLowerCase().indexOf(v) !== -1 ||
+                        s.msSiglum.toLowerCase().indexOf(v) !== -1;
+                });
+            }
+            else {
+                s.sections = _this.props.sections;
+            }
+            return s;
+        });
+    };
+    return SectionTablePanel;
+}(React.Component));
+exports.default = SectionTablePanel;
 
 
 /***/ }),
@@ -40801,6 +41001,47 @@ var SectionProxy = (function (_super) {
             else {
                 SpgProxy_ts_1.default.callbackError(callback, null);
             }
+        });
+    };
+    SectionProxy.prototype.createSection = function (p, callback) {
+        var params = {
+            action: 'CreateSection'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            callback(new sn.Section(d), null);
+        });
+    };
+    SectionProxy.prototype.updateSection = function (p, callback) {
+        var params = {
+            action: 'UpdateSection'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            callback(new sn.Section(d), null);
+        });
+    };
+    SectionProxy.prototype.deleteSection = function (libSiglum, msSiglum, sectionID, callback) {
+        var params = {
+            action: 'DeleteSection',
+            libSiglum: libSiglum,
+            msSiglum: msSiglum,
+            sectionID: sectionID
+        };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            callback(Boolean(d.success), null);
         });
     };
     SectionProxy.prototype.getCenturies = function (callback) {

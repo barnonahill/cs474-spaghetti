@@ -34,6 +34,58 @@ export default class SectionProxy extends SpgProxy {
 		});
 	}
 
+	createSection(p:sn.Properties, callback: (s:sn.Section, e?:string) => void) {
+		var params:any = {
+			action: 'CreateSection'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.e) {
+				return SpgProxy.callbackError(callback, d.e);
+			}
+
+			callback(new sn.Section(d), null);
+		});
+	}
+
+	updateSection(p:sn.Properties, callback: (s:sn.Section, e?:string) => void) {
+		var params:any = {
+			action: 'UpdateSection'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.e) {
+				return SpgProxy.callbackError(callback, d.e);
+			}
+
+			callback(new sn.Section(d), null);
+		});
+	}
+
+	deleteSection(libSiglum:string, msSiglum:string, sectionID:number,
+		callback: (s:boolean, e?:string) => void)
+	{
+		var params:any = {
+			action: 'DeleteSection',
+			libSiglum: libSiglum,
+			msSiglum: msSiglum,
+			sectionID: sectionID
+		};
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.e) {
+				return SpgProxy.callbackError(callback, d.e);
+			}
+			
+			callback(Boolean(d.success), null);
+		});
+	}
+
 	getCenturies(callback: (centuries:cty.Century[], e?:string) => void) {
 		var params = {action:'GetCenturies'};
 
