@@ -6,6 +6,8 @@ import java.util.HashMap;
 
 import spg.models.Century;
 import spg.models.Cursus;
+import spg.models.Notation;
+import spg.models.Provenance;
 import spg.models.Section;
 import spg.models.SourceCompleteness;
 
@@ -286,6 +288,40 @@ public class SectionController {
 			al = new ArrayList<>();
 			while (rs.next()) {
 				al.add(new SourceCompleteness(rs));
+			}
+			return al;
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public static ArrayList<Provenance> getProvenances() {
+		String query = SpgController.buildSelectQuery("Provenance", null);
+		ArrayList<Provenance> al = null;
+		
+		try {
+			ResultSet rs = SpgController.getResultSet(query);
+			al = new ArrayList<>();
+			while (rs.next()) {
+				al.add(new Provenance(rs));
+			}
+			return al;
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public static ArrayList<Notation> getNotations() {
+		String query = SpgController.buildSelectQuery("Provenance", null);
+		ArrayList<Notation> al = null;
+		
+		try {
+			ResultSet rs = SpgController.getResultSet(query);
+			al = new ArrayList<>();
+			while (rs.next()) {
+				al.add(new Notation(rs));
 			}
 			return al;
 		}
