@@ -128,9 +128,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 				/>);
 			case Panel.EDIT:
 				return (<EditPanel
-					country={this.state.country}
 					countries={this.props.countries}
-					library={this.state.library}
 					msTypes={this.state.msTypes}
 					manuscript={this.state.manuscript}
 					onBack={() => this.changePanel(Panel.TABLE)}
@@ -424,11 +422,12 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					this.setState((s:S) => {
 						var i = s.manuscripts.findIndex(m => {
 							return man.libSiglum === m.libSiglum &&
-								man.msSiglum === m.libSiglum;
+								man.msSiglum === m.msSiglum;
 						});
 
 						s.manuscripts[i].destroy();
 						s.manuscripts[i] = man;
+						s.panel = Panel.TABLE;
 						return s;
 					})
 				}
