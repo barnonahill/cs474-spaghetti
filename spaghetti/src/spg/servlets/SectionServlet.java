@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import spg.controllers.ManuscriptController;
 import spg.controllers.SectionController;
 import spg.models.Section;
 
@@ -140,6 +141,11 @@ private static final long serialVersionUID = 1L;
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
+		if(SectionController.getSectionOrNull(libSiglum, msSiglum, sectionID) != null) {
+			throw new Exception("Section with same libSiglum, msType, and sectionID already exists.");
+		}
+		
+		
 		Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);

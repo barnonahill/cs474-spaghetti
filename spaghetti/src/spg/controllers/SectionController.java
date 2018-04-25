@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import spg.models.Manuscript;
 import spg.models.Section;
 
 public class SectionController {
@@ -61,10 +62,43 @@ public class SectionController {
 	}
 	
 	
+	/**
+	 * gets all the sections filtered by libSiglum or msSiglum (but not by countryID yet)
+	 * @param countryID -
+	 * @param libSiglum - primary key
+	 * @param msSiglum - primary key
+	 * @return - a list of all the selected Libraries
+	 * @throws Exception - anything (SQLEception, ...)
+	 */
 	public static ArrayList<Section> getSections(String countryID, String libSiglum, String msSiglum ) throws Exception{
-		
 		//get from r to l only the ones that are in that. (msSiglum if given, else lib if given, then countryID if given).
-		return null;
+		HashMap<String, String> namesToValues = null;
+		String query;
+		ResultSet resultSet;
+		Section s;
+		ArrayList<Section> sections= new ArrayList<Section>();
+
+		//
+		if(libSiglum != null) {
+			namesToValues = new HashMap<String, String>();
+			namesToValues.put("libSiglum", libSiglum);
+		}
+		if(msSiglum != null) {
+			namesToValues = new HashMap<String, String>();
+			namesToValues.put("msSiglum", msSiglum);
+		}
+		//@Paul, I thought we went over this. since countryID is in libSiglum we don't need it. we just need libSiglum.
+		
+		query = SpgController.buildSelectQuery(SECTION, namesToValues);
+		
+		resultSet = SpgController.getResultSet(query);
+		
+		while (resultSet.next()) {
+			s = new Section(resultSet);
+			sections.add(s);
+		}
+		
+		return sections;
 	}
 	
 	/**
@@ -86,6 +120,37 @@ public class SectionController {
 		SpgController.executeSQL(query);
 				
 		return true;
+	}
+
+
+	/**
+	 * for checking if a Section already exists.
+	 * @param libSiglum - primary keys
+	 * @param msSiglum - 
+	 * @param sectionID - 
+	 * @return A library or null.
+	 */
+	public static Object getSectionOrNull(String libSiglum, String msSiglum, String sectionID) {
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+		Section s = null;
+		String query;
+		ResultSet resultSet;
+		
+		namesToValues.put("libSiglum", libSiglum);
+		namesToValues.put("msSiglum", msSiglum);
+		namesToValues.put("sectionID", sectionID);
+		
+		
+		query = SpgController.buildSelectQuery(SECTION, namesToValues);
+		try {
+			resultSet = SpgController.getResultSet(query);
+			resultSet.next();
+			s = new Section(resultSet);
+		} catch (Exception e) {
+			//Do nothing. aka return null. 
+		}
+		
+		return s;
 	}
 
 
