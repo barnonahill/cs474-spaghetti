@@ -4,12 +4,11 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import spg.models.Manuscript;
 import spg.models.Section;
 
 /**
  * 
- * @author Kyle Tran
+ * @author Carl Clermont, Kyle Tran, Zach Butts
  *
  */
 public class SectionController {
@@ -17,7 +16,12 @@ public class SectionController {
 	private final static String SECTION = "Section";
 
 	
-	
+	/**
+	 * 
+	 * @params - all the colums of Section
+	 * @return
+	 * @throws Exception
+	 */
 	public static Section createSection(String libSiglum, String msSiglum, String sectionID, String sectionType,
 			String liturgicalOccassion, String notationID, String numGatherings, String numColumns,
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
@@ -63,9 +67,15 @@ public class SectionController {
    				provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 
     	return section;
-}
+	}
 	
 	
+	/**
+	 * 
+	 * @params -
+	 * @return -
+	 * @throws Exception -
+	 */
 	public static Section updateSection(String libSiglum, String msSiglum, String sectionID, String sectionType,
 			String liturgicalOccassion, String notationID, String numGatherings, String numColumns,
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,

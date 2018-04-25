@@ -11,7 +11,6 @@ import spg.models.Library;
 /**
  * LibraryController - Static methods used for handling Library and Country sql commands.
  * @author Carl Clermont
- * From Carl, to Reader: I am an idiot who forgot about maps, so you are gonna have to use two arraylists. yay me.
  *
  */
 public class LibraryController {

@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 
 /**
  * @author Carl Clermont
- * @version 4/16/18
  */
 
 public abstract class SpgController extends HttpServlet{

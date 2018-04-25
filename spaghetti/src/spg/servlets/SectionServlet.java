@@ -11,13 +11,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import spg.controllers.ManuscriptController;
 import spg.controllers.SectionController;
 import spg.models.Section;
 
 /**
  * 
- * @author Kyle Tran
+ * @author Carl Clermont, Kyle Tran
  *
  */
 @WebServlet(name="SectionServices", urlPatterns= {"/section"})
