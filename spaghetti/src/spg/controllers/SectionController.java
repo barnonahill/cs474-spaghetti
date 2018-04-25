@@ -20,8 +20,44 @@ public class SectionController {
 			String inscription, String colophon, String sourceCompletenessID) throws Exception
 	{
 		
-		return null;
-	}
+		String query;
+        	Section section;
+
+        	HasMap<String, String> namesToValues = new HashMap<String, String>();
+        
+    		if(lib == null)
+    		{
+        	throw new Exception("libSiglum cannot be left empty or blank.");
+		}
+    
+   	 	namesToValues.put("libSiglum", libSiglum);
+   	 	namesToValues.put("msSiglum", msSiglum);
+   	 	namesToValues.put("sectionID", sectionID);
+  	 	namesToValues.put("sectionType", sectionType);
+  	 	namesToValues.put("liturgicalOccassion", liturgicalOccassion);
+  	 	namesToValues.put("notationID", notationID);
+ 	 	namesToValues.put("numGatherings", numGatherings);
+ 	 	namesToValues.put("numColumns", numColumns);
+         	namesToValues.put("linesPerColumn", linesPerColumn);
+ 	 	namesToValues.put("scribe", scribe);
+    	 	namesToValues.put("date", date);
+	 	namesToValues.put("centuryID", centuryID);
+    	 	namesToValues.put("cursusID", cursusID);
+    	 	namesToValues.put("provenanceID", provenanceID);
+    		namesToValues.put("provenanceDetail", provenanceDetail);
+    		namesToValues.put("commissioner", commissioner);
+    		namesToValues.put("inscription", inscription);
+    		namesToValues.put("colophon", colophon);
+    		namesToValues.put("sourceCompletenessID", sourceCompletenessID);
+
+
+    		query = SpgController.buildInsertQuery(LIBRARY, namesToValues);
+    		SpgController.executeSQL(query);
+    
+   		section = new Library(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, notationID, numGatherings, numColumns, linesPerColumn, scribe, date, centuryID, cursusID, provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
+
+    		return section;
+}
 	
 	
 	public static Section updateSection(String libSiglum, String msSiglum, String sectionID, String sectionType,
