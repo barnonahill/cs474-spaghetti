@@ -13,7 +13,11 @@ import org.json.JSONObject;
 
 import spg.controllers.SectionController;
 import spg.models.Century;
+import spg.models.Cursus;
+import spg.models.Notation;
+import spg.models.Provenance;
 import spg.models.Section;
+import spg.models.SourceCompleteness;
 
 /**
  * 
@@ -309,7 +313,7 @@ private static final long serialVersionUID = 1L;
 		
 		JSONArray j = new JSONArray();
 		for (Notation n : note) {
-			j.put(note.toJSON());
+			j.put(n.toJSON());
 		}
 		
 		return j.toString();

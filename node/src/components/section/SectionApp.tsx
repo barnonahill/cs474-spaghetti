@@ -12,6 +12,7 @@ import { Cursus } from '@src/models/cursus.ts';
 import { SourceCompleteness } from '@src/models/sourceCompleteness.ts';
 import { Provenance } from '@src/models/provenance.ts';
 import { Notation } from '@src/models/notation.ts';
+import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
 enum Panel {
 	INIT=0,
@@ -33,6 +34,11 @@ interface P {
 interface S {
 	panel: Panel
 	loadMessage?: string
+	centuries?: Century[]
+	cursuses?: Cursus[]
+	srcComps?: SourceCompleteness[]
+	provs?: Provenance[]
+	notations?: Notation[]
 }
 export default class SectionApp extends React.Component<P,S> {
 	constructor(p:P) {
@@ -75,5 +81,15 @@ export default class SectionApp extends React.Component<P,S> {
 
 	renderLoader() {
 		return <PageLoader inner={this.state.loadMessage} />;
+	}
+
+	loadCenturies() {
+		this.setState((s:S) => {
+			s.panel = Panel.LOADER;
+			s.loadMessage = 'Loading Centuries...';
+			return s;
+		});
+
+		
 	}
 }
