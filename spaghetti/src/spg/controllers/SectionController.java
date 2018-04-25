@@ -314,7 +314,7 @@ public class SectionController {
 	}
 	
 	public static ArrayList<Notation> getNotations() {
-		String query = SpgController.buildSelectQuery("Provenance", null);
+		String query = SpgController.buildSelectQuery("Notation", null);
 		ArrayList<Notation> al = null;
 		
 		try {
