@@ -54,6 +54,10 @@ interface S {
 		sections?: sn.Section[]
 		section?: sn.Section
 	}
+	temp: {
+		library?: Library
+		manuscript?: Manuscript
+	}
 	supports: {
 		centuries?: Century[]
 		cursuses?: Cursus[]
@@ -71,7 +75,8 @@ export default class SectionApp extends React.Component<P,S> {
 			panel: Panel.LOADER,
 			loadMessage: 'Loading Supports...',
 			primaries: {},
-			supports: {}
+			supports: {},
+			temp: {}
 		};
 
 		this.renderInit = this.renderInit.bind(this);
@@ -89,6 +94,8 @@ export default class SectionApp extends React.Component<P,S> {
 		this.loadSupports = this.loadSupports.bind(this);
 
 		this.loadSections = this.loadSections.bind(this);
+		this.loadLibraries = this.loadLibraries.bind(this);
+		this.loadManuscripts = this.loadManuscripts.bind(this);
 
 		this.changePanel = this.changePanel.bind(this);
 		this.setLoader = this.setLoader.bind(this);
@@ -286,6 +293,24 @@ export default class SectionApp extends React.Component<P,S> {
 		});
 	}
 
+	loadLibraries(countryID:string, callback: (a: Library[]) => void) {
+		proxyFactory.getLibraryProxy().getLibraries(countryID, (a, e?) => {
+			if (e) {
+				return alert(e);
+			}
+			return callback(a);
+		});
+	}
+
+	loadManuscripts(libSiglum: string, callback: (a: Manuscript[]) => void) {
+		proxyFactory.getManuscriptProxy().getManuscripts(null, libSiglum, (a, e?) => {
+			if (e) {
+				return alert(e);
+			}
+			return callback(a);
+		});
+	}
+
 	changePanel(p:Panel, callback?: (s:S) => S) {
 		this.setState((s:S) => {
 			s.panel = p;
@@ -368,6 +393,22 @@ export default class SectionApp extends React.Component<P,S> {
 	openEntity(s:sn.Section) {}
 
 	openEdit(stn:sn.Section) {
+		this.setLoader('Loading Libraries...');
+		var i = stn.libSiglum.indexOf('-');
+		var countryID = stn.libSiglum.slice(0, i);
+
+		this.loadLibraries(countryID, (ls:Library[]) => {
+			this.setLoader('Loading Manuscripts...');
+
+			this.loadManuscripts(stn.libSiglum, (ms: Manuscript[]) => {
+				this.setState((s:S) => {
+					s.temp.library = ls.find(l => stn.libSiglum === l.libSiglum);
+					s.temp.manuscript = ms.find(m => stn.libSiglum === m.libSiglum
+						&& stn.msSiglum === m.msSiglum);
+				});
+			});
+		});
+
 		this.setState((s:S) => {
 			s.primaries.section = stn;
 			s.panel = Panel.EDIT;
