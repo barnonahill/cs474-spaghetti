@@ -270,6 +270,37 @@ public class ManuscriptController {
 
 
 
+	
+	
+	
+	/**
+	 * 
+	 * @param getLibSiglum
+	 * @param getMSSiglum
+	 * @return
+	 * @throws Exception
+	 */
+	public static Manuscript getManuscriptOrNull(String libSiglum, String msSiglum) {
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+		Manuscript ms = null;
+		String query;
+		ResultSet resultSet;
+		
+		namesToValues.put("libSiglum", libSiglum);
+		namesToValues.put("msSiglum", msSiglum);
+		query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
+
+		try {
+			resultSet = SpgController.getResultSet(query);
+			resultSet.next();
+			ms = new Manuscript(resultSet);
+		} catch (Exception e) {
+			//This method is meant to cut of the exception. its for testing if a ms already exists.
+		}
+		
+		
+		return ms;
+	}
 
 	
 }

@@ -16,7 +16,7 @@ import spg.models.Section;
 
 /**
  * 
- * @author Kyle Tran
+ * @author Carl Clermont, Kyle Tran
  *
  */
 @WebServlet(name="SectionServices", urlPatterns= {"/section"})
@@ -140,6 +140,11 @@ private static final long serialVersionUID = 1L;
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
+		if(SectionController.getSectionOrNull(libSiglum, msSiglum, sectionID) != null) {
+			throw new Exception("Section with same libSiglum, msType, and sectionID already exists.");
+		}
+		
+		
 		Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);

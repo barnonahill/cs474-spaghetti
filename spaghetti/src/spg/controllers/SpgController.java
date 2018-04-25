@@ -4,9 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 
@@ -14,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 
 /**
  * @author Carl Clermont
- * @version 4/16/18
  */
 
 public abstract class SpgController extends HttpServlet {
