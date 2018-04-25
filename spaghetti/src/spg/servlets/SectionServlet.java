@@ -12,11 +12,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import spg.controllers.SectionController;
+import spg.models.Century;
 import spg.models.Section;
 
 /**
  * 
- * @author Carl Clermont, Kyle Tran
+ * @author Paul Barnhill, Carl Clermont, Kyle Tran
  *
  */
 @WebServlet(name="SectionServices", urlPatterns= {"/section"})
@@ -30,6 +31,8 @@ private static final long serialVersionUID = 1L;
 	public static final String GET_SECTIONS 	= "getsections";
 	public static final String DELETE_SECTION	= "deletesections";
 	
+	public static final String GET_CENTURIES = "GetCenturies";
+	
 	
 	@Override
 	public void handleRequest(HttpServletRequest req, HttpServletResponse res) throws IOException {
@@ -38,7 +41,7 @@ private static final long serialVersionUID = 1L;
 			Map<String, String> params = super.getParameters(req);
 			String action = super.getParameter(params, "action").toLowerCase();
 			String msg = null;
-			if (action.equalsIgnoreCase("CREATE_SECTION"))
+			if (action.equalsIgnoreCase(CREATE_SECTION))
             {
 				String libSiglum = super.getParameter(params, "libSiglum");
 				String msSiglum = super.getParameter(params, "msSiglum");
@@ -65,7 +68,7 @@ private static final long serialVersionUID = 1L;
 						provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
             }
 
-            else if (action.equalsIgnoreCase("UPDATE_SECTION"))
+            else if (action.equalsIgnoreCase(UPDATE_SECTION))
             {
 				String libSiglum = super.getParameter(params, "libSiglum");
 				String msSiglum = super.getParameter(params, "msSiglum");
@@ -92,14 +95,14 @@ private static final long serialVersionUID = 1L;
 						provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
             }
             
-            else if (action.equalsIgnoreCase("GET_SECTION"))
+            else if (action.equalsIgnoreCase(GET_SECTION))
             {
 				String libSiglum = super.getParameter(params, "libSiglum");
 				String msSiglum = super.getParameter(params, "msSiglum");
 				String sectionID = super.getParameter(params, "sectionID");
 				msg = this.getSection(libSiglum, msSiglum, sectionID);
             }
-            else if (action.equalsIgnoreCase("GET_SECTIONS"))
+            else if (action.equalsIgnoreCase(GET_SECTIONS))
             {
 				String libSiglum = super.getParameter(params, "libSiglum");
 				String msSiglum = super.getParameter(params, "msSiglum");
@@ -107,13 +110,19 @@ private static final long serialVersionUID = 1L;
 				msg = this.getSections(libSiglum, msSiglum, sectionID);
             }
             
-            else if(action.equalsIgnoreCase("DELETE_SECTION"))
+            else if (action.equalsIgnoreCase(DELETE_SECTION))
             {
 				String libSiglum = super.getParameter(params, "libSiglum");
 				String msSiglum = super.getParameter(params, "msSiglum");
 				String sectionID = super.getParameter(params, "sectionID");
 				msg = this.deleteSection(libSiglum, msSiglum, sectionID);
             }
+			
+            else if (action.equalsIgnoreCase(GET_CENTURIES))
+            {
+            	msg = this.getCenturies();
+            }
+			
             else
             {
                 throw new Exception("Invalid action parameter.");
@@ -214,6 +223,20 @@ private static final long serialVersionUID = 1L;
 		SectionController.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
 		JSONObject j = new JSONObject();
         j.put("success", true);
+		return j.toString();
+	}
+	
+	private String getCenturies() throws Exception {
+		ArrayList<Century> centuries = SectionController.getCenturies();
+		if (centuries == null) {
+			throw new Exception("Could not load centuries.");
+		}
+		
+		JSONArray j = new JSONArray();
+		for (Century c : centuries) {
+			j.put(c.toJSON());
+		}
+		
 		return j.toString();
 	}
 

@@ -4,11 +4,12 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import spg.models.Century;
 import spg.models.Section;
 
 /**
  * 
- * @author Carl Clermont, Kyle Tran, Zach Butts
+ * @author Paul Barnhill, Carl Clermont, Kyle Tran, Zach Butts
  *
  */
 public class SectionController {
@@ -238,6 +239,23 @@ public class SectionController {
 		}
 		
 		return s;
+	}
+	
+	public static ArrayList<Century> getCenturies() {
+		String query = SpgController.buildSelectQuery("Century", null);
+		ArrayList<Century> centuries = null;
+		
+		try {
+			ResultSet rs = SpgController.getResultSet(query);
+			centuries = new ArrayList<>();
+			while (rs.next()) {
+				centuries.add(new Century(rs));
+			}
+			return centuries;
+		}
+		catch (Exception e) {
+			return null;
+		}
 	}
 
 

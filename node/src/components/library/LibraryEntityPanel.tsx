@@ -7,29 +7,49 @@ import {
 	Button
 } from 'react-bootstrap';
 
+import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
+
+import ManuscriptApp, {
+	Panel as MsPanelEnum
+} from '@src/components/manuscript/ManuscriptApp.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
+import { Manuscript } from '@src/models/manuscript.ts';
+import { MsType } from '@src/models/msType.ts';
+import proxyFactory from '@src/proxies/ProxyFactory.ts';
+
+enum Panel {
+	ENT=0,
+	MS=1
+}
 
 interface P {
+	countries: Country[]
 	country: Country;
 	library: Library;
 	onBack: () => void
 }
 interface S {
+	panel: Panel
 	address: string
 	google: string
+	manuscripts?: Manuscript[]
+	msTypes?: MsType[]
 }
-
 
 export default class LibraryEntityPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 		this.state = {
+			panel: Panel.ENT,
 			address: this.formatAddress(),
 			google: this.getGoogleMapsUrl()
 		};
+
+		this.getEntityPanel = this.getEntityPanel.bind(this);
+		this.getManuscriptApp = this.getManuscriptApp.bind(this);
 	}
 
 	getGoogleMapsUrl() {
@@ -88,43 +108,96 @@ export default class LibraryEntityPanel extends React.Component<P,S> {
 	}
 
 	render() {
-		const c = this.props.country;
-		const l = this.props.library;
-		return [
-			(<PanelMenu key="panelMenu">
-				<Button bsStyle="default" onClick={this.props.onBack}>Back</Button>
+		switch (this.state.panel) {
+			case Panel.ENT:
+			default:
+				return this.getEntityPanel();
 
-				<a href={this.state.google} target="_blank" className="ml15">
-					<Button bsStyle="info">Google Maps</Button>
-				</a>
-			</PanelMenu>),
+			case Panel.MS:
+				return this.getManuscriptApp();
+		}
+	}
 
-			(<Form horizontal key="form">
+	getEntityPanel() {
+		var x: JSX.Element[] = [];
+		x.push(<Header key="header" min>{this.props.library.library}</Header>);
+		x.push(<PanelMenu key="panelMenu">
+			<Button bsStyle="default" onClick={this.props.onBack}>Back</Button>
+
+			<a href={this.state.google} target="_blank" className="ml15">
+				<Button bsStyle="info">Google Maps</Button>
+			</a>
+
+			<Button
+				bsStyle="info"
+				className="fr"
+				onClick={() => this.setState((s:S) => {
+					s.panel = Panel.MS;
+					return s;
+				})}
+			>Manuscripts</Button>
+		</PanelMenu>);
+
+		x.push(<Form horizontal key="form">
 			<FormGroup>
 				<Col sm={3} componentClass={ControlLabel}>Library Siglum:</Col>
-				<Col sm={4} className="pt7">{l.libSiglum}</Col>
+				<Col sm={4} className="pt7">{this.props.library.libSiglum}</Col>
 			</FormGroup>
 
 			<FormGroup>
 				<Col sm={3} componentClass={ControlLabel}>Library Name:</Col>
-				<Col sm={4} className="pt7">{l.library}</Col>
+				<Col sm={4} className="pt7">{this.props.library.library}</Col>
 			</FormGroup>
 
 			<FormGroup>
 				<Col sm={3} componentClass={ControlLabel}>City:</Col>
-				<Col sm={4} className="pt7">{l.city}</Col>
+				<Col sm={4} className="pt7">{this.props.library.city}</Col>
 			</FormGroup>
 
 			<FormGroup>
 				<Col sm={3} componentClass={ControlLabel}>Country:</Col>
-				<Col sm={4} className="pt7">{c.country}</Col>
+				<Col sm={4} className="pt7">{this.props.country.country}</Col>
 			</FormGroup>
 
 			<FormGroup>
 				<Col sm={3} componentClass={ControlLabel}>Address:</Col>
 				<Col sm={4} className="pt7">{this.renderMultiLine(this.state.address)}</Col>
 			</FormGroup>
-		</Form>)
-	];
+		</Form>);
+
+		return x;
+	}
+
+	getManuscriptApp() {
+		return (<ManuscriptApp
+			panel={MsPanelEnum.TABLE}
+			countries={this.props.countries}
+			country={this.props.country}
+			library={this.props.library}
+
+			onBack={() => this.setState((s:S) => {
+				s.panel = Panel.ENT;
+				return s;
+			})}
+		/>);
+	}
+
+	loadManuscripts(callback?: (s:S) => S) {
+		proxyFactory.getManuscriptProxy()
+			.getManuscripts(this.props.country.countryID, this.props.library.libSiglum, (m, e?) =>
+		{
+			if (e) {
+				alert(e);
+			}
+			else {
+				this.setState((s:S) => {
+					Manuscript.destroyArray(s.manuscripts);
+					s.manuscripts = m;
+
+					if (callback) return callback(s);
+					return s;
+				});
+			}
+		});
 	}
 }

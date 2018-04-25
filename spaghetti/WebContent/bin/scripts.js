@@ -36807,14 +36807,16 @@ var SpaghettiApp = (function (_super) {
     }
     SpaghettiApp.prototype.render = function () {
         var _this = this;
-        return [
-            React.createElement(Header_tsx_1.default, { key: "header" }, "Select an Entity Application"),
-            (React.createElement(react_bootstrap_1.Row, { key: "apps", className: "apps" },
-                React.createElement(react_bootstrap_1.Col, { sm: 3 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "mt20 w100p", onClick: function () { return _this.props.onSelect(index_tsx_1.App.LIB); } }, "Library")),
-                React.createElement(react_bootstrap_1.Col, { sm: 3 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "mt20 w100p", onClick: function () { return _this.props.onSelect(index_tsx_1.App.MS); } }, "Manuscript"))))
-        ];
+        var x = [];
+        x.push(React.createElement(Header_tsx_1.default, { key: "header" }, "Select an Entity Application"));
+        x.push(React.createElement(react_bootstrap_1.Row, { key: "apps" },
+            React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "mt20 w100p", onClick: function () { return _this.props.onSelect(index_tsx_1.App.LIB); } }, "Library")),
+            React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "mt20 w100p", onClick: function () { return _this.props.onSelect(index_tsx_1.App.MS); } }, "Manuscript")),
+            React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "mt20 w100p" }, "Section"))));
+        return x;
     };
     return SpaghettiApp;
 }(React.Component));
@@ -37190,10 +37192,7 @@ var LibraryApp = (function (_super) {
             case View.TABLE:
                 return (React.createElement(LibraryTablePanel_tsx_1.default, { key: "panel", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick, onRefresh: function () { return _this.onCountrySelect(_this.state.country); }, onBack: function () { return _this.changeView(View.INIT, { country: _this.state.country }); } }));
             case View.ENTITY:
-                return [
-                    React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.library.library),
-                    (React.createElement(LibraryEntityPanel_tsx_1.default, { key: "panel", country: this.state.country, library: this.state.library, onBack: function () { return _this.changeView(View.TABLE, null); } }))
-                ];
+                return (React.createElement(LibraryEntityPanel_tsx_1.default, { countries: this.props.countries, country: this.state.country, library: this.state.library, onBack: function () { return _this.changeView(View.TABLE, null); } }));
             case View.EDIT:
                 var header = this.state.country.country + ' - ' +
                     (this.state.library ? 'Edit' : 'Create') + ' Library';
@@ -37484,15 +37483,27 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var ManuscriptApp_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptApp.tsx */ "./src/components/manuscript/ManuscriptApp.tsx");
+var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var Panel;
+(function (Panel) {
+    Panel[Panel["ENT"] = 0] = "ENT";
+    Panel[Panel["MS"] = 1] = "MS";
+})(Panel || (Panel = {}));
 var LibraryEntityPanel = (function (_super) {
     __extends(LibraryEntityPanel, _super);
     function LibraryEntityPanel(p) {
         var _this = _super.call(this, p) || this;
         _this.state = {
+            panel: Panel.ENT,
             address: _this.formatAddress(),
             google: _this.getGoogleMapsUrl()
         };
+        _this.getEntityPanel = _this.getEntityPanel.bind(_this);
+        _this.getManuscriptApp = _this.getManuscriptApp.bind(_this);
         return _this;
     }
     LibraryEntityPanel.prototype.getGoogleMapsUrl = function () {
@@ -37544,30 +37555,68 @@ var LibraryEntityPanel = (function (_super) {
         });
     };
     LibraryEntityPanel.prototype.render = function () {
-        var c = this.props.country;
-        var l = this.props.library;
-        return [
-            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
-                React.createElement("a", { href: this.state.google, target: "_blank", className: "ml15" },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info" }, "Google Maps")))),
-            (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
-                React.createElement(react_bootstrap_1.FormGroup, null,
-                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.libSiglum)),
-                React.createElement(react_bootstrap_1.FormGroup, null,
-                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Name:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.library)),
-                React.createElement(react_bootstrap_1.FormGroup, null,
-                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "City:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, l.city)),
-                React.createElement(react_bootstrap_1.FormGroup, null,
-                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, c.country)),
-                React.createElement(react_bootstrap_1.FormGroup, null,
-                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.renderMultiLine(this.state.address)))))
-        ];
+        switch (this.state.panel) {
+            case Panel.ENT:
+            default:
+                return this.getEntityPanel();
+            case Panel.MS:
+                return this.getManuscriptApp();
+        }
+    };
+    LibraryEntityPanel.prototype.getEntityPanel = function () {
+        var _this = this;
+        var x = [];
+        x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.props.library.library));
+        x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+            React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+            React.createElement("a", { href: this.state.google, target: "_blank", className: "ml15" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "info" }, "Google Maps")),
+            React.createElement(react_bootstrap_1.Button, { bsStyle: "info", className: "fr", onClick: function () { return _this.setState(function (s) {
+                    s.panel = Panel.MS;
+                    return s;
+                }); } }, "Manuscripts")));
+        x.push(React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.library.libSiglum)),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Name:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.library.library)),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "City:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.library.city)),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.country.country)),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.renderMultiLine(this.state.address)))));
+        return x;
+    };
+    LibraryEntityPanel.prototype.getManuscriptApp = function () {
+        var _this = this;
+        return (React.createElement(ManuscriptApp_tsx_1.default, { panel: ManuscriptApp_tsx_1.Panel.TABLE, countries: this.props.countries, country: this.props.country, library: this.props.library, onBack: function () { return _this.setState(function (s) {
+                s.panel = Panel.ENT;
+                return s;
+            }); } }));
+    };
+    LibraryEntityPanel.prototype.loadManuscripts = function (callback) {
+        var _this = this;
+        ProxyFactory_ts_1.default.getManuscriptProxy()
+            .getManuscripts(this.props.country.countryID, this.props.library.libSiglum, function (m, e) {
+            if (e) {
+                alert(e);
+            }
+            else {
+                _this.setState(function (s) {
+                    manuscript_ts_1.Manuscript.destroyArray(s.manuscripts);
+                    s.manuscripts = m;
+                    if (callback)
+                        return callback(s);
+                    return s;
+                });
+            }
+        });
     };
     return LibraryEntityPanel;
 }(React.Component));
@@ -37760,10 +37809,25 @@ var ManuscriptApp = (function (_super) {
         return _this;
     }
     ManuscriptApp.prototype.componentDidMount = function () {
+        var _this = this;
         this.loadMsTypes(function (state, msTypes) {
             state.msType = null;
             msType_ts_1.MsType.destroyArray(state.msTypes);
-            state.panel = Panel.INIT;
+            if (_this.props.panel === Panel.TABLE) {
+                state.panel = Panel.LOADER;
+                state.loadMessage = 'Loading Manuscripts...';
+                _this.loadManuscripts(_this.props.country.countryID, _this.props.library.libSiglum, false, function (s, manuscripts) {
+                    ms.Manuscript.destroyArray(s.manuscripts);
+                    s.country = _this.props.country;
+                    s.library = _this.props.library;
+                    s.manuscripts = manuscripts;
+                    s.panel = Panel.TABLE;
+                    return s;
+                });
+            }
+            else {
+                state.panel = Panel.INIT;
+            }
             state.msTypes = msTypes;
             return state;
         });
@@ -37779,7 +37843,9 @@ var ManuscriptApp = (function (_super) {
             case Panel.FILTER:
                 return (React.createElement(ManuscriptFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSelect: this.onFilterLoad }));
             case Panel.TABLE:
-                return (React.createElement(ManuscriptTablePanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscripts: this.state.manuscripts, onBack: function () { return _this.changePanel(Panel.INIT); }, onRefresh: this.reloadManuscripts, onEdit: this.openEditPanel, onDelete: this.confirmDelete, onView: this.openEntityPanel }));
+                return (React.createElement(ManuscriptTablePanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscripts: this.state.manuscripts, onRefresh: this.reloadManuscripts, onEdit: this.openEditPanel, onDelete: this.confirmDelete, onView: this.openEntityPanel, onBack: this.props.panel === Panel.TABLE
+                        ? this.props.onBack
+                        : function () { return _this.changePanel(Panel.INIT); } }));
             case Panel.ENTITY:
                 return (React.createElement(ManuscriptEntityPanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscript: this.state.manuscript, msType: this.state.msType, onBack: this.onEntityBack }));
             case Panel.EDIT:

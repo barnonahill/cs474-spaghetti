@@ -27,6 +27,10 @@ export enum Panel {
 interface P {
 	countries: Array<Country>
 	onBack: () => void
+	// Load to this panel
+	panel?: Panel
+	country?: Country
+	library?: Library
 }
 interface S {
 	panel: Panel
@@ -85,7 +89,27 @@ export default class ManuscriptApp extends React.Component<P,S> {
 			state.msType = null;
 			MsType.destroyArray(state.msTypes);
 
-			state.panel = Panel.INIT;
+			if (this.props.panel === Panel.TABLE) {
+				// Opened from LibraryEntityPanel
+				state.panel = Panel.LOADER;
+				state.loadMessage = 'Loading Manuscripts...';
+
+				this.loadManuscripts(this.props.country.countryID, this.props.library.libSiglum, false,
+						(s:S, manuscripts:ms.Manuscript[]) =>
+				{
+					ms.Manuscript.destroyArray(s.manuscripts);
+
+					s.country = this.props.country;
+					s.library = this.props.library;
+					s.manuscripts = manuscripts;
+					s.panel = Panel.TABLE;
+					return s;
+				});
+			}
+			else {
+				state.panel = Panel.INIT;
+			}
+
 			state.msTypes = msTypes;
 			return state;
 		});
@@ -101,23 +125,28 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					onBack={this.props.onBack}
 					onSelect={this.onInitSelect}
 				/>);
+
 			case Panel.FILTER:
 				return (<FilterPanel
 					countries={this.props.countries}
 					onBack={() => this.changePanel(Panel.INIT)}
 					onSelect={this.onFilterLoad}
 				/>);
+
 			case Panel.TABLE:
 				return (<TablePanel
 					country={this.state.country}
 					library={this.state.library}
 					manuscripts={this.state.manuscripts}
-					onBack={() => this.changePanel(Panel.INIT)}
 					onRefresh={this.reloadManuscripts}
 					onEdit={this.openEditPanel}
 					onDelete={this.confirmDelete}
 					onView={this.openEntityPanel}
+					onBack={this.props.panel === Panel.TABLE
+						? this.props.onBack
+						: () => this.changePanel(Panel.INIT)}
 				/>);
+
 			case Panel.ENTITY:
 				return (<EntityPanel
 					country={this.state.country}
@@ -126,6 +155,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					msType={this.state.msType}
 					onBack={this.onEntityBack}
 				/>);
+
 			case Panel.EDIT:
 				return (<EditPanel
 					countries={this.props.countries}
@@ -134,6 +164,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					onBack={() => this.changePanel(Panel.TABLE)}
 					onSubmit={this.saveManuscript}
 				/>);
+
 			case Panel.MST:
 				return (<MsTypeApp
 					msTypes={this.state.msTypes}

@@ -212,16 +212,15 @@ export default class LibraryApp extends React.Component<Properties, State> {
 						onRefresh={() => this.onCountrySelect(this.state.country)}
 						onBack={() => this.changeView(View.INIT,{country:this.state.country})}
 					/>);
+
 			case View.ENTITY:
-				return [
-					<Header key="header" min>{this.state.library.library}</Header>,
-					(<EntityPanel
-						key="panel"
-						country={this.state.country}
-						library={this.state.library}
-						onBack={() => this.changeView(View.TABLE,null)}
-					/>)
-				];
+			return (<EntityPanel
+				countries={this.props.countries}
+				country={this.state.country}
+				library={this.state.library}
+				onBack={() => this.changeView(View.TABLE,null)}
+			/>);
+
 			case View.EDIT:
 				var header = this.state.country.country + ' - ' +
 				 	(this.state.library ? 'Edit' : 'Create') + ' Library';
