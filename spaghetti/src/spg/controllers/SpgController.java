@@ -216,7 +216,7 @@ public abstract class SpgController extends HttpServlet {
 					updates.append(", ");
 				}
 				addComma = true;
-				if(name.equals("")) {
+				if(val.equals("")) {
 					updates.append("NULL");
 				}
 				else {
@@ -250,7 +250,7 @@ public abstract class SpgController extends HttpServlet {
 					updates.append(", ");
 				}
 				addComma = true;
-				if(name.equals("")) {
+				if(val.equals("")) {
 					updates.append(name + " = NULL");
 				}
 				else {
