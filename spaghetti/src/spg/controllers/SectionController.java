@@ -7,6 +7,11 @@ import java.util.HashMap;
 import spg.models.Manuscript;
 import spg.models.Section;
 
+/**
+ * 
+ * @author Kyle Tran
+ *
+ */
 public class SectionController {
 	
 	private final static String SECTION = "Section";
@@ -53,7 +58,9 @@ public class SectionController {
     	query = SpgController.buildInsertQuery(SECTION, namesToValues);
     	SpgController.executeSQL(query);
     
-   		section = new Section(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, notationID, numGatherings, numColumns, linesPerColumn, scribe, date, centuryID, cursusID, provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
+   		section = new Section(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, notationID,
+   				numGatherings, numColumns, linesPerColumn, scribe, date, centuryID, cursusID, provenanceID,
+   				provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 
     	return section;
 }
@@ -66,7 +73,42 @@ public class SectionController {
 			String inscription, String colophon, String sourceCompletenessID) throws Exception
 	{
 		
-		return null;
+		String query;
+		Section section;
+		
+		HashMap<String, String> namesToValues = new HashMap<String, String>();
+		HashMap<String, String> pkNamesToValues = new HashMap<String, String>();
+		
+   	 	
+  	 	namesToValues.put("sectionType", sectionType);
+  	 	namesToValues.put("liturgicalOccassion", liturgicalOccassion);
+  	 	namesToValues.put("notationID", notationID);
+ 	 	namesToValues.put("numGatherings", numGatherings);
+ 	 	namesToValues.put("numColumns", numColumns);
+        namesToValues.put("linesPerColumn", linesPerColumn);
+ 	 	namesToValues.put("scribe", scribe);
+    	namesToValues.put("date", date);
+	 	namesToValues.put("centuryID", centuryID);
+    	namesToValues.put("cursusID", cursusID);
+    	namesToValues.put("provenanceID", provenanceID);
+    	namesToValues.put("provenanceDetail", provenanceDetail);
+    	namesToValues.put("commissioner", commissioner);
+    	namesToValues.put("inscription", inscription);
+    	namesToValues.put("colophon", colophon);
+    	namesToValues.put("sourceCompletenessID", sourceCompletenessID);
+		
+		pkNamesToValues.put("libSiglum", libSiglum);
+		pkNamesToValues.put("msSiglum", msSiglum);
+		pkNamesToValues.put("sectionID", sectionID);
+		
+		query = SpgController.buildUpdateQuery(SECTION, pkNamesToValues, namesToValues);
+		SpgController.executeSQL(query);
+		
+		section =  new Section(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, notationID,
+				numGatherings, numColumns, linesPerColumn, scribe, date, centuryID, cursusID, provenanceID,
+				provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
+				
+		return section;
 	}
 	
 	
