@@ -21,13 +21,13 @@ public class SectionController {
 	{
 		
 		String query;
-        	Section section;
+        Section section;
 
-        	HasMap<String, String> namesToValues = new HashMap<String, String>();
+        HashMap<String, String> namesToValues = new HashMap<String, String>();
         
-    		if(lib == null)
-    		{
-        	throw new Exception("libSiglum cannot be left empty or blank.");
+    	if(libSiglum == null || msSiglum == null || sectionID == null)
+    	{
+        	throw new Exception("libSiglum, msSiglum, and sectionID cannot be left empty or blank.");
 		}
     
    	 	namesToValues.put("libSiglum", libSiglum);
@@ -38,25 +38,24 @@ public class SectionController {
   	 	namesToValues.put("notationID", notationID);
  	 	namesToValues.put("numGatherings", numGatherings);
  	 	namesToValues.put("numColumns", numColumns);
-         	namesToValues.put("linesPerColumn", linesPerColumn);
+        namesToValues.put("linesPerColumn", linesPerColumn);
  	 	namesToValues.put("scribe", scribe);
-    	 	namesToValues.put("date", date);
+    	namesToValues.put("date", date);
 	 	namesToValues.put("centuryID", centuryID);
-    	 	namesToValues.put("cursusID", cursusID);
-    	 	namesToValues.put("provenanceID", provenanceID);
-    		namesToValues.put("provenanceDetail", provenanceDetail);
-    		namesToValues.put("commissioner", commissioner);
-    		namesToValues.put("inscription", inscription);
-    		namesToValues.put("colophon", colophon);
-    		namesToValues.put("sourceCompletenessID", sourceCompletenessID);
+    	namesToValues.put("cursusID", cursusID);
+    	namesToValues.put("provenanceID", provenanceID);
+    	namesToValues.put("provenanceDetail", provenanceDetail);
+    	namesToValues.put("commissioner", commissioner);
+    	namesToValues.put("inscription", inscription);
+    	namesToValues.put("colophon", colophon);
+    	namesToValues.put("sourceCompletenessID", sourceCompletenessID);
 
-
-    		query = SpgController.buildInsertQuery(LIBRARY, namesToValues);
-    		SpgController.executeSQL(query);
+    	query = SpgController.buildInsertQuery(SECTION, namesToValues);
+    	SpgController.executeSQL(query);
     
-   		section = new Library(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, notationID, numGatherings, numColumns, linesPerColumn, scribe, date, centuryID, cursusID, provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
+   		section = new Section(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, notationID, numGatherings, numColumns, linesPerColumn, scribe, date, centuryID, cursusID, provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 
-    		return section;
+    	return section;
 }
 	
 	
