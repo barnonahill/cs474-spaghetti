@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 /**
  * 
- * @author Kyle Tran
+ * @author Paul Barnhill, Kyle Tran
  *
  */
 public class Section {
@@ -97,7 +97,7 @@ public class Section {
 		this.msSiglum = resultSet.getString("msSiglum");
 		this.sectionID = resultSet.getInt("sectionID");
 		this.sectionType = resultSet.getString("sectionType");
-		this.liturgicalOccassion = resultSet.getString("liturgicalOccassion");
+		this.liturgicalOccassion = resultSet.getString("liturgicalOccasion");
 		this.notationID = resultSet.getString("notationID");
 		this.numGatherings = resultSet.getInt("numGatherings");
 		this.numColumns = resultSet.getInt("numColumns");

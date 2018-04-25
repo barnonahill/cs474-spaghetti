@@ -36,6 +36,10 @@ private static final long serialVersionUID = 1L;
 	public static final String DELETE_SECTION	= "deletesections";
 	
 	public static final String GET_CENTURIES = "GetCenturies";
+	public static final String GET_CURSUSES = "GetCursuses";
+	public static final String GET_SRC_COMPS = "GetSourceCompletenesses";
+	public static final String GET_PROVENANCES = "GetProvenances";
+	public static final String GET_NOTATIONS = "GetNotations";
 	
 	
 	@Override
@@ -106,6 +110,7 @@ private static final long serialVersionUID = 1L;
 				String sectionID = super.getParameter(params, "sectionID");
 				msg = this.getSection(libSiglum, msSiglum, sectionID);
             }
+			
             else if (action.equalsIgnoreCase(GET_SECTIONS))
             {
 				String libSiglum = super.getParameter(params, "libSiglum");
@@ -127,21 +132,21 @@ private static final long serialVersionUID = 1L;
             	msg = this.getCenturies();
             }
 			
-			else if (action.equalsIgnoreCase(GET_CURSUSES)
+			else if (action.equalsIgnoreCase(GET_CURSUSES))
 			{
 				msg = this.getCursuses();
 			}
 			
-			else if (action.equalsIgnoreCase(GET_SOURCECOMPLETENESSES)
+			else if (action.equalsIgnoreCase(GET_SRC_COMPS))
 			{
 				msg = this.getSourceCompletenesses();
 			}
 			
-			else if (action.equalsIgnoreCase(GET_PROVENANCES)
+			else if (action.equalsIgnoreCase(GET_PROVENANCES))
 			{
 				msg = this.getProvenances();
-			
-			else if (action.equalsNotation(GET_NOTATIONS)
+			}
+			else if (action.equalsIgnoreCase(GET_NOTATIONS))
 			{
 				msg = this.getNotations();
 			}
@@ -226,7 +231,7 @@ private static final long serialVersionUID = 1L;
 		JSONArray sections = new JSONArray();
 		ArrayList<Section> results = SectionController.getSections(libSiglum, sectionID, deletesectionID);
 		
-		for(Section s : results) {
+		for (Section s : results) {
 			sections.put(s.toJSON());
 		}
 				
@@ -285,7 +290,7 @@ private static final long serialVersionUID = 1L;
 		
 		JSONArray j = new JSONArray();
 		for (SourceCompleteness s : sc) {
-			j.put(c.toJSON());
+			j.put(s.toJSON());
 		}
 		
 		return j.toString();
@@ -305,8 +310,8 @@ private static final long serialVersionUID = 1L;
 		return j.toString();
 	}
 	
-	private String getNotation() throws Exception {
-		ArrayList<Notation> note = SectionController.getNotation();
+	private String getNotations() throws Exception {
+		ArrayList<Notation> note = SectionController.getNotations();
 		if (note == null) {
 			throw new Exception("Could not load notation");
 		}

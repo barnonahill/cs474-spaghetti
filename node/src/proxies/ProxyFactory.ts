@@ -1,16 +1,18 @@
 import LibraryProxy from '@src/proxies/LibraryProxy.ts';
-import ManuScriptProxy from '@src/proxies/ManuscriptProxy.ts';
+import ManuscriptProxy from '@src/proxies/ManuscriptProxy.ts';
+import SectionProxy from '@src/proxies/SectionProxy.ts';
 
 
 /**
  * ProxyFactory is a factory-singleton for accessing the various data proxies as singletons.
  *
  * @author Paul Barnhill
- * @version 2018-04-16
+ * @version 2018-04-25
  */
 class ProxyFactory {
 	private libraryProxy: LibraryProxy;
-	private manuscriptProxy: ManuScriptProxy;
+	private manuscriptProxy: ManuscriptProxy;
+	private sectionProxy: SectionProxy;
 
 	constructor() {}
 
@@ -27,14 +29,20 @@ class ProxyFactory {
 	/**
 	 * Gets the manuscriptProxy singleton.
 	 */
-	getManuscriptProxy(): ManuScriptProxy {
+	getManuscriptProxy(): ManuscriptProxy {
 		if (!this.manuscriptProxy) {
-			this.manuscriptProxy = new ManuScriptProxy();
+			this.manuscriptProxy = new ManuscriptProxy();
 		}
 		return this.manuscriptProxy;
+	}
+
+	getSectionProxy(): SectionProxy {
+		if (!this.sectionProxy) {
+			this.sectionProxy = new SectionProxy();
+		}
+		return this.sectionProxy;
 	}
 }
 
 // export a factory singleton
-const factory = new ProxyFactory();
-export default factory;
+export default new ProxyFactory();

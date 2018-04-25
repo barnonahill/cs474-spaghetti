@@ -51,7 +51,7 @@ export default class SpaghettiApp extends React.Component<P,S> {
 					bsStyle="info"
 					bsSize="large"
 					className="mt20 w100p"
-					//onClick={() => this.props.onSelect(AppEnum.MS)}
+					onClick={() => this.props.onSelect(AppEnum.SECTION)}
 				>Section</Button>
 			</Col>
 		</Row>);

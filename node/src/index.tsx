@@ -6,6 +6,7 @@ import Header from '@src/components/common/Header.tsx';
 import InitApp from '@src/components/SpaghettiApp.tsx';
 import LibraryApp from '@src/components/library/LibraryApp.tsx';
 import ManuscriptApp from '@src/components/manuscript/ManuscriptApp.tsx';
+import SectionApp from '@src/components/section/SectionApp.tsx';
 import PageLoader from '@src/components/common/PageLoader.tsx';
 
 import { Country } from '@src/models/country.ts';
@@ -15,7 +16,8 @@ export enum App {
 	LOADER=0,
 	INIT=1,
 	LIB=2,
-	MS=3
+	MS=3,
+	SECTION=4
 }
 
 /**
@@ -61,6 +63,9 @@ class Spaghetti {
 			case App.MS:
 				this.renderManuscriptApp();
 				break;
+			case App.SECTION:
+				this.renderSectionApp();
+				break;
 		}
 	}
 
@@ -94,6 +99,16 @@ class Spaghetti {
 	renderManuscriptApp() {
 		ReactDOM.render(
 			(<ManuscriptApp
+				countries={this.countries}
+				onBack={() => this.onSelect(App.INIT)}
+			/>),
+			this.appContainer
+		);
+	}
+
+	renderSectionApp() {
+		ReactDOM.render(
+			(<SectionApp
 				countries={this.countries}
 				onBack={() => this.onSelect(App.INIT)}
 			/>),

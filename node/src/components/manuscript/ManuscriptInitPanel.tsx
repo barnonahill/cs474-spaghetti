@@ -30,14 +30,14 @@ export default class ManuscriptInitPanel extends React.Component<P,{}> {
 				>Back</Button>
 			</PanelMenu>),
 
-			(<Row key="actions" className="mb40">
+			(<Row key="actions" className="mb60">
 				<Col xs={12} sm={4} smOffset={1}>
 					<Button
 						bsStyle="primary"
 						bsSize="large"
 						className="w100p"
 						onClick={() => this.props.onSelect(Panel.FILTER)}
-					>Filter by Country and Library</Button>
+					>Filter Manuscripts</Button>
 				</Col>
 				<Col xs={12} sm={4} smOffset={2}>
 					<Button
@@ -49,7 +49,7 @@ export default class ManuscriptInitPanel extends React.Component<P,{}> {
 				</Col>
 			</Row>),
 
-			(<Row key="entities">
+			(<Row key="entities" className="mb30">
 				<Col xs={12} sm={4} smOffset={4}>
 					<Button
 						bsStyle="info"

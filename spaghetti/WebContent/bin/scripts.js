@@ -36815,7 +36815,7 @@ var SpaghettiApp = (function (_super) {
             React.createElement(react_bootstrap_1.Col, { sm: 4 },
                 React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "mt20 w100p", onClick: function () { return _this.props.onSelect(index_tsx_1.App.MS); } }, "Manuscript")),
             React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "mt20 w100p" }, "Section"))));
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "mt20 w100p", onClick: function () { return _this.props.onSelect(index_tsx_1.App.SECTION); } }, "Section"))));
         return x;
     };
     return SpaghettiApp;
@@ -38750,12 +38750,12 @@ var ManuscriptInitPanel = (function (_super) {
             React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Manuscripts"),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
                 React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
-            (React.createElement(react_bootstrap_1.Row, { key: "actions", className: "mb40" },
+            (React.createElement(react_bootstrap_1.Row, { key: "actions", className: "mb60" },
                 React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 1 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.FILTER); } }, "Filter by Country and Library")),
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.FILTER); } }, "Filter Manuscripts")),
                 React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 2 },
                     React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.TABLE); } }, "Load all Manuscripts")))),
-            (React.createElement(react_bootstrap_1.Row, { key: "entities" },
+            (React.createElement(react_bootstrap_1.Row, { key: "entities", className: "mb30" },
                 React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 4 },
                     React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.MST); } }, "Manuscript Types"))))
         ];
@@ -39255,6 +39255,516 @@ exports.default = MsTypeTablePanel;
 
 /***/ }),
 
+/***/ "./src/components/section/SectionApp.tsx":
+/*!***********************************************!*\
+  !*** ./src/components/section/SectionApp.tsx ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
+var SectionInitPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionInitPanel.tsx */ "./src/components/section/SectionInitPanel.tsx");
+var SectionFilterPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionFilterPanel.tsx */ "./src/components/section/SectionFilterPanel.tsx");
+var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
+var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
+var century_ts_1 = __webpack_require__(/*! @src/models/century.ts */ "./src/models/century.ts");
+var cursus_ts_1 = __webpack_require__(/*! @src/models/cursus.ts */ "./src/models/cursus.ts");
+var sourceCompleteness_ts_1 = __webpack_require__(/*! @src/models/sourceCompleteness.ts */ "./src/models/sourceCompleteness.ts");
+var provenance_ts_1 = __webpack_require__(/*! @src/models/provenance.ts */ "./src/models/provenance.ts");
+var notation_ts_1 = __webpack_require__(/*! @src/models/notation.ts */ "./src/models/notation.ts");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var Panel;
+(function (Panel) {
+    Panel[Panel["INIT"] = 0] = "INIT";
+    Panel[Panel["EDIT"] = 1] = "EDIT";
+    Panel[Panel["ENTITY"] = 2] = "ENTITY";
+    Panel[Panel["TABLE"] = 3] = "TABLE";
+    Panel[Panel["LOADER"] = 4] = "LOADER";
+    Panel[Panel["FILTER"] = 5] = "FILTER";
+    Panel[Panel["CENTURY"] = 6] = "CENTURY";
+    Panel[Panel["CURSUS"] = 7] = "CURSUS";
+    Panel[Panel["SRC_COMP"] = 8] = "SRC_COMP";
+    Panel[Panel["PROVENANCE"] = 9] = "PROVENANCE";
+    Panel[Panel["NOTATION"] = 10] = "NOTATION";
+})(Panel = exports.Panel || (exports.Panel = {}));
+var SectionApp = (function (_super) {
+    __extends(SectionApp, _super);
+    function SectionApp(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            panel: Panel.LOADER,
+            loadMessage: 'Loading Supports...',
+            primaries: {},
+            supports: {}
+        };
+        _this.renderInit = _this.renderInit.bind(_this);
+        _this.renderEdit = _this.renderEdit.bind(_this);
+        _this.renderEntity = _this.renderEntity.bind(_this);
+        _this.renderTable = _this.renderTable.bind(_this);
+        _this.renderLoader = _this.renderLoader.bind(_this);
+        _this.loadCenturies = _this.loadCenturies.bind(_this);
+        _this.loadCursuses = _this.loadCursuses.bind(_this);
+        _this.loadSrcComps = _this.loadSrcComps.bind(_this);
+        _this.loadProvenances = _this.loadProvenances.bind(_this);
+        _this.loadNotations = _this.loadNotations.bind(_this);
+        _this.loadSupports = _this.loadSupports.bind(_this);
+        _this.loadSections = _this.loadSections.bind(_this);
+        _this.changePanel = _this.changePanel.bind(_this);
+        _this.setLoader = _this.setLoader.bind(_this);
+        _this.onInitSubmit = _this.onInitSubmit.bind(_this);
+        _this.onFilterSubmit = _this.onFilterSubmit.bind(_this);
+        return _this;
+    }
+    SectionApp.prototype.componentDidMount = function () {
+        this.loadSupports(function (s) {
+            s.panel = Panel.INIT;
+            return s;
+        });
+    };
+    SectionApp.prototype.render = function () {
+        switch (this.state.panel) {
+            default:
+            case Panel.INIT:
+                return this.renderInit();
+            case Panel.FILTER:
+                return this.renderFilter();
+            case Panel.LOADER:
+                return this.renderLoader();
+        }
+    };
+    SectionApp.prototype.renderInit = function () {
+        var _this = this;
+        return (React.createElement(SectionInitPanel_tsx_1.default, { onBack: this.props.onBack, onSubmit: function (p) { return _this.setState(function (s) {
+                s.panel = p;
+                return s;
+            }); } }));
+    };
+    SectionApp.prototype.renderEdit = function () { };
+    SectionApp.prototype.renderEntity = function () { };
+    SectionApp.prototype.renderFilter = function () {
+        var _this = this;
+        return (React.createElement(SectionFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSubmit: this.onFilterSubmit }));
+    };
+    SectionApp.prototype.renderTable = function () { };
+    SectionApp.prototype.renderLoader = function () {
+        return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
+    };
+    SectionApp.prototype.loadCenturies = function (callback) {
+        this.setState(function (s) {
+            s.panel = Panel.LOADER;
+            s.loadMessage = 'Loading Centuries...';
+            return s;
+        });
+        ProxyFactory_ts_1.default.getSectionProxy().getCenturies(function (a, e) {
+            if (e) {
+                return alert(e);
+            }
+            callback(a);
+        });
+    };
+    SectionApp.prototype.loadCursuses = function (callback) {
+        this.setState(function (s) {
+            s.panel = Panel.LOADER;
+            s.loadMessage = 'Loading Cursuses...';
+            return s;
+        });
+        ProxyFactory_ts_1.default.getSectionProxy().getCursuses(function (a, e) {
+            if (e) {
+                return alert(e);
+            }
+            return callback(a);
+        });
+    };
+    SectionApp.prototype.loadSrcComps = function (callback) {
+        this.setState(function (s) {
+            s.panel = Panel.LOADER;
+            s.loadMessage = 'Loading Source Completenesses...';
+            return s;
+        });
+        ProxyFactory_ts_1.default.getSectionProxy().getSourceCompletenesses(function (a, e) {
+            if (e) {
+                return alert(e);
+            }
+            return callback(a);
+        });
+    };
+    SectionApp.prototype.loadProvenances = function (callback) {
+        this.setState(function (s) {
+            s.panel = Panel.LOADER;
+            s.loadMessage = 'Loading Provenances...';
+            return s;
+        });
+        ProxyFactory_ts_1.default.getSectionProxy().getProvenances(function (a, e) {
+            if (e) {
+                return alert(e);
+            }
+            return callback(a);
+        });
+    };
+    SectionApp.prototype.loadNotations = function (callback) {
+        this.setState(function (s) {
+            s.panel = Panel.LOADER;
+            s.loadMessage = 'Loading Notations...';
+            return s;
+        });
+        ProxyFactory_ts_1.default.getSectionProxy().getNotations(function (a, e) {
+            if (e) {
+                return alert(e);
+            }
+            return callback(a);
+        });
+    };
+    SectionApp.prototype.loadSupports = function (callback) {
+        var _this = this;
+        this.loadCenturies(function (centuries) {
+            _this.loadCursuses(function (cursuses) {
+                _this.loadSrcComps(function (srcComps) {
+                    _this.loadProvenances(function (provs) {
+                        _this.loadNotations(function (notations) {
+                            _this.setState(function (s) {
+                                century_ts_1.Century.destroyArray(s.supports.centuries);
+                                cursus_ts_1.Cursus.destroyArray(s.supports.cursuses);
+                                sourceCompleteness_ts_1.SourceCompleteness.destroyArray(s.supports.srcComps);
+                                provenance_ts_1.Provenance.destroyArray(s.supports.provs);
+                                notation_ts_1.Notation.destroyArray(s.supports.notations);
+                                s.supports.centuries = centuries;
+                                s.supports.cursuses = cursuses;
+                                s.supports.srcComps = srcComps;
+                                s.supports.provs = provs;
+                                s.supports.notations = notations;
+                                if (callback)
+                                    return callback(s);
+                                else
+                                    return s;
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    };
+    SectionApp.prototype.loadSections = function (libSiglum, msSiglum, callback) {
+        ProxyFactory_ts_1.default.getSectionProxy().getSections(libSiglum, msSiglum, function (a, e) {
+            if (e) {
+                return alert(e);
+            }
+            return callback(a);
+        });
+    };
+    SectionApp.prototype.changePanel = function (p, callback) {
+        this.setState(function (s) {
+            s.panel = p;
+            if (callback)
+                return callback(s);
+            else
+                return s;
+        });
+    };
+    SectionApp.prototype.setLoader = function (msg) {
+        this.setState(function (s) {
+            s.panel = Panel.LOADER;
+            s.loadMessage = msg;
+            return s;
+        });
+    };
+    SectionApp.prototype.onInitSubmit = function (p) {
+        var _this = this;
+        if (p === Panel.TABLE) {
+            this.setLoader('Loading Sections...');
+            this.loadSections(null, null, function (ss) {
+                _this.setState(function (s) {
+                    s.primaries.sections = ss;
+                    s.panel = p;
+                    return s;
+                });
+            });
+        }
+        else {
+            this.changePanel(p);
+        }
+    };
+    SectionApp.prototype.onFilterSubmit = function (c, l, m, ls, ms) {
+        var _this = this;
+        this.setLoader('Loading Manuscripts for ' + l.libSiglum + ' ' + m.msSiglum + '...');
+        this.loadSections(l.libSiglum, m.msSiglum, function (ss) {
+            _this.setState(function (s) {
+                library_ts_1.Library.destroyArray(s.primaries.libraries);
+                manuscript_ts_1.Manuscript.destroyArray(s.primaries.manuscripts);
+                s.primaries.library = null;
+                s.primaries.manuscript = null;
+                s.primaries.libraries = ls;
+                s.primaries.manuscripts = ms;
+                s.primaries.library = l;
+                s.primaries.manuscript = m;
+                s.primaries.sections = ss;
+                s.panel = Panel.TABLE;
+                return s;
+            });
+        });
+    };
+    return SectionApp;
+}(React.Component));
+exports.default = SectionApp;
+
+
+/***/ }),
+
+/***/ "./src/components/section/SectionFilterPanel.tsx":
+/*!*******************************************************!*\
+  !*** ./src/components/section/SectionFilterPanel.tsx ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_select_1 = __webpack_require__(/*! react-select */ "./node_modules/react-select/dist/react-select.es.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
+var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var SectionFilterPanel = (function (_super) {
+    __extends(SectionFilterPanel, _super);
+    function SectionFilterPanel(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            ents: {},
+            opts: {
+                countries: p.countries.map(function (c) {
+                    return { label: c.country, value: c.countryID };
+                })
+            },
+            val: {
+                countryID: null,
+                libSiglum: null,
+                msSiglum: null
+            }
+        };
+        _this.onCountrySelect = _this.onCountrySelect.bind(_this);
+        _this.onLibrarySelect = _this.onLibrarySelect.bind(_this);
+        _this.onManuscriptSelect = _this.onManuscriptSelect.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
+        return _this;
+    }
+    SectionFilterPanel.prototype.render = function () {
+        var xs = [];
+        xs.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Filter Sections"));
+        xs.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+            React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
+        xs.push(React.createElement(react_bootstrap_1.Alert, { bsStyle: "info", className: "mb20 mr15p ml15p text-center", key: "alert" },
+            React.createElement("strong", null, "Filter sections by country, library, and manuscript.")));
+        xs.push(React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form", onSubmit: this.onSubmit },
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID", validationState: this.state.val.countryID },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Country:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_select_1.default, { name: "countryID", value: this.state.opts.country, options: this.state.opts.countries, onChange: this.onCountrySelect, className: this.state.val.countryID === null ? '' : 'has-error' }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "libSiglum", validationState: this.state.val.libSiglum },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Library:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_select_1.default, { name: "libSiglum", value: this.state.opts.library, options: this.state.opts.libraries, onChange: this.onLibrarySelect, className: this.state.val.libSiglum == null ? '' : 'has-error' }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "msSiglum", validationState: this.state.val.msSiglum },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Manuscript:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_select_1.default, { name: "msSiglum", value: this.state.opts.manuscript, options: this.state.opts.manuscripts, onChange: this.onManuscriptSelect, className: this.state.val.msSiglum == null ? '' : 'has-error' }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
+                React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit" }, "Load")))));
+        return xs;
+    };
+    SectionFilterPanel.prototype.onCountrySelect = function (o) {
+        var _this = this;
+        if (o) {
+            ProxyFactory_ts_1.default.getLibraryProxy().getLibraries(o.value, function (ls, e) {
+                if (e) {
+                    return alert(e);
+                }
+                _this.setState(function (s) {
+                    library_ts_1.Library.destroyArray(s.ents.libraries);
+                    manuscript_ts_1.Manuscript.destroyArray(s.ents.manuscripts);
+                    s.opts.library = null;
+                    s.opts.manuscripts = null;
+                    s.opts.country = o;
+                    s.ents.libraries = ls;
+                    s.opts.libraries = ls.map(function (l) {
+                        return { label: l.library, value: l.libSiglum };
+                    });
+                    return s;
+                });
+            });
+        }
+        else {
+            this.setState(function (s) {
+                library_ts_1.Library.destroyArray(s.ents.libraries);
+                manuscript_ts_1.Manuscript.destroyArray(s.ents.manuscripts);
+                s.opts.libraries = null;
+                s.opts.manuscripts = null;
+                s.opts.library = null;
+                s.opts.manuscript = null;
+                s.opts.country = null;
+                return s;
+            });
+        }
+    };
+    SectionFilterPanel.prototype.onLibrarySelect = function (o) {
+        var _this = this;
+        if (o) {
+            ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(null, o.value, function (ms, e) {
+                if (e) {
+                    return alert(e);
+                }
+                _this.setState(function (s) {
+                    manuscript_ts_1.Manuscript.destroyArray(s.ents.manuscripts);
+                    s.opts.manuscript = null;
+                    s.opts.library = o;
+                    s.ents.manuscripts = ms;
+                    s.opts.manuscripts = ms.map(function (m) {
+                        return { label: m.msSiglum, value: m.msSiglum };
+                    });
+                    return s;
+                });
+            });
+        }
+        else {
+            this.setState(function (s) {
+                manuscript_ts_1.Manuscript.destroyArray(s.ents.manuscripts);
+                s.opts.manuscripts = null;
+                s.opts.manuscript = null;
+                s.opts.library = null;
+                return s;
+            });
+        }
+    };
+    SectionFilterPanel.prototype.onManuscriptSelect = function (o) {
+        this.setState(function (s) {
+            s.opts.manuscript = o;
+            return s;
+        });
+    };
+    SectionFilterPanel.prototype.onSubmit = function (e) {
+        var _this = this;
+        e.preventDefault();
+        var val = {
+            countryID: this.state.opts.country ? null : 'error',
+            libSiglum: this.state.opts.library ? null : 'error',
+            msSiglum: this.state.opts.manuscript ? null : 'error'
+        };
+        for (var k in val) {
+            if (val[k] !== null) {
+                return this.setState(function (s) {
+                    s.val = val;
+                    return s;
+                });
+            }
+        }
+        var country = this.props.countries
+            .find(function (c) { return _this.state.opts.country.value === c.countryID; });
+        var library = this.state.ents.libraries
+            .find(function (l) { return _this.state.opts.library.value === l.libSiglum; });
+        var manuscript = this.state.ents.manuscripts
+            .find(function (m) { return _this.state.opts.manuscript.value === m.msSiglum; });
+        this.setState(function (s) {
+            s.val = val;
+            _this.props.onSubmit(country, library, manuscript, _this.state.ents.libraries, _this.state.ents.manuscripts);
+            return s;
+        });
+    };
+    return SectionFilterPanel;
+}(React.Component));
+exports.default = SectionFilterPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/section/SectionInitPanel.tsx":
+/*!*****************************************************!*\
+  !*** ./src/components/section/SectionInitPanel.tsx ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SectionApp_tsx_1 = __webpack_require__(/*! @src/components/section/SectionApp.tsx */ "./src/components/section/SectionApp.tsx");
+var SectionInitPanel = (function (_super) {
+    __extends(SectionInitPanel, _super);
+    function SectionInitPanel(p) {
+        return _super.call(this, p) || this;
+    }
+    SectionInitPanel.prototype.render = function () {
+        var _this = this;
+        return [
+            React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Sections"),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
+            (React.createElement(react_bootstrap_1.Row, { key: "actions", className: "mb60" },
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 1 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.FILTER); } }, "Filter Sections")),
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 2 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.TABLE); } }, "Load all Sections")))),
+            (React.createElement(react_bootstrap_1.Row, { key: "entities1", className: "mb30" },
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.CENTURY); } }, "Centuries")),
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.CURSUS); } }, "Cursuses")),
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.SRC_COMP); } }, "Source Completenesses")))),
+            (React.createElement(react_bootstrap_1.Row, { key: "entities2", className: "mb30" },
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.PROVENANCE); } }, "Provenances")),
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.NOTATION); } }, "Notations"))))
+        ];
+    };
+    return SectionInitPanel;
+}(React.Component));
+exports.default = SectionInitPanel;
+
+
+/***/ }),
+
 /***/ "./src/index.tsx":
 /*!***********************!*\
   !*** ./src/index.tsx ***!
@@ -39270,6 +39780,7 @@ var ReactDOM = __webpack_require__(/*! react-dom */ "react-dom");
 var SpaghettiApp_tsx_1 = __webpack_require__(/*! @src/components/SpaghettiApp.tsx */ "./src/components/SpaghettiApp.tsx");
 var LibraryApp_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryApp.tsx */ "./src/components/library/LibraryApp.tsx");
 var ManuscriptApp_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptApp.tsx */ "./src/components/manuscript/ManuscriptApp.tsx");
+var SectionApp_tsx_1 = __webpack_require__(/*! @src/components/section/SectionApp.tsx */ "./src/components/section/SectionApp.tsx");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var App;
@@ -39278,6 +39789,7 @@ var App;
     App[App["INIT"] = 1] = "INIT";
     App[App["LIB"] = 2] = "LIB";
     App[App["MS"] = 3] = "MS";
+    App[App["SECTION"] = 4] = "SECTION";
 })(App = exports.App || (exports.App = {}));
 var Spaghetti = (function () {
     function Spaghetti(container) {
@@ -39313,6 +39825,9 @@ var Spaghetti = (function () {
             case App.MS:
                 this.renderManuscriptApp();
                 break;
+            case App.SECTION:
+                this.renderSectionApp();
+                break;
         }
     };
     Spaghetti.prototype.renderLoader = function () {
@@ -39328,6 +39843,10 @@ var Spaghetti = (function () {
     Spaghetti.prototype.renderManuscriptApp = function () {
         var _this = this;
         ReactDOM.render((React.createElement(ManuscriptApp_tsx_1.default, { countries: this.countries, onBack: function () { return _this.onSelect(App.INIT); } })), this.appContainer);
+    };
+    Spaghetti.prototype.renderSectionApp = function () {
+        var _this = this;
+        ReactDOM.render((React.createElement(SectionApp_tsx_1.default, { countries: this.countries, onBack: function () { return _this.onSelect(App.INIT); } })), this.appContainer);
     };
     return Spaghetti;
 }());
@@ -39391,6 +39910,48 @@ exports.default = SpgModel;
 
 /***/ }),
 
+/***/ "./src/models/century.ts":
+/*!*******************************!*\
+  !*** ./src/models/century.ts ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var SpgModel_ts_1 = __webpack_require__(/*! @src/models/SpgModel.ts */ "./src/models/SpgModel.ts");
+var Century = (function (_super) {
+    __extends(Century, _super);
+    function Century(props) {
+        var _this = _super.call(this) || this;
+        _this.centuryID = props.centuryID;
+        _this.centuryName = props.centuryName || null;
+        return _this;
+    }
+    Century.prototype.toProperties = function () {
+        return {
+            centuryID: this.centuryID,
+            centuryName: this.centuryName
+        };
+    };
+    return Century;
+}(SpgModel_ts_1.default));
+exports.Century = Century;
+
+
+/***/ }),
+
 /***/ "./src/models/country.ts":
 /*!*******************************!*\
   !*** ./src/models/country.ts ***!
@@ -39435,6 +39996,51 @@ var Country = (function (_super) {
     return Country;
 }(SpgModel_ts_1.default));
 exports.Country = Country;
+
+
+/***/ }),
+
+/***/ "./src/models/cursus.ts":
+/*!******************************!*\
+  !*** ./src/models/cursus.ts ***!
+  \******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var SpgModel_ts_1 = __webpack_require__(/*! @src/models/SpgModel.ts */ "./src/models/SpgModel.ts");
+var Cursus = (function (_super) {
+    __extends(Cursus, _super);
+    function Cursus(props) {
+        var _this = _super.call(this) || this;
+        if (!props.cursusID.length) {
+            throw Error('cursusID cannot be empty.');
+        }
+        _this.cursusID = props.cursusID;
+        _this.cursusName = props.cursusName || null;
+        return _this;
+    }
+    Cursus.prototype.toProperties = function () {
+        return {
+            cursusID: this.cursusID,
+            cursusName: this.cursusName
+        };
+    };
+    return Cursus;
+}(SpgModel_ts_1.default));
+exports.Cursus = Cursus;
 
 
 /***/ }),
@@ -39602,6 +40208,210 @@ var MsType = (function (_super) {
     return MsType;
 }(SpgModel_ts_1.default));
 exports.MsType = MsType;
+
+
+/***/ }),
+
+/***/ "./src/models/notation.ts":
+/*!********************************!*\
+  !*** ./src/models/notation.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var SpgModel_ts_1 = __webpack_require__(/*! @src/models/SpgModel.ts */ "./src/models/SpgModel.ts");
+var Notation = (function (_super) {
+    __extends(Notation, _super);
+    function Notation(props) {
+        var _this = _super.call(this) || this;
+        if (!props.notationID) {
+            throw Error('notationID cannot be empty.');
+        }
+        _this.notationID = props.notationID;
+        _this.notationName = props.notationName || null;
+        return _this;
+    }
+    Notation.prototype.toProperties = function () {
+        return {
+            notationID: this.notationID,
+            notationName: this.notationName
+        };
+    };
+    return Notation;
+}(SpgModel_ts_1.default));
+exports.Notation = Notation;
+
+
+/***/ }),
+
+/***/ "./src/models/provenance.ts":
+/*!**********************************!*\
+  !*** ./src/models/provenance.ts ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var SpgModel_ts_1 = __webpack_require__(/*! @src/models/SpgModel.ts */ "./src/models/SpgModel.ts");
+var Provenance = (function (_super) {
+    __extends(Provenance, _super);
+    function Provenance(props) {
+        var _this = _super.call(this) || this;
+        if (!props.provenanceID.length) {
+            throw Error('provenanceID cannot be empty.');
+        }
+        _this.provenanceID = props.provenanceID;
+        _this.provenanceName = props.provenanceName || null;
+        return _this;
+    }
+    Provenance.prototype.toProperties = function () {
+        return {
+            provenanceID: this.provenanceID,
+            provenanceName: this.provenanceName
+        };
+    };
+    return Provenance;
+}(SpgModel_ts_1.default));
+exports.Provenance = Provenance;
+
+
+/***/ }),
+
+/***/ "./src/models/section.ts":
+/*!*******************************!*\
+  !*** ./src/models/section.ts ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var SpgModel_ts_1 = __webpack_require__(/*! @src/models/SpgModel.ts */ "./src/models/SpgModel.ts");
+var Section = (function (_super) {
+    __extends(Section, _super);
+    function Section(props) {
+        var _this = _super.call(this) || this;
+        for (var k in props) {
+            if (k === 'libSiglum' || k === 'msSiglum' || k === 'notationID' || k === 'centuryID' ||
+                k === 'cursusID' || k === 'provenanceID' || k === 'sourceCompletenessID') {
+                if (!(props && props[k].length)) {
+                    throw Error(k + ' cannot be empty.');
+                }
+                _this[k] = props[k];
+            }
+            else {
+                _this[k] = props[k] || null;
+            }
+        }
+        return _this;
+    }
+    Section.prototype.toProperties = function () {
+        return {
+            libSiglum: this.libSiglum,
+            msSiglum: this.msSiglum,
+            sectionID: this.sectionID,
+            sectionType: this.sectionType,
+            liturgicalOccasion: this.liturgicalOccasion,
+            notationID: this.notationID,
+            numGatherings: this.numGatherings,
+            numColumns: this.numColumns,
+            linesPerColumn: this.linesPerColumn,
+            scribe: this.scribe,
+            date: this.date,
+            centuryID: this.centuryID,
+            cursusID: this.cursusID,
+            provenanceID: this.provenanceID,
+            provenanceDetail: this.provenanceDetail,
+            commissioner: this.commissioner,
+            inscription: this.inscription,
+            colophon: this.colophon,
+            sourceCompletenessID: this.sourceCompletenessID
+        };
+    };
+    return Section;
+}(SpgModel_ts_1.default));
+exports.Section = Section;
+
+
+/***/ }),
+
+/***/ "./src/models/sourceCompleteness.ts":
+/*!******************************************!*\
+  !*** ./src/models/sourceCompleteness.ts ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var SpgModel_ts_1 = __webpack_require__(/*! @src/models/SpgModel.ts */ "./src/models/SpgModel.ts");
+var SourceCompleteness = (function (_super) {
+    __extends(SourceCompleteness, _super);
+    function SourceCompleteness(props) {
+        var _this = _super.call(this) || this;
+        if (!props.sourceCompletenessID.length) {
+            throw Error('sourceCompletenessID cannot be empty.');
+        }
+        _this.sourceCompletenessID = props.sourceCompletenessID;
+        _this.sourceCompletenessName = props.sourceCompletenessName || null;
+        return _this;
+    }
+    SourceCompleteness.prototype.toProperties = function () {
+        return {
+            sourceCompletenessID: this.sourceCompletenessID,
+            sourceCompletenessName: this.sourceCompletenessName
+        };
+    };
+    return SourceCompleteness;
+}(SpgModel_ts_1.default));
+exports.SourceCompleteness = SourceCompleteness;
 
 
 /***/ }),
@@ -39913,6 +40723,7 @@ exports.default = ManuScriptProxy;
 Object.defineProperty(exports, "__esModule", { value: true });
 var LibraryProxy_ts_1 = __webpack_require__(/*! @src/proxies/LibraryProxy.ts */ "./src/proxies/LibraryProxy.ts");
 var ManuscriptProxy_ts_1 = __webpack_require__(/*! @src/proxies/ManuscriptProxy.ts */ "./src/proxies/ManuscriptProxy.ts");
+var SectionProxy_ts_1 = __webpack_require__(/*! @src/proxies/SectionProxy.ts */ "./src/proxies/SectionProxy.ts");
 var ProxyFactory = (function () {
     function ProxyFactory() {
     }
@@ -39928,10 +40739,148 @@ var ProxyFactory = (function () {
         }
         return this.manuscriptProxy;
     };
+    ProxyFactory.prototype.getSectionProxy = function () {
+        if (!this.sectionProxy) {
+            this.sectionProxy = new SectionProxy_ts_1.default();
+        }
+        return this.sectionProxy;
+    };
     return ProxyFactory;
 }());
-var factory = new ProxyFactory();
-exports.default = factory;
+exports.default = new ProxyFactory();
+
+
+/***/ }),
+
+/***/ "./src/proxies/SectionProxy.ts":
+/*!*************************************!*\
+  !*** ./src/proxies/SectionProxy.ts ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var cty = __webpack_require__(/*! @src/models/century.ts */ "./src/models/century.ts");
+var crs = __webpack_require__(/*! @src/models/cursus.ts */ "./src/models/cursus.ts");
+var sc = __webpack_require__(/*! @src/models/sourceCompleteness.ts */ "./src/models/sourceCompleteness.ts");
+var prv = __webpack_require__(/*! @src/models/provenance.ts */ "./src/models/provenance.ts");
+var nt = __webpack_require__(/*! @src/models/notation.ts */ "./src/models/notation.ts");
+var sn = __webpack_require__(/*! @src/models/section.ts */ "./src/models/section.ts");
+var SpgProxy_ts_1 = __webpack_require__(/*! @src/proxies/SpgProxy.ts */ "./src/proxies/SpgProxy.ts");
+var SectionProxy = (function (_super) {
+    __extends(SectionProxy, _super);
+    function SectionProxy() {
+        return _super.call(this, 'section') || this;
+    }
+    SectionProxy.prototype.getSections = function (libSiglum, msSiglum, callback) {
+        var params = {
+            action: 'GetSections',
+            libSiglum: libSiglum,
+            msSiglum: msSiglum
+        };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            else if (d.constructor === Array) {
+                callback(d.map(function (p) { return new sn.Section(p); }, null));
+            }
+            else {
+                SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    SectionProxy.prototype.getCenturies = function (callback) {
+        var params = { action: 'GetCenturies' };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            else if (d.constructor === Array) {
+                callback(d.map(function (p) { return new cty.Century(p); }, null));
+            }
+            else {
+                SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    SectionProxy.prototype.getCursuses = function (callback) {
+        var params = { action: 'GetCursuses' };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            else if (d.constructor === Array) {
+                callback(d.map(function (p) { return new crs.Cursus(p); }, null));
+            }
+            else {
+                SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    SectionProxy.prototype.getSourceCompletenesses = function (callback) {
+        var params = { action: 'GetSourceCompletenesses' };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            else if (d.constructor === Array) {
+                callback(d.map(function (p) { return new sc.SourceCompleteness(p); }, null));
+            }
+            else {
+                SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    SectionProxy.prototype.getProvenances = function (callback) {
+        var params = { action: 'GetProvenances' };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            else if (d.constructor === Array) {
+                callback(d.map(function (p) { return new prv.Provenance(p); }, null));
+            }
+            else {
+                SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    SectionProxy.prototype.getNotations = function (callback) {
+        var params = { action: 'GetNotations' };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            else if (d.constructor === Array) {
+                callback(d.map(function (p) { return new nt.Notation(p); }, null));
+            }
+            else {
+                SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    return SectionProxy;
+}(SpgProxy_ts_1.default));
+exports.default = SectionProxy;
 
 
 /***/ }),

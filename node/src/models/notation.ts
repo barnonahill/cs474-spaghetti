@@ -1,6 +1,6 @@
 /**
  * @author Paul Barnhill
- * @version 2018-04-16
+ * @version 2018-04-25
  */
 import SpgModel from '@src/models/SpgModel.ts';
 
@@ -21,7 +21,7 @@ export class Notation extends SpgModel {
 
 	constructor(props: Properties) {
 		super();
-		if (!props.notationID.length) {
+		if (!props.notationID) {
 			throw Error('notationID cannot be empty.');
 		}
 
