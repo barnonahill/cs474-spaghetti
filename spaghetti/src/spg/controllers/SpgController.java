@@ -186,7 +186,7 @@ public abstract class SpgController extends HttpServlet{
 		
 		for(String name : namesToValues.keySet()) {
 			val = namesToValues.get(name);
-			if(!(val == null)) { 
+			if(val != null) { 
 				if(addComma) {
 					updates.append(", ");
 				}
@@ -211,12 +211,17 @@ public abstract class SpgController extends HttpServlet{
 		
 		for(String name : namesToValues.keySet()) {
 			val = namesToValues.get(name);
-			if(!(val == null)) {
+			if(val != null) {
 				if(addComma) {
 					updates.append(", ");
 				}
 				addComma = true;
-				updates.append(checkVarType(val));
+				if(name.equals("")) {
+					updates.append("NULL");
+				}
+				else {
+					updates.append(checkVarType(val));					
+				}
 			}
 		}
 		
@@ -245,7 +250,12 @@ public abstract class SpgController extends HttpServlet{
 					updates.append(", ");
 				}
 				addComma = true;
-				updates.append(name + " = " + checkVarType(val));
+				if(name.equals("")) {
+					updates.append(name + " = NULL");
+				}
+				else {
+					updates.append(name + " = " + checkVarType(val));
+				}
 			}
 		}
 		
