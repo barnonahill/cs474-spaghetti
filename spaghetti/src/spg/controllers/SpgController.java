@@ -13,14 +13,14 @@ import javax.servlet.http.HttpServlet;
  * @author Carl Clermont
  */
 
-public abstract class SpgController extends HttpServlet{
-	
+public abstract class SpgController extends HttpServlet {
+	public static Properties p = null;
 	public static final String DATABASE_ADDR = 
-			//"jdbc:mysql://mysql.cs.jmu.edu/BarnhillButtsClermontTran_Manuscript";
-			"jdbc:mysql://127.0.0.1/Manuscript2018";
-	//public static final String USER = "clermocj";
-	public static final String USER = "root";
-	//public static final String DB_PASS = "cs474";	
+			"jdbc:mysql://mysql.cs.jmu.edu/BarnhillButtsClermontTran_Manuscript";
+			//"jdbc:mysql://127.0.0.1/Manuscript2018";
+	public static final String USER = "clermocj";
+	//public static final String USER = "root";
+	public static final String DB_PASS = "cs474";	
 	
 	/**
 	 * getResultSet - for SELECT.
@@ -34,20 +34,24 @@ public abstract class SpgController extends HttpServlet{
 		Statement statement;
 		ResultSet resultSet;
 		try {
-			Properties p = new Properties();
-			//p.setProperty("user", "root");
-			p.setProperty("port", "3306");
-			p.setProperty("user", USER);
-			//p.setProperty("password", DB_PASS);
+			initProperties();
 			Class.forName("com.mysql.jdbc.Driver");
 			connection = DriverManager.getConnection(DATABASE_ADDR, p);
-			//connection = DriverManager.getConnection(DATABASE_ADDR, USER, DB_PASS);
 			statement = connection.createStatement();
 			resultSet = statement.executeQuery(queryString);
 			return resultSet; 
 		} catch (Exception e) {
 	        e.printStackTrace();
 	        throw new Exception("Could not connect to database");
+		}
+	}
+	
+	public static final void initProperties() {
+		if (SpgController.p == null) {
+			SpgController.p = new Properties();
+			p.setProperty("user", USER);
+			p.setProperty("password", DB_PASS);
+			p.setProperty("port", "3306");
 		}
 	}
 	
@@ -63,13 +67,9 @@ public abstract class SpgController extends HttpServlet{
 		Statement statement;
 		int rows;
 		try {
-			Properties p = new Properties();
-			p.setProperty("user", USER);
-			//p.setProperty("password", DB_PASS);
-			p.setProperty("port", "3306");
+			initProperties();
 			Class.forName("com.mysql.jdbc.Driver");
 			connection = DriverManager.getConnection(DATABASE_ADDR, p);
-			//connection = DriverManager.getConnection(DATABASE_ADDR, USER, DB_PASS);
 			statement = connection.createStatement();
 			rows = statement.executeUpdate(queryString);
 			return rows; 

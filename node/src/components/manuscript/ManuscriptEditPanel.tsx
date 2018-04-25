@@ -25,9 +25,7 @@ import { MsType } from '@src/models/msType.ts';
 import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
 interface P {
-	country: Country
 	countries: Country[]
-	library: Library
 	msTypes: MsType[]
 	manuscript: ms.Manuscript
 	onBack: () => void
@@ -111,9 +109,35 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 		// Edit mode
 		else {
 			state.msProps = p.manuscript.toProperties();
-			state.ents.country = p.countries.find(c => state.msProps.countryID === c.countryID);
-			state.ents.library = p.library;
-			state.ents.msType = p.msTypes.find(mt => state.msProps.msType === mt.msType)
+
+			if (!state.msProps.dimensions) {
+				state.msProps.dimensions = '';
+			}
+			if (!state.msProps.binding) {
+				state.msProps.binding = '';
+			}
+			if (!state.msProps.sourceNotes) {
+				state.msProps.sourceNotes = '';
+			}
+			if (!state.msProps.summary) {
+				state.msProps.summary = '';
+			}
+			if (!state.msProps.bibliography) {
+				state.msProps.bibliography = '';
+			}
+			state.msProps.foliated = state.msProps.foliated || false;
+			state.msProps.vellum = state.msProps.vellum || false;
+
+
+			state.ents = {
+				library: null,
+				msType: p.msTypes.find(mt => state.msProps.msType === mt.msType)
+			};
+			state.opts.msType = {label: state.ents.msType.msTypeName, value: state.ents.msType.msType};
+
+			var i = state.msProps.libSiglum.indexOf('-');
+			var countryID = state.msProps.libSiglum.slice(0, i);
+			state.ents.country = p.countries.find(c => countryID === c.countryID);
 		}
 
 		this.state = state;
@@ -129,7 +153,6 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 		this.onCountrySelect = this.onCountrySelect.bind(this);
 		this.onLibrarySelect = this.onLibrarySelect.bind(this);
 		this.onMsTypeSelect = this.onMsTypeSelect.bind(this);
-		this.onNumberInputChange = this.onNumberInputChange.bind(this);
 		this.onTextInputChange = this.onTextInputChange.bind(this);
 
 		this.onSubmit = this.onSubmit.bind(this);
@@ -197,7 +220,7 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 					<FormControl
 						type="number"
 						value={this.state.msProps.leaves}
-						onChange={this.onNumberInputChange}
+						onChange={this.onTextInputChange}
 					/>
 				</Col>
 			</FormGroup>
@@ -371,7 +394,10 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 			value = (<Col key="v"
 				sm={4}
 				className="pt7 pl26"
-			>{this.state.ents.library.library}</Col>);
+			>{this.state.ents.library
+					? this.state.ents.library.library
+					: this.state.msProps.libSiglum
+				}</Col>);
 		}
 
 		return (
@@ -431,7 +457,8 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 			if (!countryID) {
 				return;
 			}
-			countryID = this.state.msProps.countryID;
+			var i = this.state.msProps.libSiglum.indexOf('-');
+			countryID = this.state.msProps.libSiglum.slice(0, i);
 		}
 
 		if (!countryID) {
@@ -456,7 +483,11 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 					s.msProps.libSiglum = '';
 				}
 				else {
-					s.ents.library = libs.find(l => s.msProps.libSiglum === l.libSiglum);
+					s.ents.library = libs.find(l => s.msProps.libSiglum === l.libSiglum) || null;
+					s.opts.library = s.opts.libraries.find(l => s.msProps.libSiglum === l.value) || null;
+					if (!s.opts.library) {
+						s.msProps.libSiglum = '';
+					}
 				}
 
 				if (callback) return callback(s);
@@ -525,16 +556,6 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 		});
 	}
 
-	onNumberInputChange(e:React.FormEvent<FormControl>) {
-		const target = e.target as HTMLInputElement;
-		const k = target.id;
-		const v = target.value;
-		this.setState((s:S) => {
-			s.msProps[k] = Number.parseInt(v);
-			return s;
-		});
-	}
-
 	onTextInputChange(e:React.FormEvent<FormControl>) {
 		const target = e.target as HTMLInputElement;
 		const k = target.id;
@@ -566,28 +587,13 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 			}
 		}
 
+		// Update validation state while submit is processing
 		this.setState((s:S) => {
 			s.val = val;
 			if (typeof s.msProps.leaves === 'string') {
-				s.msProps.leaves = 0;
+				s.msProps.leaves = Number.parseInt(s.msProps.leaves);
 			}
-			if (!s.msProps.dimensions) {
-				s.msProps.dimensions = null;
-			}
-			if (!s.msProps.binding) {
-				s.msProps.binding = null;
-			}
-			if (!s.msProps.sourceNotes) {
-				s.msProps.sourceNotes = null;
-			}
-			if (!s.msProps.summary) {
-				s.msProps.summary = null;
-			}
-			if (!s.msProps.bibliography) {
-				s.msProps.bibliography = null;
-			}
-
-			this.props.onSubmit(s.msProps, s.isNew);
+			this.props.onSubmit(s.msProps, this.state.isNew);
 			return s;
 		});
 	}

@@ -2,10 +2,25 @@
  * Interface of a data model for database entities.
  *
  * @author Paul Barnhill
- * @version 2018-04-16
+ * @version 2018-04-24
  */
 export default abstract class SpgModel {
 	abstract toProperties(): any;
+
+	/**
+	 * Clones the object passed in and nulls any empty string values.
+	 */
+	static cloneAndNullify(a:any) {
+		if (a) {
+			var b = Object.assign({},a);
+			for (let k in b) {
+				if (b[k] === '') {
+					b[k] = null;
+				}
+			}
+		}
+		return b;
+	}
 
 	/**
 	 * Deletes all the properties of this data model, to prevent memory leakage.

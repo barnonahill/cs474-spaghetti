@@ -37780,7 +37780,7 @@ var ManuscriptApp = (function (_super) {
             case Panel.ENTITY:
                 return (React.createElement(ManuscriptEntityPanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscript: this.state.manuscript, msType: this.state.msType, onBack: this.onEntityBack }));
             case Panel.EDIT:
-                return (React.createElement(ManuscriptEditPanel_tsx_1.default, { country: this.state.country, countries: this.props.countries, library: this.state.library, msTypes: this.state.msTypes, manuscript: this.state.manuscript, onBack: function () { return _this.changePanel(Panel.TABLE); }, onSubmit: this.saveManuscript }));
+                return (React.createElement(ManuscriptEditPanel_tsx_1.default, { countries: this.props.countries, msTypes: this.state.msTypes, manuscript: this.state.manuscript, onBack: function () { return _this.changePanel(Panel.TABLE); }, onSubmit: this.saveManuscript }));
             case Panel.MST:
                 return (React.createElement(MsTypeApp_tsx_1.default, { onBack: function () { return _this.changePanel(Panel.MST); } }));
         }
@@ -38035,10 +38035,11 @@ var ManuscriptApp = (function (_super) {
                     _this.setState(function (s) {
                         var i = s.manuscripts.findIndex(function (m) {
                             return man.libSiglum === m.libSiglum &&
-                                man.msSiglum === m.libSiglum;
+                                man.msSiglum === m.msSiglum;
                         });
                         s.manuscripts[i].destroy();
                         s.manuscripts[i] = man;
+                        s.panel = Panel.TABLE;
                         return s;
                     });
                 }
@@ -38124,9 +38125,31 @@ var ManuscriptEditPanel = (function (_super) {
         }
         else {
             state.msProps = p.manuscript.toProperties();
-            state.ents.country = p.countries.find(function (c) { return state.msProps.countryID === c.countryID; });
-            state.ents.library = p.library;
-            state.ents.msType = p.msTypes.find(function (mt) { return state.msProps.msType === mt.msType; });
+            if (!state.msProps.dimensions) {
+                state.msProps.dimensions = '';
+            }
+            if (!state.msProps.binding) {
+                state.msProps.binding = '';
+            }
+            if (!state.msProps.sourceNotes) {
+                state.msProps.sourceNotes = '';
+            }
+            if (!state.msProps.summary) {
+                state.msProps.summary = '';
+            }
+            if (!state.msProps.bibliography) {
+                state.msProps.bibliography = '';
+            }
+            state.msProps.foliated = state.msProps.foliated || false;
+            state.msProps.vellum = state.msProps.vellum || false;
+            state.ents = {
+                library: null,
+                msType: p.msTypes.find(function (mt) { return state.msProps.msType === mt.msType; })
+            };
+            state.opts.msType = { label: state.ents.msType.msTypeName, value: state.ents.msType.msType };
+            var i = state.msProps.libSiglum.indexOf('-');
+            var countryID = state.msProps.libSiglum.slice(0, i);
+            state.ents.country = p.countries.find(function (c) { return countryID === c.countryID; });
         }
         _this.state = state;
         _this.loadLibraries(true);
@@ -38138,7 +38161,6 @@ var ManuscriptEditPanel = (function (_super) {
         _this.onCountrySelect = _this.onCountrySelect.bind(_this);
         _this.onLibrarySelect = _this.onLibrarySelect.bind(_this);
         _this.onMsTypeSelect = _this.onMsTypeSelect.bind(_this);
-        _this.onNumberInputChange = _this.onNumberInputChange.bind(_this);
         _this.onTextInputChange = _this.onTextInputChange.bind(_this);
         _this.onSubmit = _this.onSubmit.bind(_this);
         return _this;
@@ -38164,7 +38186,7 @@ var ManuscriptEditPanel = (function (_super) {
             React.createElement(react_bootstrap_1.FormGroup, { controlId: "leaves" },
                 React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Number of Leaves:"),
                 React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                    React.createElement(react_bootstrap_1.FormControl, { type: "number", value: this.state.msProps.leaves, onChange: this.onNumberInputChange }))),
+                    React.createElement(react_bootstrap_1.FormControl, { type: "number", value: this.state.msProps.leaves, onChange: this.onTextInputChange }))),
             React.createElement(react_bootstrap_1.FormGroup, { controlId: "foliated" },
                 React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Foliated:"),
                 React.createElement(react_bootstrap_1.Col, { sm: 4 },
@@ -38218,7 +38240,9 @@ var ManuscriptEditPanel = (function (_super) {
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library:"));
-            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl26" }, this.state.ents.library.library));
+            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl26" }, this.state.ents.library
+                ? this.state.ents.library.library
+                : this.state.msProps.libSiglum));
         }
         return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "libSiglum", validationState: this.state.val.libSiglum },
             label,
@@ -38245,7 +38269,8 @@ var ManuscriptEditPanel = (function (_super) {
             if (!countryID) {
                 return;
             }
-            countryID = this.state.msProps.countryID;
+            var i = this.state.msProps.libSiglum.indexOf('-');
+            countryID = this.state.msProps.libSiglum.slice(0, i);
         }
         if (!countryID) {
             return;
@@ -38266,7 +38291,11 @@ var ManuscriptEditPanel = (function (_super) {
                     s.msProps.libSiglum = '';
                 }
                 else {
-                    s.ents.library = libs.find(function (l) { return s.msProps.libSiglum === l.libSiglum; });
+                    s.ents.library = libs.find(function (l) { return s.msProps.libSiglum === l.libSiglum; }) || null;
+                    s.opts.library = s.opts.libraries.find(function (l) { return s.msProps.libSiglum === l.value; }) || null;
+                    if (!s.opts.library) {
+                        s.msProps.libSiglum = '';
+                    }
                 }
                 if (callback)
                     return callback(s);
@@ -38332,15 +38361,6 @@ var ManuscriptEditPanel = (function (_super) {
             return s;
         });
     };
-    ManuscriptEditPanel.prototype.onNumberInputChange = function (e) {
-        var target = e.target;
-        var k = target.id;
-        var v = target.value;
-        this.setState(function (s) {
-            s.msProps[k] = Number.parseInt(v);
-            return s;
-        });
-    };
     ManuscriptEditPanel.prototype.onTextInputChange = function (e) {
         var target = e.target;
         var k = target.id;
@@ -38372,24 +38392,9 @@ var ManuscriptEditPanel = (function (_super) {
         this.setState(function (s) {
             s.val = val;
             if (typeof s.msProps.leaves === 'string') {
-                s.msProps.leaves = 0;
+                s.msProps.leaves = Number.parseInt(s.msProps.leaves);
             }
-            if (!s.msProps.dimensions) {
-                s.msProps.dimensions = null;
-            }
-            if (!s.msProps.binding) {
-                s.msProps.binding = null;
-            }
-            if (!s.msProps.sourceNotes) {
-                s.msProps.sourceNotes = null;
-            }
-            if (!s.msProps.summary) {
-                s.msProps.summary = null;
-            }
-            if (!s.msProps.bibliography) {
-                s.msProps.bibliography = null;
-            }
-            _this.props.onSubmit(s.msProps, s.isNew);
+            _this.props.onSubmit(s.msProps, _this.state.isNew);
             return s;
         });
     };
@@ -39102,6 +39107,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var SpgModel = (function () {
     function SpgModel() {
     }
+    SpgModel.cloneAndNullify = function (a) {
+        if (a) {
+            var b = Object.assign({}, a);
+            for (var k in b) {
+                if (b[k] === '') {
+                    b[k] = null;
+                }
+            }
+        }
+        return b;
+    };
     SpgModel.prototype.destroy = function () {
         for (var k in this) {
             delete this[k];
@@ -39681,7 +39697,7 @@ exports.default = factory;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-var BASE_SERVICES = "http://localhost:8080/spaghetti";
+var BASE_SERVICES = "http://localhost:8080/tomcat";
 var SpgProxy = (function () {
     function SpgProxy(service) {
         this.service = service;
