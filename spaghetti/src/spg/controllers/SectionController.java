@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import spg.models.Century;
+import spg.models.Cursus;
 import spg.models.Section;
+import spg.models.SourceCompleteness;
 
 /**
  * 
@@ -257,9 +259,38 @@ public class SectionController {
 			return null;
 		}
 	}
-
-
-
 	
+	public static ArrayList<Cursus> getCursuses() {
+		String query = SpgController.buildSelectQuery("Cursus", null);
+		ArrayList<Cursus> cursuses = null;
+		
+		try {
+			ResultSet rs = SpgController.getResultSet(query);
+			cursuses = new ArrayList<>();
+			while (rs.next()) {
+				cursuses.add(new Cursus(rs));
+			}
+			return cursuses;
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
 	
+	public static ArrayList<SourceCompleteness> getSourceCompletenesses() {
+		String query = SpgController.buildSelectQuery("SourceCompleteness", null);
+		ArrayList<SourceCompleteness> al = null;
+		
+		try {
+			ResultSet rs = SpgController.getResultSet(query);
+			al = new ArrayList<>();
+			while (rs.next()) {
+				al.add(new SourceCompleteness(rs));
+			}
+			return al;
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
 }
