@@ -17,7 +17,7 @@ import spg.models.Manuscript;
 
 /**
  * 
- * @author Carl Clermont & Zach Butts
+ * @author Carl Clermont, Paul Barnhill, Zach Butts
  *
  */
 @WebServlet(name="ManuscriptServices", urlPatterns= {"/manuscript"})
@@ -64,8 +64,7 @@ public class ManuscriptServlet extends SpgHttpServlet{
             else if (action.equalsIgnoreCase(DELETE_MSTYPE))
             {
                 String msType = super.getRequiredParameter(params, "msType");
-				String msTypeName = super.getParameter(params, "msTypeName");
-				msg = this.deleteMSType(msType, msTypeName);  
+				msg = this.deleteMSType(msType);  
             }
 
             else if (action.equalsIgnoreCase(CREATE_MANUSCRIPT))
@@ -268,8 +267,8 @@ public class ManuscriptServlet extends SpgHttpServlet{
 		return msTypes.toString();
 	}
 
-    private String deleteMSType(String MSType, String MSTypeName) throws Exception {
-		ManuscriptController.deleteMSType(MSType, MSTypeName);
+    private String deleteMSType(String MSType) throws Exception {
+		ManuscriptController.deleteMSType(MSType);
 		JSONObject j = new JSONObject();
         j.put("success", true);
 		return j.toString();

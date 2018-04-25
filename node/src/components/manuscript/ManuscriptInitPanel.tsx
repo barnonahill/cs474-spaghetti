@@ -55,6 +55,7 @@ export default class ManuscriptInitPanel extends React.Component<P,{}> {
 						bsStyle="info"
 						bsSize="large"
 						className="w100p"
+						onClick={() => this.props.onSelect(Panel.MST)}
 					>Manuscript Types</Button>
 				</Col>
 			</Row>)

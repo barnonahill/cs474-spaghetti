@@ -37426,10 +37426,10 @@ var LibraryEditPanel = (function (_super) {
                                     "-"),
                                 React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.libSiglum, onChange: this.onInputChange, className: "dib" }))))]
                     : [(React.createElement(react_bootstrap_1.Col, { key: "label", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:")),
-                        React.createElement(react_bootstrap_1.Col, { key: "value", sm: 4, className: "pt7 pl26" }, this.state.props.libSiglum)]),
+                        React.createElement(react_bootstrap_1.Col, { key: "value", sm: 4, className: "pt7 pl27" }, this.state.props.libSiglum)]),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl26" }, this.props.country.country)),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.country.country)),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "library", validationState: this.state.valStates.library },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Library Name:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
@@ -37785,7 +37785,10 @@ var ManuscriptApp = (function (_super) {
             case Panel.EDIT:
                 return (React.createElement(ManuscriptEditPanel_tsx_1.default, { countries: this.props.countries, msTypes: this.state.msTypes, manuscript: this.state.manuscript, onBack: function () { return _this.changePanel(Panel.TABLE); }, onSubmit: this.saveManuscript }));
             case Panel.MST:
-                return (React.createElement(MsTypeApp_tsx_1.default, { onBack: function () { return _this.changePanel(Panel.MST); } }));
+                return (React.createElement(MsTypeApp_tsx_1.default, { msTypes: this.state.msTypes, onBack: function () { return _this.changePanel(Panel.INIT); }, replaceMsTypes: function (m) { return _this.setState(function (s) {
+                        s.msTypes = m;
+                        return s;
+                    }); } }));
         }
     };
     ManuscriptApp.prototype.changePanel = function (p) {
@@ -37842,6 +37845,10 @@ var ManuscriptApp = (function (_super) {
                 });
                 break;
             case Panel.TABLE:
+                this.setState(function (s) {
+                    s.panel = Panel.LOADER;
+                    s.loadMessage = "Loading Manuscripts...";
+                });
                 this.loadManuscripts(null, null, false, function (s, manuscripts) {
                     s.panel = p;
                     library_ts_1.Library.destroyArray(s.libraries);
@@ -37853,6 +37860,10 @@ var ManuscriptApp = (function (_super) {
                 });
                 break;
             case Panel.MST:
+                this.setState(function (s) {
+                    s.panel = p;
+                    return s;
+                });
                 break;
             default:
                 break;
@@ -38228,7 +38239,7 @@ var ManuscriptEditPanel = (function (_super) {
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"));
-            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl26" }, this.state.ents.country.country));
+            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl27" }, this.state.ents.country.country));
         }
         return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID", validationState: this.state.val.countryID },
             label,
@@ -38243,7 +38254,7 @@ var ManuscriptEditPanel = (function (_super) {
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library:"));
-            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl26" }, this.state.ents.library
+            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl27" }, this.state.ents.library
                 ? this.state.ents.library.library
                 : this.state.msProps.libSiglum));
         }
@@ -38260,7 +38271,7 @@ var ManuscriptEditPanel = (function (_super) {
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Manuscript Siglum:"));
-            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl26" }, this.state.msProps.msSiglum));
+            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl27" }, this.state.msProps.msSiglum));
         }
         return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "msSiglum", validationState: this.state.val.countryID },
             label,
@@ -38680,7 +38691,7 @@ var ManuscriptInitPanel = (function (_super) {
                     React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.TABLE); } }, "Load all Manuscripts")))),
             (React.createElement(react_bootstrap_1.Row, { key: "entities" },
                 React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 4 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p" }, "Manuscript Types"))))
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSelect(ManuscriptApp_tsx_1.Panel.MST); } }, "Manuscript Types"))))
         ];
     };
     return ManuscriptInitPanel;
@@ -38836,35 +38847,100 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
+var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
 var MsTypeTablePanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/MsTypeTablePanel.tsx */ "./src/components/manuscript/MsTypeTablePanel.tsx");
+var MsTypeEditPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/MsTypeEditPanel.tsx */ "./src/components/manuscript/MsTypeEditPanel.tsx");
 var mst = __webpack_require__(/*! @src/models/msType.ts */ "./src/models/msType.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
 (function (Panel) {
     Panel[Panel["TABLE"] = 0] = "TABLE";
     Panel[Panel["EDIT"] = 1] = "EDIT";
+    Panel[Panel["LOADER"] = 2] = "LOADER";
 })(Panel || (Panel = {}));
 var MsTypeApp = (function (_super) {
     __extends(MsTypeApp, _super);
     function MsTypeApp(p) {
         var _this = _super.call(this, p) || this;
+        _this.state = {
+            msTypes: p.msTypes,
+            msType: null,
+            panel: Panel.TABLE,
+            loadMessage: ''
+        };
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.openEdit = _this.openEdit.bind(_this);
+        _this.loadMsTypes = _this.loadMsTypes.bind(_this);
+        _this.saveMsType = _this.saveMsType.bind(_this);
+        return _this;
+    }
+    MsTypeApp.prototype.render = function () {
+        var _this = this;
+        switch (this.state.panel) {
+            case Panel.TABLE:
+                return (React.createElement(MsTypeTablePanel_tsx_1.default, { msTypes: this.state.msTypes, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: this.loadMsTypes }));
+            case Panel.EDIT:
+                return (React.createElement(MsTypeEditPanel_tsx_1.default, { msType: this.state.msType, onBack: function () { return _this.setState(function (s) {
+                        s.panel = Panel.TABLE;
+                        return s;
+                    }); }, onSubmit: this.saveMsType }));
+            case Panel.LOADER:
+                return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
+            default:
+                return null;
+        }
+    };
+    MsTypeApp.prototype.confirmDelete = function (msType) {
+        var _this = this;
+        var del = confirm('Delete ' + msType.msTypeName +
+            '? This will delete all manuscripts of this type!');
+        if (del) {
+            this.setState(function (s) {
+                s.panel = Panel.LOADER;
+                s.loadMessage = 'Deleting ' + msType.msType + '...';
+            });
+            ProxyFactory_ts_1.default.getManuscriptProxy().deleteMsType(msType.msType, function (s, e) {
+                if (e) {
+                    alert(e);
+                }
+                else if (s) {
+                    _this.setState(function (s) {
+                        var i = s.msTypes.findIndex(function (m) {
+                            return m.msType === msType.msType;
+                        });
+                        s.msTypes[i].destroy();
+                        s.msTypes.splice(i, 1);
+                        s.panel = Panel.TABLE;
+                        _this.props.replaceMsTypes(s.msTypes);
+                        return s;
+                    });
+                }
+            });
+        }
+    };
+    MsTypeApp.prototype.loadMsTypes = function () {
+        var _this = this;
+        this.setState(function (s) {
+            s.panel = Panel.LOADER;
+            s.loadMessage = 'Loading Manuscript Types...';
+            return s;
+        });
         ProxyFactory_ts_1.default.getManuscriptProxy().getMsTypes(function (msTypes, e) {
             if (e) {
                 alert(e);
             }
             else {
-                _this.state = {
-                    msTypes: msTypes,
-                    msType: null,
-                    panel: Panel.TABLE
-                };
+                _this.setState(function (s) {
+                    mst.MsType.destroyArray(s.msTypes);
+                    s.msTypes = msTypes;
+                    s.msType = null;
+                    s.panel = Panel.TABLE;
+                    _this.props.replaceMsTypes(s.msTypes);
+                    return s;
+                });
             }
         });
-        _this.openEdit = _this.openEdit.bind(_this);
-        _this.confirmDelete = _this.confirmDelete.bind(_this);
-        _this.saveMsType = _this.saveMsType.bind(_this);
-        return _this;
-    }
+    };
     MsTypeApp.prototype.openEdit = function (msType) {
         this.setState(function (s) {
             s.panel = Panel.EDIT;
@@ -38874,6 +38950,10 @@ var MsTypeApp = (function (_super) {
     };
     MsTypeApp.prototype.saveMsType = function (p, isNew) {
         var _this = this;
+        this.setState(function (s) {
+            s.panel = Panel.LOADER;
+            s.loadMessage = 'Saving ' + p.msType + '...';
+        });
         if (isNew) {
             ProxyFactory_ts_1.default.getManuscriptProxy().createMsType(p, function (msType, e) {
                 if (e) {
@@ -38882,6 +38962,8 @@ var MsTypeApp = (function (_super) {
                 else {
                     _this.setState(function (s) {
                         s.msTypes.push(msType);
+                        s.panel = Panel.TABLE;
+                        _this.props.replaceMsTypes(s.msTypes);
                         return s;
                     });
                 }
@@ -38899,61 +38981,141 @@ var MsTypeApp = (function (_super) {
                         });
                         s.msTypes[i].destroy();
                         s.msTypes[i] = msType;
+                        s.panel = Panel.TABLE;
+                        _this.props.replaceMsTypes(s.msTypes);
                         return s;
                     });
                 }
             });
-        }
-    };
-    MsTypeApp.prototype.loadMsTypes = function () {
-        var _this = this;
-        ProxyFactory_ts_1.default.getManuscriptProxy().getMsTypes(function (msTypes, e) {
-            if (e) {
-                alert(e);
-            }
-            else {
-                _this.setState(function (s) {
-                    mst.MsType.destroyArray(s.msTypes);
-                    s.msTypes = msTypes;
-                    s.msType = null;
-                    return s;
-                });
-            }
-        });
-    };
-    MsTypeApp.prototype.confirmDelete = function (msType) {
-        var _this = this;
-        var del = confirm('Delete ' + msType.msTypeName + '?');
-        if (del) {
-            ProxyFactory_ts_1.default.getManuscriptProxy().deleteMsType(msType.msType, function (s, e) {
-                if (e) {
-                    alert(e);
-                }
-                else if (s) {
-                    _this.setState(function (s) {
-                        var i = s.msTypes.findIndex(function (m) {
-                            return m.msType === msType.msType;
-                        });
-                        s.msTypes[i].destroy();
-                        s.msTypes.splice(i, 1);
-                        return s;
-                    });
-                }
-            });
-        }
-    };
-    MsTypeApp.prototype.render = function () {
-        var _this = this;
-        switch (this.state.panel) {
-            case Panel.TABLE:
-                return (React.createElement(MsTypeTablePanel_tsx_1.default, { msTypes: this.state.msTypes, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: function () { return _this.loadMsTypes; } }));
-            default:
-                return null;
         }
     };
     return MsTypeApp;
 }(React.Component));
 exports.default = MsTypeApp;
+
+
+/***/ }),
+
+/***/ "./src/components/manuscript/MsTypeEditPanel.tsx":
+/*!*******************************************************!*\
+  !*** ./src/components/manuscript/MsTypeEditPanel.tsx ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var MsTypeEditPanel = (function (_super) {
+    __extends(MsTypeEditPanel, _super);
+    function MsTypeEditPanel(p) {
+        var _this = _super.call(this, p) || this;
+        var isNew = !Boolean(p.msType);
+        var mProps;
+        if (isNew) {
+            mProps = {
+                msType: '',
+                msTypeName: ''
+            };
+        }
+        else {
+            mProps = p.msType.toProperties();
+        }
+        _this.state = {
+            isNew: isNew,
+            mProps: mProps,
+            val: {
+                msType: null,
+                msTypeName: null
+            }
+        };
+        _this.getMsTypeFormGroup = _this.getMsTypeFormGroup.bind(_this);
+        _this.onChange = _this.onChange.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
+        return _this;
+    }
+    MsTypeEditPanel.prototype.render = function () {
+        var x = [];
+        x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true },
+            "Manuscript Type - ",
+            this.state.isNew ? 'Create' : 'Edit'));
+        x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+            React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
+        x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
+            this.getMsTypeFormGroup(),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "msTypeName", validationState: this.state.val.msTypeName },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Name:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.mProps.msTypeName, onChange: this.onChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))));
+        return x;
+    };
+    MsTypeEditPanel.prototype.getMsTypeFormGroup = function () {
+        var label, value;
+        if (this.state.isNew) {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Manuscript Type:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.mProps.msType, onChange: this.onChange })));
+        }
+        else {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Manuscript Type:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.msType.msType));
+        }
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "msType", validationState: this.state.val.msType },
+            label,
+            value));
+    };
+    MsTypeEditPanel.prototype.onChange = function (e) {
+        var target = e.target;
+        var k = target.id;
+        var v = target.value;
+        this.setState(function (s) {
+            s.mProps[k] = v;
+            return s;
+        });
+    };
+    MsTypeEditPanel.prototype.onSubmit = function (e) {
+        var _this = this;
+        e.preventDefault();
+        var val = {
+            msTypeName: this.state.mProps.msTypeName ? null : 'error'
+        };
+        if (this.state.isNew) {
+            val.msType = this.state.mProps.msType ? null : 'error';
+        }
+        for (var k in val) {
+            if (val[k] !== null) {
+                return this.setState(function (s) {
+                    s.val = val;
+                    return s;
+                });
+            }
+        }
+        this.setState(function (s) {
+            s.val = val;
+            _this.props.onSubmit(s.mProps, _this.state.isNew);
+            return s;
+        });
+    };
+    return MsTypeEditPanel;
+}(React.Component));
+exports.default = MsTypeEditPanel;
 
 
 /***/ }),
@@ -38981,6 +39143,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
 var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
 var MsTypeTablePanel = (function (_super) {
     __extends(MsTypeTablePanel, _super);
@@ -38990,23 +39153,14 @@ var MsTypeTablePanel = (function (_super) {
             rowGetter: function (i) { return _this.props.msTypes[i.index]; },
             width: window.innerWidth - 50
         };
-        _this.renderEdit = _this.renderEdit.bind(_this);
         _this.renderDelete = _this.renderDelete.bind(_this);
+        _this.renderEdit = _this.renderEdit.bind(_this);
         return _this;
     }
-    MsTypeTablePanel.prototype.renderEdit = function (p) {
-        var _this = this;
-        var mst = p.rowData;
-        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", onClick: function () { return _this.props.onEdit(mst); } }, "Edit"));
-    };
-    MsTypeTablePanel.prototype.renderDelete = function (p) {
-        var _this = this;
-        var mst = p.rowData;
-        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", onClick: function () { return _this.props.onDelete(mst); } }, "Delete"));
-    };
     MsTypeTablePanel.prototype.render = function () {
         var _this = this;
         return [
+            React.createElement(Header_tsx_1.default, { min: true, key: "header" }, "Manuscript Types"),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
                 React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
                 React.createElement(react_bootstrap_1.Button, { bsStyle: "success", className: "ml15", onClick: function () { return _this.props.onEdit(null); } }, "New"),
@@ -39017,6 +39171,16 @@ var MsTypeTablePanel = (function (_super) {
                 React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderEdit }),
                 React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderDelete })))
         ];
+    };
+    MsTypeTablePanel.prototype.renderDelete = function (p) {
+        var _this = this;
+        var mst = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onDelete(mst); } }, "Delete"));
+    };
+    MsTypeTablePanel.prototype.renderEdit = function (p) {
+        var _this = this;
+        var mst = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onEdit(mst); } }, "Edit"));
     };
     return MsTypeTablePanel;
 }(React.Component));

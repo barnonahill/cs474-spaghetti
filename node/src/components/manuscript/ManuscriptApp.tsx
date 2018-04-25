@@ -136,7 +136,12 @@ export default class ManuscriptApp extends React.Component<P,S> {
 				/>);
 			case Panel.MST:
 				return (<MsTypeApp
-					onBack={() => this.changePanel(Panel.MST)}
+					msTypes={this.state.msTypes}
+					onBack={() => this.changePanel(Panel.INIT)}
+					replaceMsTypes={(m) => this.setState((s:S) => {
+						s.msTypes = m;
+						return s;
+					})}
 				/>);
 		}
 	}
@@ -203,6 +208,11 @@ export default class ManuscriptApp extends React.Component<P,S> {
 				break;
 
 			case Panel.TABLE:
+				this.setState((s:S) => {
+					s.panel = Panel.LOADER;
+					s.loadMessage = "Loading Manuscripts...";
+				});
+
 				this.loadManuscripts(null, null, false, (s:S, manuscripts:Array<ms.Manuscript>) => {
 					s.panel = p;
 					Library.destroyArray(s.libraries);
@@ -216,6 +226,10 @@ export default class ManuscriptApp extends React.Component<P,S> {
 				break;
 
 			case Panel.MST:
+				this.setState((s:S) => {
+					s.panel = p;
+					return s;
+				});
 				break;
 			default:
 				break;

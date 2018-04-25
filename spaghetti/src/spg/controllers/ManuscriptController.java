@@ -98,12 +98,11 @@ public class ManuscriptController {
 	 * @return -
 	 * @throws Exception -
 	 */
-	public static boolean deleteMSType(String msType, String msTypeName) throws Exception {
+	public static boolean deleteMSType(String msType) throws Exception {
 		String query;
 		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
 
 		pkNamesToValues.put("msType", msType);
-		pkNamesToValues.put("msTypeName", msTypeName);
 		
 		query = SpgController.buildDeleteQuery(MSTYPE, pkNamesToValues);
 		

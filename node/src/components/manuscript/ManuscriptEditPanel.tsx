@@ -349,7 +349,7 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 
 			value = (<Col key="v"
 				sm={4}
-				className="pt7 pl26"
+				className="pt7 pl27"
 			>{this.state.ents.country.country}</Col>);
 		}
 
@@ -393,7 +393,7 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 
 			value = (<Col key="v"
 				sm={4}
-				className="pt7 pl26"
+				className="pt7 pl27"
 			>{this.state.ents.library
 					? this.state.ents.library.library
 					: this.state.msProps.libSiglum
@@ -437,7 +437,7 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 
 			value = (<Col key="v"
 				sm={4}
-				className="pt7 pl26"
+				className="pt7 pl27"
 			>{this.state.msProps.msSiglum}</Col>);
 		}
 

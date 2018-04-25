@@ -35,30 +35,13 @@ export default class MsTypeTablePanel extends React.Component<P,S> {
 			width: window.innerWidth - 50
 		};
 
-		this.renderEdit = this.renderEdit.bind(this);
 		this.renderDelete = this.renderDelete.bind(this);
-	}
-
-	renderEdit(p: TableCellProps) {
-		const mst:MsType = p.rowData;
-		return (<Button
-			bsStyle="success"
-			bsSize="small"
-			onClick={() => this.props.onEdit(mst)}
-		>Edit</Button>);
-	}
-
-	renderDelete(p: TableCellProps) {
-		const mst:MsType = p.rowData;
-		return (<Button
-			bsStyle="danger"
-			bsSize="small"
-			onClick={() => this.props.onDelete(mst)}
-		>Delete</Button>);
+		this.renderEdit = this.renderEdit.bind(this);
 	}
 
 	render() {
 		return [
+			<Header min key="header">Manuscript Types</Header>,
 			(<PanelMenu key="panelMenu">
 				<Button
 					bsStyle="default"
@@ -113,5 +96,25 @@ export default class MsTypeTablePanel extends React.Component<P,S> {
 				/>
 			</Table>)
 		];
+	}
+
+	renderDelete(p: TableCellProps) {
+		const mst:MsType = p.rowData;
+		return (<Button
+			bsStyle="danger"
+			bsSize="small"
+			className="w100p"
+			onClick={() => this.props.onDelete(mst)}
+		>Delete</Button>);
+	}
+
+	renderEdit(p: TableCellProps) {
+		const mst:MsType = p.rowData;
+		return (<Button
+			bsStyle="success"
+			bsSize="small"
+			className="w100p"
+			onClick={() => this.props.onEdit(mst)}
+		>Edit</Button>);
 	}
 }

@@ -141,13 +141,13 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 								sm={3}
 								componentClass={ControlLabel}
 							>Library Siglum:</Col>),
-							<Col key="value" sm={4} className="pt7 pl26">{this.state.props.libSiglum}</Col>]
+							<Col key="value" sm={4} className="pt7 pl27">{this.state.props.libSiglum}</Col>]
 					}
 				</FormGroup>
 
 				<FormGroup controlId="countryID">
 					<Col sm={3} componentClass={ControlLabel}>Country:</Col>
-					<Col sm={4} className="pt7 pl26">{this.props.country.country}</Col>
+					<Col sm={4} className="pt7 pl27">{this.props.country.country}</Col>
 				</FormGroup>
 
 				<FormGroup
