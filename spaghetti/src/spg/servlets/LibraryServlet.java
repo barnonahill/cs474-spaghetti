@@ -50,6 +50,7 @@ public class LibraryServlet extends SpgHttpServlet {
 			// Actions are in node/src/proxies/LibraryProxy.ts
 			switch (action) 
 			{
+				 
 				case GET_COUNTRIES:
 					msg = this.getCountries();
 					break;
@@ -100,8 +101,7 @@ public class LibraryServlet extends SpgHttpServlet {
 		catch (Exception e) {
 			super.writeResponse(res, e);
 		}
-	}
-	
+	}	
 
 
 	/**

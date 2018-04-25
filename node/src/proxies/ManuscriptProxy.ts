@@ -7,6 +7,22 @@ export default class ManuScriptProxy extends SpgProxy {
 		super('manuscript');
 	}
 
+	getManuscript(libSiglum:string, msSiglum:string, callback:(m:ms.Manuscript, e?:string) => void) {
+		var params = {
+			action: 'GetManuscript',
+			libSiglum: libSiglum,
+			msSiglum: msSiglum
+		};
+
+		super.doPost(params, (res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, res.err);
+			}
+			callback(new ms.Manuscript(d as ms.Properties), null);
+		})
+	}
+
 	getManuscripts(countryID:string, libSiglum:string, callback: (manuscripts: Array<ms.Manuscript>, err?: string) => void) {
 		var params:any = {
 			action: 'GetManuscripts',

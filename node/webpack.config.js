@@ -6,7 +6,7 @@ const config = {
 	 * Mode: 'production', 'development', or 'none'
 	 * Basically prod. will compress our output file while dev. will not.
 	 */
-	//mode: 'development',
+	mode: 'development',
 	//mode: 'production',
 
 	/*

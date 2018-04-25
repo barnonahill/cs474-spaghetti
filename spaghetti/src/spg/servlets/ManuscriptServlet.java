@@ -315,9 +315,9 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	 * @return - 
 	 * @throws Exception 
 	 */
-	private String getManuscript(String getLibSiglum, String getMSSiglum) throws Exception {
-		Manuscript ms = ManuscriptController.getManuscript(getLibSiglum, getMSSiglum);
-		return ms.toJSON().toString();
+	private String getManuscript(String libSiglum, String msSiglum) throws Exception {
+		Manuscript ms = ManuscriptController.getManuscript(libSiglum, msSiglum);
+		return ms.toString();
 	}
 	
 

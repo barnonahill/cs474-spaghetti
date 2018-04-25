@@ -44,6 +44,22 @@ export default class LibraryProxy extends SpgProxy {
 		});
 	}
 
+	getLibrary(libSiglum:string, callback:(l:lib.Library, e?:string) => void) {
+		var params = {
+			action: 'GetLibrary',
+			libSiglum: libSiglum
+		};
+
+		super.doPost(params, (res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+
+			callback(new lib.Library(d as lib.Properties), null);
+		});
+	}
+
 	/**
 	 * Fetches the libraries from the back-end
 	 * @param countryID to filter by, it can be null.

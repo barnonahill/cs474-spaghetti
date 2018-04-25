@@ -37,8 +37,9 @@ export enum Panel {
 interface P {
 	countries: Country[]
 	onBack: () => void
-	// Opened from ManuscriptEntityPanel
-	panel?: Panel
+
+	// If opened from ManuscriptEntityPanel:
+	panel?: Panel // Load to this panel, it will call props.onBack
 	country?: Country
 	library?: Library
 	manuscript?: Manuscript
@@ -46,18 +47,30 @@ interface P {
 interface S {
 	panel: Panel
 	loadMessage?: string
+
+	// Main entities
 	primaries: {
+		// If sections are filtered:
+		country?: Country
 		libraries?: Library[]
 		manuscripts?: Manuscript[]
 		library?: Library
 		manuscript?: Manuscript
-		sections?: sn.Section[]
 		section?: sn.Section
+
+		// Always provided
+		sections?: sn.Section[]
 	}
-	temp: {
+
+	// If we're rendering an existing Section from an unfiltered load, temps are set before the panel
+	// is mounted and removed when it unmounts.
+	temps: {
+		country?: Country
 		library?: Library
 		manuscript?: Manuscript
 	}
+
+	// Support entities, these are loaded after SectionApp mounts.
 	supports: {
 		centuries?: Century[]
 		cursuses?: Cursus[]
@@ -76,15 +89,17 @@ export default class SectionApp extends React.Component<P,S> {
 			loadMessage: 'Loading Supports...',
 			primaries: {},
 			supports: {},
-			temp: {}
+			temps: {}
 		};
 
+		// JSX Element Getter bindings
 		this.renderInit = this.renderInit.bind(this);
 		this.renderEdit = this.renderEdit.bind(this);
 		this.renderEntity = this.renderEntity.bind(this);
 		this.renderTable = this.renderTable.bind(this);
 		this.renderLoader = this.renderLoader.bind(this);
 
+		// Support load bindings
 		this.loadCenturies = this.loadCenturies.bind(this);
 		this.loadCursuses = this.loadCursuses.bind(this);
 		this.loadSrcComps = this.loadSrcComps.bind(this);
@@ -93,30 +108,45 @@ export default class SectionApp extends React.Component<P,S> {
 		this.loadMsTypes = this.loadMsTypes.bind(this);
 		this.loadSupports = this.loadSupports.bind(this);
 
-		this.loadSections = this.loadSections.bind(this);
+		// Primary load bindings
 		this.loadLibraries = this.loadLibraries.bind(this);
 		this.loadManuscripts = this.loadManuscripts.bind(this);
+		this.loadSections = this.loadSections.bind(this);
+		this.reloadSections = this.reloadSections.bind(this);
 
+		// Temp load bindings
+		this.loadLibrary = this.loadLibrary.bind(this);
+		this.loadManuscript = this.loadManuscript.bind(this);
+
+		// State setter util bindings
 		this.changePanel = this.changePanel.bind(this);
 		this.setLoader = this.setLoader.bind(this);
 
-		this.onInitSubmit = this.onInitSubmit.bind(this);
-		this.onFilterSubmit = this.onFilterSubmit.bind(this);
-
-		this.reloadSections = this.reloadSections.bind(this);
+		// Panel open bindings
 		this.openEntity = this.openEntity.bind(this);
 		this.openEdit = this.openEdit.bind(this);
+
+		// Panel submit bindings
+		this.onInitSubmit = this.onInitSubmit.bind(this);
+		this.onFilterSubmit = this.onFilterSubmit.bind(this);
 		this.confirmDelete = this.confirmDelete.bind(this);
+
+		// Entity manipulation binding
+		// TODO - should be section
 		this.saveManuscript = this.saveManuscript.bind(this);
 	}
 
 	componentDidMount() {
+		// Load all support entities upon mount
 		this.loadSupports((s:S) => {
 			s.panel = Panel.INIT;
 			return s;
 		});
 	}
 
+	/**
+	 * Get the JSX for the current panel.
+	 */
 	render() {
 		switch (this.state.panel) {
 			default:
@@ -140,6 +170,8 @@ export default class SectionApp extends React.Component<P,S> {
 		}
 	}
 
+	/* Panel JSX getters */
+
 	renderInit() {
 		return (<InitPanel
 			onBack={this.props.onBack}
@@ -148,13 +180,16 @@ export default class SectionApp extends React.Component<P,S> {
 	}
 
 	renderEdit() {
-		// return (<EditPanel
-		// 	countries={this.props.countries}
-		// 	section={this.state.primaries.section}
-		// 	supports={this.state.supports as any}
-		// 	onBack={() => this.changePanel(Panel.TABLE)}
-		// 	onSubmit={this.saveManuscript}
-		// />)
+		var isNew = Boolean();
+
+		return (<EditPanel
+			countries={this.props.countries}
+			primaries={this.state.primaries}
+			supports={this.state.supports as any}
+			temps
+			onBack={() => this.changePanel(Panel.TABLE)}
+			onSubmit={this.saveManuscript}
+		/>)
 	}
 
 	renderEntity() {}
@@ -184,6 +219,8 @@ export default class SectionApp extends React.Component<P,S> {
 	renderLoader() {
 		return <PageLoader inner={this.state.loadMessage} />;
 	}
+
+	/* Support loaders */
 
 	loadCenturies(callback: (a:Century[]) => void) {
 		this.setLoader('Loading Centuries...');
@@ -284,6 +321,8 @@ export default class SectionApp extends React.Component<P,S> {
 		});
 	}
 
+	/* Primary loaders */
+
 	loadSections(libSiglum:string, msSiglum:string, callback:(a: sn.Section[]) => void) {
 		proxyFactory.getSectionProxy().getSections(libSiglum, msSiglum, (a, e?) => {
 			if (e) {
@@ -308,6 +347,26 @@ export default class SectionApp extends React.Component<P,S> {
 				return alert(e);
 			}
 			return callback(a);
+		});
+	}
+
+	/* Temp loaders */
+
+	loadLibrary(libSiglum:string, callback: (l:Library) => void) {
+		proxyFactory.getLibraryProxy().getLibrary(libSiglum, (l, e?) => {
+			if (e) {
+				return alert(e);
+			}
+			return callback(l);
+		});
+	}
+
+	loadManuscript(libSiglum:string, msSiglum:string, callback:(m:Manuscript) => void) {
+		proxyFactory.getManuscriptProxy().getManuscript(libSiglum, msSiglum, (m, e?) => {
+			if (e) {
+				return alert(e);
+			}
+			callback(m);
 		});
 	}
 
@@ -368,9 +427,13 @@ export default class SectionApp extends React.Component<P,S> {
 		});
 	}
 
+	/**
+	 * Called from TablePanel to refresh the view.
+	 */
 	reloadSections() {
 		this.setLoader('Loading Sections...');
 
+		// Get siglums from primaries if the view is filtered
 		var libSiglum = (this.state.primaries.library
 			? this.state.primaries.library.libSiglum
 			: null);
@@ -378,12 +441,16 @@ export default class SectionApp extends React.Component<P,S> {
 			? this.state.primaries.manuscript.msSiglum
 			: null);
 
-		this.loadSections(libSiglum, msSiglum, ss => {
+		this.loadSections(libSiglum, msSiglum, sections => {
 				this.setState((s:S) => {
+					// Destroy the stale section models.
 					sn.Section.destroyArray(s.primaries.sections);
 					s.primaries.section = null;
 
-					s.primaries.sections = ss;
+					// Set new primary section models.
+					s.primaries.sections = sections;
+
+					// Return to the table panel when finished.
 					s.panel = Panel.TABLE;
 					return s;
 				});
@@ -392,36 +459,54 @@ export default class SectionApp extends React.Component<P,S> {
 
 	openEntity(s:sn.Section) {}
 
-	openEdit(stn:sn.Section) {
-		this.setLoader('Loading Libraries...');
-		var i = stn.libSiglum.indexOf('-');
-		var countryID = stn.libSiglum.slice(0, i);
+	openEdit(stn?:sn.Section) {
+		var isNew = !Boolean(stn);
+		var isFiltered = Boolean(this.state.primaries.manuscript);
 
-		this.loadLibraries(countryID, (ls:Library[]) => {
-			this.setLoader('Loading Manuscripts...');
+		if (!(isFiltered || isNew)) {
+			// Set the country temp
+			var i = stn.libSiglum.indexOf('-');
+			var countryID = stn.libSiglum.slice(0, i);
+			var country = this.props.countries.find(c => countryID === c.countryID);
 
-			this.loadManuscripts(stn.libSiglum, (ms: Manuscript[]) => {
-				this.setState((s:S) => {
-					s.temp.library = ls.find(l => stn.libSiglum === l.libSiglum);
-					s.temp.manuscript = ms.find(m => stn.libSiglum === m.libSiglum
-						&& stn.msSiglum === m.msSiglum);
+			// Load library temp, then manuscript temp
+			this.setLoader('Loading Library ' + stn.libSiglum + '...');
+			this.loadLibrary(stn.libSiglum, library => {
+
+				// Load manuscript temp
+				this.setLoader('Loading manuscript ' + stn.msSiglum + ' from ' + library.library);
+				this.loadManuscript(stn.libSiglum, stn.msSiglum, manuscript => {
+
+					// Set our temps and go to the edit panel.
+					this.setState((s:S) => {
+						s.primaries.section = stn;
+
+						s.temps.country = country;
+						// These two will be destroyed upon exit
+						s.temps.library = library;
+						s.temps.manuscript = manuscript;
+
+						s.panel = Panel.EDIT;
+						return s;
+					});
 				});
 			});
-		});
-
-		this.setState((s:S) => {
-			s.primaries.section = stn;
-			s.panel = Panel.EDIT;
-			return s;
-		});
+		}
+		else {
+			this.setState((s:S) => {
+				s.primaries.section = stn;
+				s.panel = Panel.EDIT;
+				return s;
+			});
+		}
 	}
 
-	confirmDelete(section:sn.Section) {
-		var del = confirm('Delete ' + section.libSiglum + ' ' + section.msSiglum + ' ' + section.sectionID +
+	confirmDelete(stn:sn.Section) {
+		var del = confirm('Delete ' + stn.libSiglum + ' ' + stn.msSiglum + ' ' + stn.sectionID +
 			'? This will delete all children of this section as well!');
 
 		if (del) {
-			proxyFactory.getSectionProxy().deleteSection(section.libSiglum, section.msSiglum, section.sectionID,
+			proxyFactory.getSectionProxy().deleteSection(stn.libSiglum, stn.msSiglum, stn.sectionID,
 				(success, e?) =>
 			{
 				if (e) {
@@ -432,10 +517,14 @@ export default class SectionApp extends React.Component<P,S> {
 				}
 
 				this.setState((s:S) => {
+					// Find the location of section in the array
 					var i = s.primaries.sections.findIndex(sec => {
-						return section.libSiglum === sec.libSiglum && section.msSiglum === sec.msSiglum &&
-							section.sectionID === sec.sectionID;
+						return (stn.libSiglum === sec.libSiglum
+							&& stn.msSiglum === sec.msSiglum
+							&& stn.sectionID === sec.sectionID);
 					});
+
+					// Destroy the deleted section and remove it from the array
 					s.primaries.sections[i].destroy();
 					s.primaries.sections.splice(i, 1);
 					return s;

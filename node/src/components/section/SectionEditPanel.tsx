@@ -15,13 +15,16 @@ import {
 	Option
 } from 'react-select';
 
+// Common components
 import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
 
+// Primary entities
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
 import { Manuscript } from '@src/models/manuscript.ts';
 import * as sn from '@src/models/section.ts';
+
 // Support Entities
 import { Century } from '@src/models/century.ts';
 import { Cursus } from '@src/models/cursus.ts';
@@ -31,12 +34,78 @@ import { Notation } from '@src/models/notation.ts';
 import { MsType } from '@src/models/msType.ts';
 import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
-interface P {
+/**
+ * Models of Parent Entities, filled in constructor for existing sections,
+ * or if filtered for new sections.
+ */
+interface StateParents {
+	country: Country
+	library: Library
+	manuscript: Manuscript
+}
+
+interface StatePossibleParents {
 	countries: Country[]
-	// All three are loaded together.
-	section?: sn.Section
-	library?: Library
-	country?: Country
+	libraries: Library[] // async load
+	manuscripts: Manuscript[] // async load
+}
+
+interface PrimaryOptions {
+	country: Option
+	countries: Options
+	library: Option
+	libraries: Options
+	manuscript: Option
+	manuscripts: Options
+}
+
+interface SupportOptions {
+	century: Option
+	centuries: Options
+	cursus: Option
+	cursuses: Options
+	srcComp: Option
+	srcComps: Options
+	prov: Option
+	provs: Options
+	notation: Option
+	notations: Options
+	secType: Option
+	secTypes: Options
+}
+
+/**
+ * Validation state of required inputs, only needed for new sections.
+ */
+interface StateVal {
+	countryID: any
+	libSiglum: any
+	msSiglum: any
+	sectionID: any
+}
+
+interface P {
+	onBack: () => void
+	onSubmit: (snProps: sn.Properties, isNew: boolean) => void
+
+	// Entity loaders, used for new sections if table was not filtered.
+	loadLibraries: (countryID: string, callback: (libraries: Library[]) => void) => void
+	loadManuscripts: (libSiglum: string, msSiglum: string,
+		callback: (manuscripts: Manuscript[]) => void) => void
+
+	primaries: {
+		// All three are loaded if section already exists or table was filtered.
+		country?: Country // country of section (new or not)
+		library?: Library // library of section (new or not)
+		manuscript?: Manuscript // manuscript of section (new or not)
+
+		section?: sn.Section // section being edited or null for new section
+
+		countries: Country[]
+		libraries?: Library[] // libraries for primary country, if filtered
+		manuscripts?: Manuscript[] // manuscripts for primary library, if filtered
+	}
+
 	supports: {
 		centuries: Century[]
 		cursuses: Cursus[]
@@ -45,38 +114,29 @@ interface P {
 		notations: Notation[]
 		msTypes: MsType[]
 	}
-	onBack: () => void
-	onSubmit: (props: sn.Properties, isNew: boolean) => void
-	loadSections: (libSiglum:string, msSiglum:string, callback: (s:sn.Section[]) => void) => void
+
+	// Parent entities of existing section, if table was not filtered.
+	temps: {
+		country?: Country
+		library?: Library
+		manuscript?: Manuscript
+	}
 }
+
 interface S {
 	isNew: boolean
 	snProps: sn.Properties
-	val?: {
-		countryID: any
-		libSiglum: any
-		msSiglum: any
-		sectionID: any
-	}
+
+	parents?: StateParents
+	possibleParents: StatePossibleParents
+
+	// new
+	val?: StateVal
+
+	// react-select options, optionals are for new sections
 	opts: {
-		country?: Option
-		countries?: Options
-		library?: Option
-		libraries?: Options
-		manuscript?: Option
-		manuscripts?: Options
-		century: Option
-		centuries: Options
-		cursus: Option
-		cursuses: Options
-		srcComp: Option
-		srcComps: Options
-		prov: Option
-		provs: Options
-		notation: Option
-		notations: Options
-		msType: Option
-		msTypes: Options
+		p?: PrimaryOptions
+		s: SupportOptions
 	}
 }
 
@@ -84,11 +144,55 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
-		var msTypeOptions = p.supports.msTypes.map((m:MsType) => {
-			return {label: m.msTypeName, value: m.msType};
-		});
+		// Set up support select options
+		var sOpts: SupportOptions = {
+			century: null,
+			centuries: p.supports.centuries.map(c => {
+				return {label: c.centuryName, value: c.centuryID}
+			}),
 
-		var isNew = !Boolean(p.section);
+			cursus: null,
+			cursuses: p.supports.cursuses.map(c => {
+				return {label: c.cursusName, value: c.cursusID}
+			}),
+
+			srcComp: null,
+			srcComps: p.supports.srcComps.map(s => {
+				return {label: s.sourceCompletenessName, value: s.sourceCompletenessID}
+			}),
+
+			prov: null,
+			provs: p.supports.provs.map(p => {
+				return {label: p.provenanceName || p.provenanceID, value: p.provenanceID}
+			}),
+
+			notation: null,
+			notations: p.supports.notations.map(s => {
+				return {label: s.notationName, value: s.notationID}
+			}),
+
+			secType: null,
+			secTypes: p.supports.msTypes.map((m:MsType) => {
+				return {label: m.msTypeName, value: m.msType};
+			}),
+		};
+
+		// Determine initial state of the panel
+		var isNew = !p.primaries.section;
+		var isFiltered = Boolean(p.primaries.manuscript);
+
+		var parents: StateParents = {
+			country: p.primaries.country,
+			library: p.primaries.library,
+			manuscript: p.primaries.manuscript
+		};
+
+		var possibleParents: StatePossibleParents = {
+			countries: p.primaries.countries,
+			libraries: p.primaries.libraries || null,
+			manuscripts: p.primaries.manuscripts || null
+		};
+
 		var state: Partial<S> = {
 			isNew: isNew,
 			opts: {
