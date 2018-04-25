@@ -16,11 +16,11 @@ import javax.servlet.http.HttpServlet;
 public abstract class SpgController extends HttpServlet {
 	public static Properties p = null;
 	public static final String DATABASE_ADDR = 
-			"jdbc:mysql://mysql.cs.jmu.edu/BarnhillButtsClermontTran_Manuscript";
-			//"jdbc:mysql://127.0.0.1/Manuscript2018";
-	public static final String USER = "clermocj";
-	//public static final String USER = "root";
-	public static final String DB_PASS = "cs474";	
+			//"jdbc:mysql://mysql.cs.jmu.edu/BarnhillButtsClermontTran_Manuscript";
+			"jdbc:mysql://127.0.0.1/Manuscript2018";
+	//public static final String USER = "clermocj";
+	public static final String USER = "root";
+	//public static final String DB_PASS = "cs474";	
 	
 	/**
 	 * getResultSet - for SELECT.
@@ -46,11 +46,11 @@ public abstract class SpgController extends HttpServlet {
 		}
 	}
 	
-	public static final void initProperties() {
+	private static final void initProperties() {
 		if (SpgController.p == null) {
 			SpgController.p = new Properties();
 			p.setProperty("user", USER);
-			p.setProperty("password", DB_PASS);
+			//p.setProperty("password", DB_PASS);
 			p.setProperty("port", "3306");
 		}
 	}

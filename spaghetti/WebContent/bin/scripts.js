@@ -38529,7 +38529,10 @@ var ManuscriptFilterPanel = (function (_super) {
             libraries: null,
             libraryOptions: null,
             libraryOption: null,
-            loadDisabled: true
+            val: {
+                countryID: null,
+                libSiglum: null
+            }
         };
         _this.onCountrySelect = _this.onCountrySelect.bind(_this);
         _this.onLibrarySelect = _this.onLibrarySelect.bind(_this);
@@ -38552,7 +38555,6 @@ var ManuscriptFilterPanel = (function (_super) {
                         s.libraryOptions = s.libraries.map(function (l) {
                             return { label: l.library, value: l.libSiglum };
                         });
-                        s.loadDisabled = false;
                         return s;
                     });
                 }
@@ -38564,7 +38566,6 @@ var ManuscriptFilterPanel = (function (_super) {
                 library_ts_1.Library.destroyArray(s.libraries);
                 s.libraryOption = null;
                 s.libraryOptions = null;
-                s.loadDisabled = true;
                 return s;
             });
         }
@@ -38580,6 +38581,18 @@ var ManuscriptFilterPanel = (function (_super) {
         e.preventDefault();
         var country = null;
         var library = null;
+        var val = {
+            countryID: this.state.countryOption ? null : 'error',
+            libSiglum: this.state.libraryOption ? null : 'error'
+        };
+        for (var k in val) {
+            if (val[k] !== null) {
+                return this.setState(function (s) {
+                    s.val = val;
+                    return s;
+                });
+            }
+        }
         if (this.state.countryOption) {
             country = this.props.countries.find(function (c) {
                 return c.countryID === _this.state.countryOption.value;
@@ -38590,7 +38603,11 @@ var ManuscriptFilterPanel = (function (_super) {
                 });
             }
         }
-        this.props.onSelect(country, library, this.state.libraries);
+        this.setState(function (s) {
+            _this.props.onSelect(country, library, s.libraries);
+            s.val = val;
+            return s;
+        });
     };
     ManuscriptFilterPanel.prototype.render = function () {
         return [
@@ -38600,17 +38617,17 @@ var ManuscriptFilterPanel = (function (_super) {
             (React.createElement(react_bootstrap_1.Alert, { bsStyle: "info", className: "mb20 mr15p ml15p text-center", key: "alert" },
                 React.createElement("strong", null, "Filter manuscripts by country and library."))),
             (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form", onSubmit: this.onSubmit },
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
-                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID", validationState: this.state.val.countryID },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Country:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_select_1.default, { name: "countryID", value: this.state.countryOption, options: this.state.countryOptions, onChange: this.onCountrySelect }))),
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
-                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library:"),
+                        React.createElement(react_select_1.default, { name: "countryID", value: this.state.countryOption, options: this.state.countryOptions, onChange: this.onCountrySelect, className: this.state.val.countryID === null ? '' : 'has-error' }))),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "libSiglum", validationState: this.state.val.libSiglum },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Library:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_select_1.default, { name: "libSiglum", value: this.state.libraryOption, options: this.state.libraryOptions, onChange: this.onLibrarySelect, disabled: this.state.loadDisabled }))),
+                        React.createElement(react_select_1.default, { name: "libSiglum", value: this.state.libraryOption, options: this.state.libraryOptions, onChange: this.onLibrarySelect, className: this.state.val.libSiglum == null ? '' : 'has-error' }))),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
                     React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
-                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit", disabled: this.state.loadDisabled }, "Load")))))
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit" }, "Load")))))
         ];
     };
     return ManuscriptFilterPanel;
@@ -39700,7 +39717,7 @@ exports.default = factory;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-var BASE_SERVICES = "http://localhost:8080/tomcat";
+var BASE_SERVICES = "http://localhost:8080/spaghetti";
 var SpgProxy = (function () {
     function SpgProxy(service) {
         this.service = service;

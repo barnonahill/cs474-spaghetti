@@ -31,7 +31,10 @@ interface S {
 	libraries: Array<Library>
 	libraryOptions: Options
 	libraryOption: Option
-	loadDisabled: boolean
+	val: {
+		countryID: any
+		libSiglum: any
+	}
 }
 
 export default class ManuscriptFilterPanel extends React.Component<P,S> {
@@ -46,7 +49,10 @@ export default class ManuscriptFilterPanel extends React.Component<P,S> {
 			libraries: null,
 			libraryOptions: null,
 			libraryOption: null,
-			loadDisabled: true
+			val: {
+				countryID: null,
+				libSiglum: null
+			}
 		};
 		this.onCountrySelect = this.onCountrySelect.bind(this);
 		this.onLibrarySelect = this.onLibrarySelect.bind(this);
@@ -68,7 +74,6 @@ export default class ManuscriptFilterPanel extends React.Component<P,S> {
 						s.libraryOptions = s.libraries.map((l:Library) => {
 							return {label: l.library, value: l.libSiglum};
 						});
-						s.loadDisabled = false;
 						return s;
 					});
 				}
@@ -80,7 +85,6 @@ export default class ManuscriptFilterPanel extends React.Component<P,S> {
 				Library.destroyArray(s.libraries);
 				s.libraryOption = null;
 				s.libraryOptions = null;
-				s.loadDisabled = true;
 				return s;
 			});
 		}
@@ -98,6 +102,19 @@ export default class ManuscriptFilterPanel extends React.Component<P,S> {
 		var country: Country = null;
 		var library: Library = null;
 
+		var val:any = {
+			countryID: this.state.countryOption ? null : 'error',
+			libSiglum: this.state.libraryOption ? null : 'error'
+		};
+		for (let k in val) {
+			if (val[k] !== null) {
+				return this.setState((s:S) => {
+					s.val = val;
+					return s;
+				})
+			}
+		}
+
 		if (this.state.countryOption) {
 			country = this.props.countries.find((c: Country) => {
 				return c.countryID === this.state.countryOption.value;
@@ -110,7 +127,11 @@ export default class ManuscriptFilterPanel extends React.Component<P,S> {
 			}
 		}
 
-		this.props.onSelect(country, library, this.state.libraries);
+		this.setState((s:S) => {
+			this.props.onSelect(country, library, s.libraries);
+			s.val = val;
+			return s;
+		});
 	}
 
 	render() {
@@ -130,27 +151,40 @@ export default class ManuscriptFilterPanel extends React.Component<P,S> {
 			><strong>Filter manuscripts by country and library.</strong></Alert>),
 
 			(<Form horizontal key="form" onSubmit={this.onSubmit}>
-				<FormGroup controlId="countryID">
-					<Col sm={3} componentClass={ControlLabel}>Country:</Col>
+				<FormGroup
+					controlId="countryID"
+					validationState={this.state.val.countryID}
+				>
+					<Col sm={3}
+						componentClass={ControlLabel}
+						className="required"
+					>Country:</Col>
 					<Col sm={4}>
 						<Select
 							name="countryID"
 							value={this.state.countryOption}
 							options={this.state.countryOptions}
 							onChange={this.onCountrySelect}
+							className={this.state.val.countryID === null ? '' : 'has-error'}
 						/>
 					</Col>
 				</FormGroup>
 
-				<FormGroup controlId="countryID">
-					<Col sm={3} componentClass={ControlLabel}>Library:</Col>
+				<FormGroup
+					controlId="libSiglum"
+					validationState={this.state.val.libSiglum}
+				>
+					<Col sm={3}
+						componentClass={ControlLabel}
+						className="required"
+					>Library:</Col>
 					<Col sm={4}>
 						<Select
 							name="libSiglum"
 							value={this.state.libraryOption}
 							options={this.state.libraryOptions}
 							onChange={this.onLibrarySelect}
-							disabled={this.state.loadDisabled}
+							className={this.state.val.libSiglum == null ? '' : 'has-error'}
 						/>
 					</Col>
 				</FormGroup>
@@ -160,9 +194,7 @@ export default class ManuscriptFilterPanel extends React.Component<P,S> {
 						<Button
 							bsStyle="primary"
 							type="submit"
-							disabled={this.state.loadDisabled}
-							>Load
-						</Button>
+						>Load</Button>
 					</Col>
 				</FormGroup>
 			</Form>)
