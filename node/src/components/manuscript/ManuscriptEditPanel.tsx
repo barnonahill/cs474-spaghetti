@@ -81,7 +81,7 @@ export default class ManuscriptEditPanel extends React.Component<P,S> {
 				msSiglum: '',
 				msType: '',
 				dimensions: '',
-				leaves: '',
+				leaves: 0,
 				foliated: false,
 				vellum: false,
 				binding: '',

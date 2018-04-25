@@ -37350,6 +37350,9 @@ var LibraryEditPanel = (function (_super) {
         if (p.library) {
             isNew = false;
             props = p.library.toProperties();
+            props.address1 = props.address1 || '';
+            props.address2 = props.address2 || '';
+            props.postCode = props.postCode || '';
         }
         else {
             isNew = true;
@@ -38102,7 +38105,7 @@ var ManuscriptEditPanel = (function (_super) {
                 msSiglum: '',
                 msType: '',
                 dimensions: '',
-                leaves: '',
+                leaves: 0,
                 foliated: false,
                 vellum: false,
                 binding: '',

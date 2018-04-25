@@ -41,6 +41,9 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 		if (p.library) {
 			isNew = false;
 			props = p.library.toProperties();
+			props.address1 = props.address1 || '';
+			props.address2 = props.address2 || '';
+			props.postCode = props.postCode || '';
 		}
 		else {
 			isNew = true;
