@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import spg.controllers.ManuscriptController;
 import spg.controllers.SectionController;
 import spg.models.Century;
 import spg.models.Cursus;
@@ -28,7 +27,7 @@ import spg.models.SourceCompleteness;
 @WebServlet(name="SectionServices", urlPatterns= {"/section"})
 public class SectionServlet extends SpgHttpServlet{
 private static final long serialVersionUID = 1L;
-private SectionController sectionController;
+	
 	
 	public static final String CREATE_SECTION 	= "createsection";
 	public static final String UPDATE_SECTION 	= "updatesection";
@@ -43,16 +42,10 @@ private SectionController sectionController;
 	public static final String GET_NOTATIONS = "GetNotations";
 	
 	
-	public SectionServlet() {
-		super();
-		this.sectionController = new SectionController();
-	}
-	
 	@Override
 	public void handleRequest(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		try 
 		{
-			sectionController.open();
 			Map<String, String> params = super.getParameters(req);
 			String action = super.getParameter(params, "action").toLowerCase();
 			String msg = null;
@@ -138,6 +131,11 @@ private SectionController sectionController;
             	msg = this.getCenturies();
             }
 			
+			else if (action.equalsIgnoreCase(UPDATE_CENTURY))
+			{
+				String centuryID = super.getParameter(params, "centuryID");
+				msg = this.deleteCentury(centuryID);
+			}
 			else if (action.equalsIgnoreCase(GET_CURSUSES))
 			{
 				msg = this.getCursuses();
@@ -183,15 +181,20 @@ private SectionController sectionController;
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
-		if(sectionController.getSectionOrNull(libSiglum, msSiglum, sectionID) != null) {
-			throw new Exception("Section with same libSiglum, msType, and sectionID already exists.");
-		}
-		
-		
-		Section s = sectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
+
+		Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 		return s.toJSON().toString();
+		try {
+			Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
+					notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
+					provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
+			return s.toJSON().toString();
+		}
+		catch (MySQLIntegrityConstraintViolationException e) {
+			throw new Exception("An entry with the same primary key already exists.");
+    }
 	}
 	
 
@@ -206,10 +209,15 @@ private SectionController sectionController;
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
-		Section s = sectionController.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
+		try {
+			Section s = SectionController.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 		return s.toJSON().toString();
+		}
+		catch (MySQLIntegrityConstraintViolationException e) {
+			throw new Exception("An entry with the same primary key already exists.");
+		}
 	}
 	
 	/**
@@ -221,8 +229,13 @@ private SectionController sectionController;
 	 * @throws Exception 
 	 */
 	private String getSection(String libSiglum, String msSiglum, String sectionID) throws Exception {
-		Section s = sectionController.getSection(libSiglum, msSiglum, sectionID);
-		return s.toJSON().toString();
+		try {
+			Section s = SectionController.getSection(libSiglum, msSiglum, sectionID);
+			return s.toJSON().toString();
+		}
+		catch (MySQLIntegrityConstraintViolationException e) {
+			throw new Exception("An entry with the same primary key already exists.");
+		}
 	}
 	
 
@@ -235,7 +248,7 @@ private SectionController sectionController;
 	 */
 	private String getSections(String libSiglum, String sectionID) throws Exception {
 		JSONArray sections = new JSONArray();
-		ArrayList<Section> results = sectionController.getSections(libSiglum, sectionID);
+		ArrayList<Section> results = SectionController.getSections(libSiglum, sectionID);
 		
 		for (Section s : results) {
 			sections.put(s.toJSON());
@@ -254,14 +267,23 @@ private SectionController sectionController;
 	 * @throws Exception 
 	 */
 	private String deleteSection(String deleteLibSiglum, String deleteMSSiglum, String deletesectionID) throws Exception {
-		sectionController.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
 		JSONObject j = new JSONObject();
-        j.put("success", true);
-		return j.toString();
-	}
+		boolean success = false;
+        try {
+			SectionController.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
+			success = true;
+		}
+		catch (MYSQLException e) {
+			success = false;
+        }
+		finally {
+			j.put("success", success);
+			return j.toString();
+		}
+    }
 	
 	private String getCenturies() throws Exception {
-		ArrayList<Century> centuries = sectionController.getCenturies();
+		ArrayList<Century> centuries = SectionController.getCenturies();
 		if (centuries == null) {
 			throw new Exception("Could not load centuries.");
 		}
@@ -274,8 +296,49 @@ private SectionController sectionController;
 		return j.toString();
 	}
 	
+	/**
+	 * updateCentury - 
+	 * @params -
+	 * @return -
+	 * @throws Exception 
+	 */
+	private String updateCentury(String centuryID) throws Exception {
+		try {
+			Century s = SectionController.updateCentury(centuryID);
+			return c.toJSON().toString();
+		}
+		catch (MySQLIntegrityConstraintViolationException e) {
+			throw new Exception("An entry with the same primary key already exists.");
+		}
+	}
+	
+	private String createCentury(String centuryID) throws Exception {
+		try {
+			Century s = SectionController.createCentury(centuryID);
+			return c.toJSON().toString();
+		}
+		catch (MySQLIntegrityConstraintViolationException e) {
+			throw new Exception("An entry with the same primary key already exists.");
+		}
+	}
+	
+	private String deleteCentury(String centuryID) throws Exception {
+		JSONObject j = new JSONObject();
+		boolean = success = false;
+		try {
+			SectionController.deleteCentury(centuryID);
+			success = true;
+		}
+		catch (MYSQLException e) {
+			success = false;
+		}
+		finally {
+			j.put("success", success);
+			return j.toString();
+		}
+	
 	private String getCursuses() throws Exception {
-		ArrayList<Cursus> cursuses = sectionController.getCursuses();
+		ArrayList<Cursus> cursuses = SectionController.getCursuses();
 		if (cursuses == null) {
 			throw new Exception("Could not load cursuses.");
 		}
@@ -289,7 +352,7 @@ private SectionController sectionController;
 	}
 	
 	private String getSourceCompletenesses() throws Exception {
-		ArrayList<SourceCompleteness> sc = sectionController.getSourceCompletenesses();
+		ArrayList<SourceCompleteness> sc = SectionController.getSourceCompletenesses();
 		if (sc == null) {
 			throw new Exception("Could not load source completenesses");
 		}
@@ -303,7 +366,7 @@ private SectionController sectionController;
 	}
 	
 	private String getProvenances() throws Exception {
-		ArrayList<Provenance> prov = sectionController.getProvenances();
+		ArrayList<Provenance> prov = SectionController.getProvenances();
 		if (prov == null) {
 			throw new Exception("Could not load provenance");
 		}
@@ -317,7 +380,7 @@ private SectionController sectionController;
 	}
 	
 	private String getNotations() throws Exception {
-		ArrayList<Notation> note = sectionController.getNotations();
+		ArrayList<Notation> note = SectionController.getNotations();
 		if (note == null) {
 			throw new Exception("Could not load notation");
 		}
