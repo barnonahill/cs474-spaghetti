@@ -148,14 +148,13 @@ public abstract class SpgController {
 	 * @return
 	 * UPDATE table SET column1 = val1, column2 = val2 WHERE pk = pkVal;
 	 */
-	final String buildUpdateQuery(String tableName,  Map<String, String> pkNamesToValues, 
-			Map<String, String> namesToValues) {
+	final String buildUpdateQuery(String tableName, Map<String, String> primaryMap, Map<String, String> nvMap) {
 		StringBuilder query = new StringBuilder("UPDATE ");
 		query.append(tableName);
 		query.append(" SET ");
-		query.append(ceateUpdatesString(namesToValues));
+		query.append(createUpdatesString(nvMap));
 		query.append(" WHERE ");
-		query.append(createPredicate(pkNamesToValues));
+		query.append(createPredicate(primaryMap));
 		query.append(";");
 		return query.toString();
 	}
@@ -267,14 +266,14 @@ public abstract class SpgController {
 	
 	
 	/**
-	 * ceateUpdatesString - used for UPDATE.
+	 * createUpdatesString - used for UPDATE.
 	 * @param varNames - the names of the variables to update.
 	 * @param varVals - the values to set them too.
 	 * @return a string.
 	 * e.g.
 	 * "countryID = 'US', city = 'Harrisonburg', postCode = '22807'"
 	 */
-	private final String ceateUpdatesString(Map<String,String> namesToValues) {
+	private final String createUpdatesString(Map<String,String> namesToValues) {
 	
 		StringBuilder updates = new StringBuilder("");
 		boolean addComma = false;
@@ -307,18 +306,20 @@ public abstract class SpgController {
 	 * e.g.
 	 * libSiglum = 'potato' AND msType = 'windex'
 	 */
-	private final String createPredicate(Map<String,String> namesToValues) {
+	private final String createPredicate(Map<String,String> primaryMap) {
 		StringBuilder predicate = new StringBuilder("");
 		boolean addAnd = false;
 		String pkVal;
 		
-		for(String name : namesToValues.keySet()) {
-			pkVal = namesToValues.get(name);
-			if(addAnd) {
+		for(String name : primaryMap.keySet()) {
+			pkVal = primaryMap.get(name);
+			
+			if (addAnd) {
 				predicate.append(" AND ");
 			}
+			
 			addAnd = true;
-			predicate.append(name + " = " + checkVarType(pkVal));
+			predicate.append(name + " = " + checkVarType(name, pkVal));
 		}
 
 		return predicate.toString();
@@ -332,8 +333,8 @@ public abstract class SpgController {
 	 * @param var - a string.
 	 * @return filterValue or 'filterValue' where filterValue is a String.
 	 */
-	private final String checkVarType(String var) {
-		String newValue = var;
+	private String checkVarType(String key, String value) {
+		String newValue = value;
 		
     	if (newValue.equalsIgnoreCase("true") || newValue.equalsIgnoreCase("false")) {
     		return newValue;
@@ -341,7 +342,8 @@ public abstract class SpgController {
 		
         try {
         	Integer.parseInt(newValue);
-        } catch (NumberFormatException nfe) {
+        } 
+        catch (NumberFormatException nfe) {
         	newValue = "'"+newValue+"'";
         }
 		

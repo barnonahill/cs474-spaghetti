@@ -65,7 +65,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 			tempLibrary: false
 		};
 
-		this.changePanel = this.changePanel.bind(this);
+		this.setPanel = this.setPanel.bind(this);
 		this.confirmDelete = this.confirmDelete.bind(this);
 
 		this.onFilterLoad = this.onFilterLoad.bind(this);
@@ -129,7 +129,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 			case Panel.FILTER:
 				return (<FilterPanel
 					countries={this.props.countries}
-					onBack={() => this.changePanel(Panel.INIT)}
+					onBack={() => this.setPanel(Panel.INIT)}
 					onSelect={this.onFilterLoad}
 				/>);
 
@@ -144,7 +144,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					onView={this.openEntityPanel}
 					onBack={this.props.panel === Panel.TABLE
 						? this.props.onBack
-						: () => this.changePanel(Panel.INIT)}
+						: () => this.setPanel(Panel.INIT)}
 				/>);
 
 			case Panel.ENTITY:
@@ -169,14 +169,14 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					countries={this.props.countries}
 					msTypes={this.state.msTypes}
 					manuscript={this.state.manuscript}
-					onBack={() => this.changePanel(Panel.TABLE)}
+					onBack={() => this.setPanel(Panel.TABLE)}
 					onSubmit={this.saveManuscript}
 				/>);
 
 			case Panel.MST:
 				return (<MsTypeApp
 					msTypes={this.state.msTypes}
-					onBack={() => this.changePanel(Panel.INIT)}
+					onBack={() => this.setPanel(Panel.INIT)}
 					replaceMsTypes={(m) => this.setState((s:S) => {
 						s.msTypes = m;
 						return s;
@@ -185,7 +185,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 		}
 	}
 
-	changePanel(p:Panel) {
+	setPanel(p:Panel) {
 		this.setState((s:S) => {
 			s.panel = p;
 			return s;

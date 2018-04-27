@@ -30,7 +30,7 @@ export default class SectionInitPanel extends React.Component<P,{}> {
 				>Back</Button>
 			</PanelMenu>),
 
-			(<Row key="actions" className="mb30">
+			(<Row key="actions" className="mb60">
 				<Col xs={12} sm={4} smOffset={1}>
 					<Button
 						bsStyle="primary"
@@ -48,6 +48,17 @@ export default class SectionInitPanel extends React.Component<P,{}> {
 					>Load all Sections</Button>
 				</Col>
 			</Row>),
+
+			(<Row key="entities" className="mb30">
+				<Col xs={12} sm={4}>
+					<Button
+						bsStyle="info"
+						bsSize="large"
+						className="w100p"
+						onClick={() => this.props.onSubmit(Panel.CENTURY)}
+					>Centuries</Button>
+				</Col>
+			</Row>)
 		];
 	}
 }

@@ -102,6 +102,9 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 	 * Creates the JSX ELement for the entity view.
 	 */
 	private renderEntity() {
+		const entities = this.props.entities;
+		const section = entities.section;
+
 		return [
 			(<Header key="header" min>
 				Section #{this.props.entities.section.sectionID} of Manuscript {this.props.entities.section.msSiglum} from Library l {this.props.entities.library.library}
@@ -115,7 +118,7 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 					/* <Button
 					bsStyle="info"
 					className="fr"
-					onClick={() => this.changePanel(Panel.STN)}
+					onClick={() => this.setPanel(Panel.STN)}
 				>Sections</Button> */}
 			</PanelMenu>),
 
@@ -164,47 +167,47 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 				sourceComp: SourceCompleteness */}
 
 				<FormGroup>
-          <Col sm={3} componentClass={ControlLabel}>
-            Section Type:
-          </Col>
-          <Col sm={4} className="pt7">
-            {this.out(this.props.entities.sectionType.msTypeName)}
-          </Col>
-        </FormGroup>
+					<Col sm={3} componentClass={ControlLabel}>
+						Section Type:
+					</Col>
+					<Col sm={4} className="pt7">
+						{entities.sectionType ? entities.sectionType.msTypeName : 'NULL'}
+					</Col>
+				</FormGroup>
 
 				<FormGroup>
-          <Col sm={3} componentClass={ControlLabel}>
-            Notation:
-          </Col>
-          <Col sm={4} className="pt7">
-            {this.out(this.props.entities.notation.notationName)}
-          </Col>
-        </FormGroup>
+					<Col sm={3} componentClass={ControlLabel}>
+						Notation:
+					</Col>
+					<Col sm={4} className="pt7">
+						{entities.notation ? entities.notation.notationName : 'NULL'}
+					</Col>
+				</FormGroup>
 
 				<FormGroup>
 					<Col sm={3} componentClass={ControlLabel}>
 						Century:
 					</Col>
 					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.century.centuryName)}
+						{entities.century ? entities.century.centuryName : 'NULL'}
 					</Col>
 				</FormGroup>
 
 				<FormGroup>
-          <Col sm={3} componentClass={ControlLabel}>
-            Date:
-          </Col>
-          <Col sm={4} className="pt7">
-            {this.out(this.props.entities.section.date)}
-          </Col>
-        </FormGroup>
+					<Col sm={3} componentClass={ControlLabel}>
+						Date:
+					</Col>
+					<Col sm={4} className="pt7">
+						{section.date || 'NULL'}
+					</Col>
+				</FormGroup>
 
 				<FormGroup>
 					<Col sm={3} componentClass={ControlLabel}>
 						Cursus:
 					</Col>
 					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.cursus.cursusName)}
+						{entities.cursus ? entities.cursus.cursusName : 'NULL'}
 					</Col>
 				</FormGroup>
 
@@ -213,7 +216,7 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 						Provenance:
 					</Col>
 					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.provenance.provenanceID)}
+						{entities.provenance ? entities.provenance.provenanceID : 'NULL'}
 					</Col>
 				</FormGroup>
 
@@ -222,7 +225,7 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 						Provenance Details:
 					</Col>
 					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.section.provenanceDetail)}
+						{section.provenanceDetail || 'NULL'}
 					</Col>
 				</FormGroup>
 
@@ -231,7 +234,7 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 						Source Completeness:
 					</Col>
 					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.sourceComp.sourceCompletenessName)}
+						{entities.sourceComp ? entities.sourceComp.sourceCompletenessName : 'NULL'}
 					</Col>
 				</FormGroup>
 
@@ -240,7 +243,7 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 						Scribe:
 					</Col>
 					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.section.scribe)}
+						{section.scribe || 'NULL'}
 					</Col>
 				</FormGroup>
 
@@ -258,7 +261,7 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 						Number of Gatherings:
 					</Col>
 					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.section.numGatherings)}
+						{section.numGatherings || 'NULL'}
 					</Col>
 				</FormGroup>
 
@@ -267,7 +270,7 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 						Number of Columns:
 					</Col>
 					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.section.numColumns)}
+						{section.numColumns || 'NULL'}
 					</Col>
 				</FormGroup>
 
@@ -276,7 +279,7 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 						Number of Lines per Column:
 					</Col>
 					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.section.linesPerColumn)}
+						{section.linesPerColumn || 'NULL'}
 					</Col>
 				</FormGroup>
 
@@ -285,7 +288,7 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 						Inscription:
 					</Col>
 					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.section.inscription)}
+						{section.inscription || 'NULL'}
 					</Col>
 				</FormGroup>
 
@@ -293,8 +296,8 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 					<Col sm={3} componentClass={ControlLabel}>
 						Colophon:
 					</Col>
-					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.section.colophon)}
+					<Col sm={9} className="pt7">
+						{section.colophon || 'NULL'}
 					</Col>
 				</FormGroup>
 
@@ -302,8 +305,17 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 					<Col sm={3} componentClass={ControlLabel}>
 						Commissioner:
 					</Col>
-					<Col sm={4} className="pt7">
-						{this.out(this.props.entities.section.commissioner)}
+					<Col sm={9} className="pt7">
+						{this.out(section.commissioner || 'NULL')}
+					</Col>
+				</FormGroup>
+
+				<FormGroup>
+					<Col sm={3} componentClass={ControlLabel}>
+						Liturgical Occasion:
+					</Col>
+					<Col sm={9} className="pt7">
+						{this.out(section.liturgicalOccasion || 'NULL')}
 					</Col>
 				</FormGroup>
 			</Form>)
@@ -314,7 +326,7 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 	// renderSectionTable() {
 	// 	return (<SectionApp
 	// 		countries={this.props.countries}
-	// 		onBack={() => this.changePanel(Panel.ENT)}
+	// 		onBack={() => this.setPanel(Panel.ENT)}
 	//
 	// 		sideloads = {{
 	// 			country: this.props.country,
@@ -327,7 +339,7 @@ export default class SectionEntityPanel extends React.Component<P,S> {
 	// 	/>);
 	// }
 
-	private changePanel(p:Panel) {
+	private setPanel(p:Panel) {
 		this.setState((s:S) => {
 			s.panel = p;
 			return s;

@@ -126,4 +126,15 @@ export const TABLE_CONSTANTS = {
 	HEADER_HEIGHT: 40
 };
 
-const spg: Spaghetti = new Spaghetti(document.querySelector('main'));
+/**
+ * Adjusts the width and height constants for a table.
+ */
+function adjustTableConstants() {
+	TABLE_CONSTANTS.HEIGHT = window.innerHeight - 85;
+	TABLE_CONSTANTS.WIDTH = window.innerWidth - 50;
+}
+
+window.addEventListener('load', () => {
+	const spg: Spaghetti = new Spaghetti(document.querySelector('main'));
+	window.addEventListener('resize', adjustTableConstants);
+});

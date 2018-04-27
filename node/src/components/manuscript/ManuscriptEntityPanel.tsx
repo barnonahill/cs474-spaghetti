@@ -77,7 +77,7 @@ export default class ManuscriptEntityPanel extends React.Component<P,S> {
 				<Button
 					bsStyle="info"
 					className="fr"
-					onClick={() => this.changePanel(Panel.STN)}
+					onClick={() => this.setPanel(Panel.STN)}
 				>View Sections</Button>
 			</PanelMenu>),
 
@@ -185,7 +185,7 @@ export default class ManuscriptEntityPanel extends React.Component<P,S> {
 	renderSectionTable() {
 		return (<SectionApp
 			countries={this.props.countries}
-			onBack={() => this.changePanel(Panel.ENT)}
+			onBack={() => this.setPanel(Panel.ENT)}
 
 			sideloads = {{
 				country: this.props.country,
@@ -198,7 +198,7 @@ export default class ManuscriptEntityPanel extends React.Component<P,S> {
 		/>);
 	}
 
-	changePanel(p:Panel) {
+	setPanel(p:Panel) {
 		this.setState((s:S) => {
 			s.panel = p;
 			return s;

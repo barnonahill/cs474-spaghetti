@@ -81,7 +81,7 @@ export default class SectionProxy extends SpgProxy {
 			if (d.e) {
 				return SpgProxy.callbackError(callback, d.e);
 			}
-			
+
 			callback(Boolean(d.success), null);
 		});
 	}
@@ -168,6 +168,53 @@ export default class SectionProxy extends SpgProxy {
 			else {
 				SpgProxy.callbackError(callback, null);
 			}
+		});
+	}
+
+	createCentury(p:cty.Properties, callback: (c: cty.Century, e?:string) => void) {
+		var params:any = {
+			action: 'CreateCentury'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+
+			callback(new cty.Century(d as cty.Properties), null);
+		});
+	}
+
+	updateCentury(p:cty.Properties, callback: (c: cty.Century, e?:string) => void) {
+		var params:any = {
+			action: 'UpdateCentury'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+
+			callback(new cty.Century(d as cty.Properties), null);
+		});
+	}
+
+	deleteCentury(centuryID: string, callback: (s:boolean, e?:string) => void) {
+		var params:any = {
+			action: 'DeleteCentury',
+			centuryID: centuryID
+		};
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+			callback(Boolean(d.success), null);
 		});
 	}
 }

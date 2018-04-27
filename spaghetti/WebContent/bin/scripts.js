@@ -36825,6 +36825,374 @@ exports.default = SpaghettiApp;
 
 /***/ }),
 
+/***/ "./src/components/century/CenturyApp.tsx":
+/*!***********************************************!*\
+  !*** ./src/components/century/CenturyApp.tsx ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
+var CenturyTablePanel_tsx_1 = __webpack_require__(/*! @src/components/century/CenturyTablePanel.tsx */ "./src/components/century/CenturyTablePanel.tsx");
+var CenturyEditPanel_tsx_1 = __webpack_require__(/*! @src/components/century/CenturyEditPanel.tsx */ "./src/components/century/CenturyEditPanel.tsx");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var Panel;
+(function (Panel) {
+    Panel[Panel["TABLE"] = 0] = "TABLE";
+    Panel[Panel["EDIT"] = 1] = "EDIT";
+    Panel[Panel["LOADER"] = 2] = "LOADER";
+})(Panel || (Panel = {}));
+var CenturyApp = (function (_super) {
+    __extends(CenturyApp, _super);
+    function CenturyApp(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            panel: Panel.TABLE,
+            centuries: _this.props.centuries
+        };
+        _this.openEdit = _this.openEdit.bind(_this);
+        _this.reloadCenturies = _this.reloadCenturies.bind(_this);
+        _this.saveCentury = _this.saveCentury.bind(_this);
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.setPanel = _this.setPanel.bind(_this);
+        _this.setLoader = _this.setLoader.bind(_this);
+        return _this;
+    }
+    CenturyApp.prototype.render = function () {
+        var _this = this;
+        switch (this.state.panel) {
+            case Panel.TABLE:
+                return (React.createElement(CenturyTablePanel_tsx_1.default, { centuries: this.props.centuries, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: this.reloadCenturies }));
+            case Panel.EDIT:
+                return (React.createElement(CenturyEditPanel_tsx_1.default, { century: this.state.century, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveCentury }));
+            case Panel.LOADER:
+                return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
+            default:
+                return null;
+        }
+    };
+    CenturyApp.prototype.confirmDelete = function (century) {
+        var _this = this;
+        var del = confirm('Delete century ' + century.centuryName + '?');
+        if (del) {
+            this.setLoader('Deleting ' + century.centuryName + '...');
+            ProxyFactory_ts_1.default.getSectionProxy().deleteCentury(century.centuryID, function (success, e) {
+                if (e) {
+                    alert(e);
+                }
+                else if (success) {
+                    _this.setState(function (s) {
+                        var i = s.centuries.findIndex(function (c) { return century.centuryID === c.centuryID; });
+                        s.centuries[i].destroy();
+                        s.centuries.splice(i, 1);
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+                else {
+                    _this.setPanel(Panel.TABLE);
+                    alert('Failed to delete century ' + century.centuryName + '.');
+                }
+            });
+        }
+    };
+    CenturyApp.prototype.reloadCenturies = function () {
+        var _this = this;
+        this.setLoader('Loading Centuries...');
+        this.props.reloadCenturies(function (centuries) {
+            _this.setState(function (s) {
+                s.century = null;
+                s.centuries = centuries;
+                _this.setPanel(Panel.TABLE, null, s);
+                return s;
+            });
+        });
+    };
+    CenturyApp.prototype.openEdit = function (century) {
+        var _this = this;
+        this.setState(function (s) {
+            s.century = century;
+            _this.setPanel(Panel.EDIT, null, s);
+            return s;
+        });
+    };
+    CenturyApp.prototype.saveCentury = function (ctProps, isNew) {
+        var _this = this;
+        this.setLoader('Saving ' + ctProps.centuryID + '...');
+        if (isNew) {
+            ProxyFactory_ts_1.default.getSectionProxy().createCentury(ctProps, function (century, e) {
+                if (e) {
+                    alert('Error creating new Century: ' + e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        s.centuries.push(century);
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+            });
+        }
+        else {
+            ProxyFactory_ts_1.default.getSectionProxy().updateCentury(ctProps, function (century, e) {
+                if (e) {
+                    alert('Error updating Century: ' + e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        var i = s.centuries.findIndex(function (c) { return century.centuryID === c.centuryID; });
+                        s.centuries[i].destroy();
+                        s.centuries[i] = century;
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+            });
+        }
+    };
+    CenturyApp.prototype.setPanel = function (p, callback, s) {
+        if (s) {
+            s.panel = p;
+        }
+        else {
+            this.setState(function (s) {
+                s.panel = p;
+                if (callback)
+                    return callback(s);
+                else
+                    return s;
+            });
+        }
+    };
+    CenturyApp.prototype.setLoader = function (msg, callback, s) {
+        var _this = this;
+        if (s) {
+            this.setPanel(Panel.LOADER);
+            s.loadMessage = msg;
+        }
+        else {
+            this.setState(function (s) {
+                _this.setPanel(Panel.LOADER, null, s);
+                s.loadMessage = msg;
+                if (callback)
+                    return callback(s);
+                return s;
+            });
+        }
+    };
+    return CenturyApp;
+}(React.Component));
+exports.default = CenturyApp;
+
+
+/***/ }),
+
+/***/ "./src/components/century/CenturyEditPanel.tsx":
+/*!*****************************************************!*\
+  !*** ./src/components/century/CenturyEditPanel.tsx ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var CenturyEditPanel = (function (_super) {
+    __extends(CenturyEditPanel, _super);
+    function CenturyEditPanel(p) {
+        var _this = _super.call(this, p) || this;
+        var isNew = !Boolean(p.century);
+        var ctProps;
+        if (isNew) {
+            ctProps = {
+                centuryID: '',
+                centuryName: ''
+            };
+        }
+        else {
+            ctProps = p.century.toProperties();
+        }
+        _this.state = {
+            isNew: isNew,
+            ctProps: ctProps,
+            val: {
+                centuryID: null,
+                centuryName: null
+            }
+        };
+        _this.getCenturyIDFormGroup = _this.getCenturyIDFormGroup.bind(_this);
+        _this.onChange = _this.onChange.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
+        return _this;
+    }
+    CenturyEditPanel.prototype.render = function () {
+        var x = [];
+        x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
+            ? 'Create a Century'
+            : 'Edit Century: ' + this.props.century.centuryName));
+        x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+            React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
+        x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
+            this.getCenturyIDFormGroup(),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryName", validationState: this.state.val.centuryName },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Century Name:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.ctProps.centuryName, onChange: this.onChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))));
+        return x;
+    };
+    CenturyEditPanel.prototype.getCenturyIDFormGroup = function () {
+        var label, value;
+        if (this.state.isNew) {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Century ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.ctProps.centuryID, onChange: this.onChange })));
+        }
+        else {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Manuscript Type:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.century.centuryID));
+        }
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryID", validationState: this.state.val.centuryID },
+            label,
+            value));
+    };
+    CenturyEditPanel.prototype.onChange = function (e) {
+        var target = e.target;
+        var k = target.id;
+        var v = target.value;
+        this.setState(function (s) {
+            s.ctProps[k] = v;
+            return s;
+        });
+    };
+    CenturyEditPanel.prototype.onSubmit = function (e) {
+        e.preventDefault();
+        var val = {
+            centuryID: this.state.ctProps.centuryID ? null : 'error'
+        };
+        if (this.state.isNew) {
+            val.centuryName = this.state.ctProps.centuryName ? null : 'error';
+        }
+        for (var k in val) {
+            if (val[k] === 'error') {
+                return this.setState(function (s) {
+                    s.val = val;
+                    return s;
+                });
+            }
+        }
+        this.setState(function (s) {
+            s.val = val;
+            return s;
+        });
+        this.props.onSubmit(this.state.ctProps, this.state.isNew);
+    };
+    return CenturyEditPanel;
+}(React.Component));
+exports.default = CenturyEditPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/century/CenturyTablePanel.tsx":
+/*!******************************************************!*\
+  !*** ./src/components/century/CenturyTablePanel.tsx ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var index_tsx_1 = __webpack_require__(/*! @src/index.tsx */ "./src/index.tsx");
+var MsTypeTablePanel = (function (_super) {
+    __extends(MsTypeTablePanel, _super);
+    function MsTypeTablePanel(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            rowGetter: function (i) { return _this.props.centuries[i.index]; },
+        };
+        _this.renderDelete = _this.renderDelete.bind(_this);
+        _this.renderEdit = _this.renderEdit.bind(_this);
+        return _this;
+    }
+    MsTypeTablePanel.prototype.render = function () {
+        var _this = this;
+        return [
+            React.createElement(Header_tsx_1.default, { min: true, key: "header" }, "Manuscript Types"),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "success", className: "ml15", onClick: function () { return _this.props.onEdit(null); } }, "New"),
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.props.centuries.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_virtualized_1.Column, { width: 200, label: "Century ID", dataKey: "centuryID" }),
+                React.createElement(react_virtualized_1.Column, { width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 330, label: "Century Name", dataKey: "centuryName" }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderEdit }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderDelete })))
+        ];
+    };
+    MsTypeTablePanel.prototype.renderDelete = function (p) {
+        var _this = this;
+        var ct = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onDelete(ct); } }, "Delete"));
+    };
+    MsTypeTablePanel.prototype.renderEdit = function (p) {
+        var _this = this;
+        var ct = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onEdit(ct); } }, "Edit"));
+    };
+    return MsTypeTablePanel;
+}(React.Component));
+exports.default = MsTypeTablePanel;
+
+
+/***/ }),
+
 /***/ "./src/components/common/Header.tsx":
 /*!******************************************!*\
   !*** ./src/components/common/Header.tsx ***!
@@ -37799,7 +38167,7 @@ var ManuscriptApp = (function (_super) {
             tempCountry: false,
             tempLibrary: false
         };
-        _this.changePanel = _this.changePanel.bind(_this);
+        _this.setPanel = _this.setPanel.bind(_this);
         _this.confirmDelete = _this.confirmDelete.bind(_this);
         _this.onFilterLoad = _this.onFilterLoad.bind(_this);
         _this.onInitSelect = _this.onInitSelect.bind(_this);
@@ -37846,23 +38214,23 @@ var ManuscriptApp = (function (_super) {
             default:
                 return (React.createElement(ManuscriptInitPanel_tsx_1.default, { onBack: this.props.onBack, onSelect: this.onInitSelect }));
             case Panel.FILTER:
-                return (React.createElement(ManuscriptFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSelect: this.onFilterLoad }));
+                return (React.createElement(ManuscriptFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.setPanel(Panel.INIT); }, onSelect: this.onFilterLoad }));
             case Panel.TABLE:
                 return (React.createElement(ManuscriptTablePanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscripts: this.state.manuscripts, onRefresh: this.reloadManuscripts, onEdit: this.openEditPanel, onDelete: this.confirmDelete, onView: this.openEntityPanel, onBack: this.props.panel === Panel.TABLE
                         ? this.props.onBack
-                        : function () { return _this.changePanel(Panel.INIT); } }));
+                        : function () { return _this.setPanel(Panel.INIT); } }));
             case Panel.ENTITY:
                 return (React.createElement(ManuscriptEntityPanel_tsx_1.default, { countries: this.props.countries, libraries: this.state.libraries, manuscripts: this.state.manuscripts, msTypes: this.state.msTypes, country: this.state.country, library: this.state.library, manuscript: this.state.manuscript, msType: this.state.msType, onBack: this.onEntityBack }));
             case Panel.EDIT:
-                return (React.createElement(ManuscriptEditPanel_tsx_1.default, { countries: this.props.countries, msTypes: this.state.msTypes, manuscript: this.state.manuscript, onBack: function () { return _this.changePanel(Panel.TABLE); }, onSubmit: this.saveManuscript }));
+                return (React.createElement(ManuscriptEditPanel_tsx_1.default, { countries: this.props.countries, msTypes: this.state.msTypes, manuscript: this.state.manuscript, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveManuscript }));
             case Panel.MST:
-                return (React.createElement(MsTypeApp_tsx_1.default, { msTypes: this.state.msTypes, onBack: function () { return _this.changePanel(Panel.INIT); }, replaceMsTypes: function (m) { return _this.setState(function (s) {
+                return (React.createElement(MsTypeApp_tsx_1.default, { msTypes: this.state.msTypes, onBack: function () { return _this.setPanel(Panel.INIT); }, replaceMsTypes: function (m) { return _this.setState(function (s) {
                         s.msTypes = m;
                         return s;
                     }); } }));
         }
     };
-    ManuscriptApp.prototype.changePanel = function (p) {
+    ManuscriptApp.prototype.setPanel = function (p) {
         this.setState(function (s) {
             s.panel = p;
             return s;
@@ -38547,7 +38915,7 @@ var ManuscriptEntityPanel = (function (_super) {
                 this.props.library.libSiglum + ' ' + this.props.manuscript.msSiglum)),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
                 React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "info", className: "fr", onClick: function () { return _this.changePanel(Panel.STN); } }, "View Sections"))),
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "info", className: "fr", onClick: function () { return _this.setPanel(Panel.STN); } }, "View Sections"))),
             (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
@@ -38589,7 +38957,7 @@ var ManuscriptEntityPanel = (function (_super) {
     };
     ManuscriptEntityPanel.prototype.renderSectionTable = function () {
         var _this = this;
-        return (React.createElement(SectionApp_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.ENT); }, sideloads: {
+        return (React.createElement(SectionApp_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.setPanel(Panel.ENT); }, sideloads: {
                 country: this.props.country,
                 library: this.props.library,
                 manuscript: this.props.manuscript,
@@ -38598,7 +38966,7 @@ var ManuscriptEntityPanel = (function (_super) {
                 msTypes: this.props.msTypes
             } }));
     };
-    ManuscriptEntityPanel.prototype.changePanel = function (p) {
+    ManuscriptEntityPanel.prototype.setPanel = function (p) {
         this.setState(function (s) {
             s.panel = p;
             return s;
@@ -39326,6 +39694,7 @@ var SectionFilterPanel_tsx_1 = __webpack_require__(/*! @src/components/section/S
 var SectionTablePanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionTablePanel.tsx */ "./src/components/section/SectionTablePanel.tsx");
 var SectionEditPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionEditPanel.tsx */ "./src/components/section/SectionEditPanel.tsx");
 var SectionEntityPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionEntityPanel.tsx */ "./src/components/section/SectionEntityPanel.tsx");
+var CenturyApp_tsx_1 = __webpack_require__(/*! @src/components/century/CenturyApp.tsx */ "./src/components/century/CenturyApp.tsx");
 var country_ts_1 = __webpack_require__(/*! @src/models/country.ts */ "./src/models/country.ts");
 var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
@@ -39367,6 +39736,7 @@ var SectionApp = (function (_super) {
         _this.renderEntity = _this.renderEntity.bind(_this);
         _this.renderTable = _this.renderTable.bind(_this);
         _this.renderLoader = _this.renderLoader.bind(_this);
+        _this.renderCenturyApp = _this.renderCenturyApp.bind(_this);
         _this.loadCenturies = _this.loadCenturies.bind(_this);
         _this.loadCursuses = _this.loadCursuses.bind(_this);
         _this.loadSrcComps = _this.loadSrcComps.bind(_this);
@@ -39380,7 +39750,7 @@ var SectionApp = (function (_super) {
         _this.reloadSections = _this.reloadSections.bind(_this);
         _this.loadLibrary = _this.loadLibrary.bind(_this);
         _this.loadManuscript = _this.loadManuscript.bind(_this);
-        _this.changePanel = _this.changePanel.bind(_this);
+        _this.setPanel = _this.setPanel.bind(_this);
         _this.setLoader = _this.setLoader.bind(_this);
         _this.loadTemps = _this.loadTemps.bind(_this);
         _this.destroyTemps = _this.destroyTemps.bind(_this);
@@ -39469,6 +39839,7 @@ var SectionApp = (function (_super) {
     SectionApp.prototype.render = function () {
         switch (this.state.panel) {
             default:
+                return null;
             case Panel.INIT:
                 return this.renderInit();
             case Panel.EDIT:
@@ -39481,6 +39852,8 @@ var SectionApp = (function (_super) {
                 return this.renderTable();
             case Panel.LOADER:
                 return this.renderLoader();
+            case Panel.CENTURY:
+                return this.renderCenturyApp();
         }
     };
     SectionApp.prototype.renderInit = function () {
@@ -39491,12 +39864,12 @@ var SectionApp = (function (_super) {
         var isNew = Boolean();
         return (React.createElement(SectionEditPanel_tsx_1.default, { loadLibraries: this.loadLibraries, loadManuscripts: this.loadManuscripts, primaries: this.getEditPrimaries(), supports: this.state.supports, temps: this.state.temps, onBack: function () {
                 _this.destroyTemps();
-                _this.changePanel(Panel.TABLE);
+                _this.setPanel(Panel.TABLE);
             }, onSubmit: this.saveSection }));
     };
     SectionApp.prototype.renderEntity = function () {
         var _this = this;
-        return (React.createElement(SectionEntityPanel_tsx_1.default, { onBack: function () { return _this.changePanel(Panel.TABLE); }, entities: {
+        return (React.createElement(SectionEntityPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE); }, entities: {
                 country: this.state.temps.country || this.state.primaries.country,
                 library: this.state.temps.library || this.state.primaries.library,
                 manuscript: this.state.temps.manuscript || this.state.primaries.manuscript,
@@ -39517,13 +39890,24 @@ var SectionApp = (function (_super) {
     };
     SectionApp.prototype.renderFilter = function () {
         var _this = this;
-        return (React.createElement(SectionFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSubmit: this.onFilterSubmit }));
+        return (React.createElement(SectionFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.setPanel(Panel.INIT); }, onSubmit: this.onFilterSubmit }));
     };
     SectionApp.prototype.renderTable = function () {
         var _this = this;
         return (React.createElement(SectionTablePanel_tsx_1.default, { library: this.state.primaries.library, manuscript: this.state.primaries.manuscript, sections: this.state.primaries.sections, onBack: function () { return _this.props.sideloads
                 ? _this.props.onBack()
-                : _this.changePanel(Panel.INIT); }, onRefresh: this.reloadSections, onEdit: this.openEdit, onDelete: this.confirmDelete, onView: this.openEntity }));
+                : _this.setPanel(Panel.INIT); }, onRefresh: this.reloadSections, onEdit: this.openEdit, onDelete: this.confirmDelete, onView: this.openEntity }));
+    };
+    SectionApp.prototype.renderCenturyApp = function () {
+        var _this = this;
+        return (React.createElement(CenturyApp_tsx_1.default, { centuries: this.state.supports.centuries, onBack: this.props.onBack, reloadCenturies: function (subCallback) { return _this.loadCenturies(function (centuries) {
+                _this.setState(function (s) {
+                    century_ts_1.Century.destroyArray(s.supports.centuries);
+                    s.supports.centuries = centuries;
+                    subCallback(centuries);
+                    return s;
+                });
+            }); } }));
     };
     SectionApp.prototype.renderLoader = function () {
         return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
@@ -39658,7 +40042,7 @@ var SectionApp = (function (_super) {
             callback(m);
         });
     };
-    SectionApp.prototype.changePanel = function (p, callback, s) {
+    SectionApp.prototype.setPanel = function (p, callback, s) {
         if (s) {
             s.panel = p;
         }
@@ -39675,12 +40059,12 @@ var SectionApp = (function (_super) {
     SectionApp.prototype.setLoader = function (msg, callback, s) {
         var _this = this;
         if (s) {
-            this.changePanel(Panel.LOADER);
+            this.setPanel(Panel.LOADER);
             s.loadMessage = msg;
         }
         else {
             this.setState(function (s) {
-                _this.changePanel(Panel.LOADER, null, s);
+                _this.setPanel(Panel.LOADER, null, s);
                 s.loadMessage = msg;
                 if (callback)
                     return callback(s);
@@ -39696,13 +40080,13 @@ var SectionApp = (function (_super) {
                 _this.setState(function (s) {
                     sn.Section.destroyArray(s.primaries.sections);
                     s.primaries.sections = sections;
-                    _this.changePanel(p, null, s);
+                    _this.setPanel(p, null, s);
                     return s;
                 });
             });
         }
         else {
-            this.changePanel(p);
+            this.setPanel(p);
         }
     };
     SectionApp.prototype.onFilterSubmit = function (c, l, m, ls, ms) {
@@ -39722,7 +40106,7 @@ var SectionApp = (function (_super) {
                 s.primaries.library = l;
                 s.primaries.manuscript = m;
                 s.primaries.sections = ss;
-                _this.changePanel(Panel.TABLE, null, s);
+                _this.setPanel(Panel.TABLE, null, s);
                 return s;
             });
         });
@@ -39741,7 +40125,7 @@ var SectionApp = (function (_super) {
                 sn.Section.destroyArray(s.primaries.sections);
                 s.primaries.section = null;
                 s.primaries.sections = sections;
-                _this.changePanel(Panel.TABLE, null, s);
+                _this.setPanel(Panel.TABLE, null, s);
                 return s;
             });
         });
@@ -39794,7 +40178,7 @@ var SectionApp = (function (_super) {
     SectionApp.prototype.openEntity = function (stn) {
         var _this = this;
         this.loadTemps(stn, function (s) {
-            _this.changePanel(Panel.ENTITY, null, s);
+            _this.setPanel(Panel.ENTITY, null, s);
             return s;
         });
     };
@@ -40461,6 +40845,8 @@ var SectionEntityPanel = (function (_super) {
         }
     };
     SectionEntityPanel.prototype.renderEntity = function () {
+        var entities = this.props.entities;
+        var section = entities.section;
         return [
             (React.createElement(Header_tsx_1.default, { key: "header", min: true },
                 "Section #",
@@ -40486,55 +40872,58 @@ var SectionEntityPanel = (function (_super) {
                     React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.entities.section.sectionID)),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Section Type:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.sectionType.msTypeName))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, entities.sectionType ? entities.sectionType.msTypeName : 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Notation:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.notation.notationName))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, entities.notation ? entities.notation.notationName : 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Century:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.century.centuryName))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, entities.century ? entities.century.centuryName : 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Date:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.date))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, section.date || 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Cursus:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.cursus.cursusName))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, entities.cursus ? entities.cursus.cursusName : 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Provenance:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.provenance.provenanceID))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, entities.provenance ? entities.provenance.provenanceID : 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Provenance Details:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.provenanceDetail))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, section.provenanceDetail || 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Source Completeness:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.sourceComp.sourceCompletenessName))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, entities.sourceComp ? entities.sourceComp.sourceCompletenessName : 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Scribe:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.scribe))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, section.scribe || 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Commissioner:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.commissioner))),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Number of Gatherings:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.numGatherings))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, section.numGatherings || 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Number of Columns:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.numColumns))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, section.numColumns || 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Number of Lines per Column:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.linesPerColumn))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, section.linesPerColumn || 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Inscription:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.inscription))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, section.inscription || 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Colophon:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.colophon))),
+                    React.createElement(react_bootstrap_1.Col, { sm: 9, className: "pt7" }, section.colophon || 'NULL')),
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Commissioner:"),
-                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.commissioner)))))
+                    React.createElement(react_bootstrap_1.Col, { sm: 9, className: "pt7" }, this.out(section.commissioner || 'NULL'))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Liturgical Occasion:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 9, className: "pt7" }, this.out(section.liturgicalOccasion || 'NULL')))))
         ];
     };
-    SectionEntityPanel.prototype.changePanel = function (p) {
+    SectionEntityPanel.prototype.setPanel = function (p) {
         this.setState(function (s) {
             s.panel = p;
             return s;
@@ -40763,11 +41152,14 @@ var SectionInitPanel = (function (_super) {
             React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Sections"),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
                 React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
-            (React.createElement(react_bootstrap_1.Row, { key: "actions", className: "mb30" },
+            (React.createElement(react_bootstrap_1.Row, { key: "actions", className: "mb60" },
                 React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 1 },
                     React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.FILTER); } }, "Filter Sections")),
                 React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 2 },
                     React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.TABLE); } }, "Load all Sections")))),
+            (React.createElement(react_bootstrap_1.Row, { key: "entities", className: "mb30" },
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.CENTURY); } }, "Centuries"))))
         ];
     };
     return SectionInitPanel;
@@ -40987,7 +41379,14 @@ exports.TABLE_CONSTANTS = {
     ROW_HEIGHT: 50,
     HEADER_HEIGHT: 40
 };
-var spg = new Spaghetti(document.querySelector('main'));
+function adjustTableConstants() {
+    exports.TABLE_CONSTANTS.HEIGHT = window.innerHeight - 85;
+    exports.TABLE_CONSTANTS.WIDTH = window.innerWidth - 50;
+}
+window.addEventListener('load', function () {
+    var spg = new Spaghetti(document.querySelector('main'));
+    window.addEventListener('resize', adjustTableConstants);
+});
 
 
 /***/ }),
@@ -42071,6 +42470,45 @@ var SectionProxy = (function (_super) {
             else {
                 SpgProxy_ts_1.default.callbackError(callback, null);
             }
+        });
+    };
+    SectionProxy.prototype.createCentury = function (p, callback) {
+        var params = {
+            action: 'CreateCentury'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(new cty.Century(d), null);
+        });
+    };
+    SectionProxy.prototype.updateCentury = function (p, callback) {
+        var params = {
+            action: 'UpdateCentury'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(new cty.Century(d), null);
+        });
+    };
+    SectionProxy.prototype.deleteCentury = function (centuryID, callback) {
+        var params = {
+            action: 'DeleteCentury',
+            centuryID: centuryID
+        };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(Boolean(d.success), null);
         });
     };
     return SectionProxy;

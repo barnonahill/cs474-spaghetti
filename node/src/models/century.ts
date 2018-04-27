@@ -10,6 +10,7 @@ import SpgModel from '@src/models/SpgModel.ts';
 export interface Properties {
 	centuryID: string;
 	centuryName: string;
+	[x: string]: any
 }
 
 /**

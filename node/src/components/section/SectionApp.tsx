@@ -8,6 +8,8 @@ import TablePanel from '@src/components/section/SectionTablePanel.tsx';
 import EditPanel from '@src/components/section/SectionEditPanel.tsx';
 import EntityPanel from '@src/components/section/SectionEntityPanel.tsx';
 
+import CenturyApp from '@src/components/century/CenturyApp.tsx';
+
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
 import { Manuscript } from '@src/models/manuscript.ts';
@@ -107,6 +109,7 @@ export default class SectionApp extends React.Component<P,S> {
 		this.renderEntity = this.renderEntity.bind(this);
 		this.renderTable = this.renderTable.bind(this);
 		this.renderLoader = this.renderLoader.bind(this);
+		this.renderCenturyApp = this.renderCenturyApp.bind(this);
 
 		// Support load bindings
 		this.loadCenturies = this.loadCenturies.bind(this);
@@ -128,7 +131,7 @@ export default class SectionApp extends React.Component<P,S> {
 		this.loadManuscript = this.loadManuscript.bind(this);
 
 		// State setter util bindings
-		this.changePanel = this.changePanel.bind(this);
+		this.setPanel = this.setPanel.bind(this);
 		this.setLoader = this.setLoader.bind(this);
 
 		// Panel open bindings
@@ -240,6 +243,8 @@ export default class SectionApp extends React.Component<P,S> {
 	render() {
 		switch (this.state.panel) {
 			default:
+				return null;
+
 			case Panel.INIT:
 				return this.renderInit();
 
@@ -257,6 +262,9 @@ export default class SectionApp extends React.Component<P,S> {
 
 			case Panel.LOADER:
 				return this.renderLoader();
+
+			case Panel.CENTURY:
+				return this.renderCenturyApp();
 		}
 	}
 
@@ -287,7 +295,7 @@ export default class SectionApp extends React.Component<P,S> {
 			temps={this.state.temps}
 			onBack={() => {
 				this.destroyTemps();
-				this.changePanel(Panel.TABLE);
+				this.setPanel(Panel.TABLE);
 			}}
 			onSubmit={this.saveSection}
 		/>)
@@ -315,7 +323,7 @@ export default class SectionApp extends React.Component<P,S> {
 		// 	onBack: () => void
 		// }
 		return (<EntityPanel
-		 	onBack={() => this.changePanel(Panel.TABLE)}
+		 	onBack={() => this.setPanel(Panel.TABLE)}
 			entities = {{
 				country: this.state.temps.country || this.state.primaries.country,
 				library: this.state.temps.library || this.state.primaries.library,
@@ -349,7 +357,7 @@ export default class SectionApp extends React.Component<P,S> {
 	renderFilter() {
 		return (<FilterPanel
 			countries={this.props.countries}
-			onBack={() => this.changePanel(Panel.INIT)}
+			onBack={() => this.setPanel(Panel.INIT)}
 			onSubmit={this.onFilterSubmit}
 		/>);
 	}
@@ -365,12 +373,27 @@ export default class SectionApp extends React.Component<P,S> {
 			sections={this.state.primaries.sections}
 			onBack={() => this.props.sideloads
 				? this.props.onBack()
-				: this.changePanel(Panel.INIT)}
+				: this.setPanel(Panel.INIT)}
 			onRefresh={this.reloadSections}
 			onEdit={this.openEdit}
 			onDelete={this.confirmDelete}
 			onView={this.openEntity}
 
+		/>);
+	}
+
+	renderCenturyApp() {
+		return (<CenturyApp
+			centuries={this.state.supports.centuries}
+			onBack={this.props.onBack}
+			reloadCenturies={(subCallback) => this.loadCenturies(centuries => {
+				this.setState((s:S) => {
+					Century.destroyArray(s.supports.centuries);
+					s.supports.centuries = centuries;
+					subCallback(centuries);
+					return s;
+				});
+			})}
 		/>);
 	}
 
@@ -582,7 +605,7 @@ export default class SectionApp extends React.Component<P,S> {
 	/**
 	 * Changes the current panel of the Section App.
 	 */
-	changePanel(p:Panel, callback?: (s:S) => S, s?:S) {
+	setPanel(p:Panel, callback?: (s:S) => S, s?:S) {
 		if (s) {
 			s.panel = p;
 		}
@@ -595,14 +618,20 @@ export default class SectionApp extends React.Component<P,S> {
 		}
 	}
 
+	/**
+	 * Sets the panel to LOADER and loadMessage to msg.
+	 * @param msg load message
+	 * @param callback Callback that has set state for loader, but not returned it.
+	 * @param s State object to set, but not return.
+	 */
 	setLoader(msg:string, callback?: (s:S) => S, s?:S) {
 		if (s) {
-			this.changePanel(Panel.LOADER);
+			this.setPanel(Panel.LOADER);
 			s.loadMessage = msg;
 		}
 		else {
 			this.setState((s:S) => {
-				this.changePanel(Panel.LOADER, null, s);
+				this.setPanel(Panel.LOADER, null, s);
 				s.loadMessage = msg;
 				if (callback) return callback(s);
 				return s;
@@ -617,13 +646,13 @@ export default class SectionApp extends React.Component<P,S> {
 				this.setState((s:S) => {
 					sn.Section.destroyArray(s.primaries.sections);
 					s.primaries.sections = sections;
-					this.changePanel(p, null, s);
+					this.setPanel(p, null, s);
 					return s;
 				});
 			});
 		}
 		else {
-			this.changePanel(p);
+			this.setPanel(p);
 		}
 	}
 
@@ -646,7 +675,7 @@ export default class SectionApp extends React.Component<P,S> {
 				s.primaries.manuscript = m;
 				s.primaries.sections = ss;
 
-				this.changePanel(Panel.TABLE, null, s);
+				this.setPanel(Panel.TABLE, null, s);
 				return s;
 			});
 		});
@@ -676,7 +705,7 @@ export default class SectionApp extends React.Component<P,S> {
 					s.primaries.sections = sections;
 
 					// Return to the table panel when finished.
-					this.changePanel(Panel.TABLE, null, s);
+					this.setPanel(Panel.TABLE, null, s);
 					return s;
 				});
 			});
@@ -743,7 +772,7 @@ export default class SectionApp extends React.Component<P,S> {
 
 	openEntity(stn:sn.Section) {
 		this.loadTemps(stn, s => {
-			this.changePanel(Panel.ENTITY, null, s);
+			this.setPanel(Panel.ENTITY, null, s);
 			return s;
 		});
 	}

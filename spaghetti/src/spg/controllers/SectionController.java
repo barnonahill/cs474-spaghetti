@@ -246,6 +246,49 @@ public class SectionController extends SpgController {
 		}
 	}
 	
+	public Century createCentury(String centuryID, String centuryName) throws Exception {
+		String query;
+		HashMap<String, String> nvMap = new HashMap<>();
+		
+		nvMap.put("centuryID", centuryID);
+		nvMap.put("centuryName", centuryName);
+		
+		query = super.buildInsertQuery("Century", nvMap);
+		super.executeSQL(query);
+		
+		return new Century(centuryID, centuryName);
+	}
+	
+	public Century updateCentury(String centuryID, String centuryName) throws Exception {
+		String query;
+		HashMap<String, String> primaryMap = new HashMap<>();
+		HashMap<String, String> updateMap = new HashMap<>();
+		
+		primaryMap.put("centuryID", centuryID);
+		updateMap.put("centuryName", centuryName);
+		
+		query = super.buildUpdateQuery("Century", primaryMap, updateMap);
+		super.executeSQL(query);
+		
+		return new Century(centuryID, centuryName);
+	}
+	
+	public boolean deleteCentury(String centuryID) throws Exception {
+		String query;
+		HashMap<String, String> nvMap = new HashMap<String, String>();
+		
+		try {
+			nvMap.put("centuryID", centuryID);
+			
+			query = super.buildDeleteQuery("Century", nvMap);
+			super.executeSQL(query);
+			return true;
+		}
+		catch (Exception e) {
+			return false;
+		}
+	}
+	
 	public ArrayList<Cursus> getCursuses() {
 		String query = super.buildSelectQuery("Cursus", null);
 		ArrayList<Cursus> cursuses = null;
@@ -335,19 +378,13 @@ public class SectionController extends SpgController {
 		return true;
 	}
 	
-	public boolean deleteCentury(String centuryID) throws Exception {
-		String query;
-		HashMap<String, String> nvMap = new HashMap<String, String>();
-		
-		try {
-			nvMap.put("centuryID", centuryID);
-			
-			query = super.buildDeleteQuery("Century", nvMap);
-			super.executeSQL(query);
-			return true;
+	@Override
+	private String checkVarType(String key, String value) {
+		if (key.indexOf("num") == 0 || key.indexOf("linesPer") == 0) {
+			return value;
 		}
-		catch (Exception e) {
-			return false;
+		else {
+			return "'" + value + "'";
 		}
 	}
 }
