@@ -8,13 +8,11 @@ import java.sql.Statement;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.servlet.http.HttpServlet;
-
 /**
- * @author Carl Clermont
+ * @author Paul Barnhill, Carl Clermont
  */
 
-public abstract class SpgController extends HttpServlet {
+public abstract class SpgController {
 	private Connection connection;
 	
 	public static Properties p = null;

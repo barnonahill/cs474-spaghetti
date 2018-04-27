@@ -2,8 +2,8 @@ import * as React from 'react';
 
 import PageLoader from '@src/components/common/PageLoader.tsx';
 
-import TablePanel from '@src/components/manuscript/MsTypeTablePanel.tsx';
-import EditPanel from '@src/components/manuscript/MsTypeEditPanel.tsx';
+import TablePanel from '@src/components/msType/MsTypeTablePanel.tsx';
+import EditPanel from '@src/components/msType/MsTypeEditPanel.tsx';
 
 import * as mst from '@src/models/msType.ts';
 import proxyFactory from '@src/proxies/ProxyFactory.ts';

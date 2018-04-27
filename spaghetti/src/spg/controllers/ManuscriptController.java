@@ -13,7 +13,8 @@ import spg.models.Manuscript;
  *
  */
 public class ManuscriptController extends SpgController {
-
+	private static final long serialVersionUID = 1L;
+	
 	private final static String MANUSCRIPT = "Manuscript";
 	private final static String MSTYPE = "MSType"; 
 	

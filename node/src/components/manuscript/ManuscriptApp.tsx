@@ -5,7 +5,7 @@ import FilterPanel from '@src/components/manuscript/ManuscriptFilterPanel.tsx';
 import TablePanel from '@src/components/manuscript/ManuscriptTablePanel.tsx';
 import EntityPanel from '@src/components/manuscript/ManuscriptEntityPanel.tsx';
 import EditPanel from '@src/components/manuscript/ManuscriptEditPanel.tsx';
-import MsTypeApp from '@src/components/manuscript/MsTypeApp.tsx';
+import MsTypeApp from '@src/components/msType/MsTypeApp.tsx';
 import PageLoader from '@src/components/common/PageLoader.tsx';
 
 import { Country } from '@src/models/country.ts';

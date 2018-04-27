@@ -37766,7 +37766,7 @@ var ManuscriptFilterPanel_tsx_1 = __webpack_require__(/*! @src/components/manusc
 var ManuscriptTablePanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptTablePanel.tsx */ "./src/components/manuscript/ManuscriptTablePanel.tsx");
 var ManuscriptEntityPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptEntityPanel.tsx */ "./src/components/manuscript/ManuscriptEntityPanel.tsx");
 var ManuscriptEditPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptEditPanel.tsx */ "./src/components/manuscript/ManuscriptEditPanel.tsx");
-var MsTypeApp_tsx_1 = __webpack_require__(/*! @src/components/manuscript/MsTypeApp.tsx */ "./src/components/manuscript/MsTypeApp.tsx");
+var MsTypeApp_tsx_1 = __webpack_require__(/*! @src/components/msType/MsTypeApp.tsx */ "./src/components/msType/MsTypeApp.tsx");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
 var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var ms = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
@@ -38936,10 +38936,10 @@ exports.default = ManuscriptTablePanel;
 
 /***/ }),
 
-/***/ "./src/components/manuscript/MsTypeApp.tsx":
-/*!*************************************************!*\
-  !*** ./src/components/manuscript/MsTypeApp.tsx ***!
-  \*************************************************/
+/***/ "./src/components/msType/MsTypeApp.tsx":
+/*!*********************************************!*\
+  !*** ./src/components/msType/MsTypeApp.tsx ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38958,8 +38958,8 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
-var MsTypeTablePanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/MsTypeTablePanel.tsx */ "./src/components/manuscript/MsTypeTablePanel.tsx");
-var MsTypeEditPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/MsTypeEditPanel.tsx */ "./src/components/manuscript/MsTypeEditPanel.tsx");
+var MsTypeTablePanel_tsx_1 = __webpack_require__(/*! @src/components/msType/MsTypeTablePanel.tsx */ "./src/components/msType/MsTypeTablePanel.tsx");
+var MsTypeEditPanel_tsx_1 = __webpack_require__(/*! @src/components/msType/MsTypeEditPanel.tsx */ "./src/components/msType/MsTypeEditPanel.tsx");
 var mst = __webpack_require__(/*! @src/models/msType.ts */ "./src/models/msType.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
@@ -39106,10 +39106,10 @@ exports.default = MsTypeApp;
 
 /***/ }),
 
-/***/ "./src/components/manuscript/MsTypeEditPanel.tsx":
-/*!*******************************************************!*\
-  !*** ./src/components/manuscript/MsTypeEditPanel.tsx ***!
-  \*******************************************************/
+/***/ "./src/components/msType/MsTypeEditPanel.tsx":
+/*!***************************************************!*\
+  !*** ./src/components/msType/MsTypeEditPanel.tsx ***!
+  \***************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -39230,10 +39230,10 @@ exports.default = MsTypeEditPanel;
 
 /***/ }),
 
-/***/ "./src/components/manuscript/MsTypeTablePanel.tsx":
-/*!********************************************************!*\
-  !*** ./src/components/manuscript/MsTypeTablePanel.tsx ***!
-  \********************************************************/
+/***/ "./src/components/msType/MsTypeTablePanel.tsx":
+/*!****************************************************!*\
+  !*** ./src/components/msType/MsTypeTablePanel.tsx ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
