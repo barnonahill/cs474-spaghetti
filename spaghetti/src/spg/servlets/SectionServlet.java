@@ -1,6 +1,8 @@
 package spg.servlets;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -25,8 +27,9 @@ import spg.models.SourceCompleteness;
  *
  */
 @WebServlet(name="SectionServices", urlPatterns= {"/section"})
-public class SectionServlet extends SpgHttpServlet{
-private static final long serialVersionUID = 1L;
+public class SectionServlet extends SpgHttpServlet {
+	private SectionController sectionController;
+	private static final long serialVersionUID = 1L;
 	
 	
 	public static final String CREATE_SECTION 	= "createsection";
@@ -41,6 +44,13 @@ private static final long serialVersionUID = 1L;
 	public static final String GET_PROVENANCES = "GetProvenances";
 	public static final String GET_NOTATIONS = "GetNotations";
 	
+	private static final String UPDATE_CENTURY = "UpdateCentury";
+	
+	public SectionServlet() {
+		super();
+		this.sectionController = new SectionController();
+	}
+	
 	
 	@Override
 	public void handleRequest(HttpServletRequest req, HttpServletResponse res) throws IOException {
@@ -49,6 +59,9 @@ private static final long serialVersionUID = 1L;
 			Map<String, String> params = super.getParameters(req);
 			String action = super.getParameter(params, "action").toLowerCase();
 			String msg = null;
+			
+			sectionController.open();
+			
 			if (action.equalsIgnoreCase(CREATE_SECTION))
             {
 				String libSiglum = super.getParameter(params, "libSiglum");
@@ -130,12 +143,7 @@ private static final long serialVersionUID = 1L;
             {
             	msg = this.getCenturies();
             }
-			
-			else if (action.equalsIgnoreCase(UPDATE_CENTURY))
-			{
-				String centuryID = super.getParameter(params, "centuryID");
-				msg = this.deleteCentury(centuryID);
-			}
+	
 			else if (action.equalsIgnoreCase(GET_CURSUSES))
 			{
 				msg = this.getCursuses();
@@ -155,6 +163,12 @@ private static final long serialVersionUID = 1L;
 				msg = this.getNotations();
 			}
 			
+			else if (action.equalsIgnoreCase(UPDATE_CENTURY))
+			{
+				String centuryID = super.getParameter(params, "centuryID");
+				msg = this.deleteCentury(centuryID);
+			}
+			
             else
             {
                 throw new Exception("Invalid action parameter.");
@@ -167,6 +181,12 @@ private static final long serialVersionUID = 1L;
         }
         catch (Exception e) {
 		    super.writeResponse(res, e);
+		}
+		finally {
+			try {
+				sectionController.close();
+			}
+			catch (Exception e) {}
 		}
 	}
 	 
@@ -182,12 +202,12 @@ private static final long serialVersionUID = 1L;
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
 
-		Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
+		Section s = sectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 		return s.toJSON().toString();
 		try {
-			Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
+			Section s = sectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
 					notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 					provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 			return s.toJSON().toString();
@@ -210,7 +230,7 @@ private static final long serialVersionUID = 1L;
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
 		try {
-			Section s = SectionController.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
+			Section s = sectionController.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 		return s.toJSON().toString();
@@ -230,7 +250,7 @@ private static final long serialVersionUID = 1L;
 	 */
 	private String getSection(String libSiglum, String msSiglum, String sectionID) throws Exception {
 		try {
-			Section s = SectionController.getSection(libSiglum, msSiglum, sectionID);
+			Section s = sectionController.getSection(libSiglum, msSiglum, sectionID);
 			return s.toJSON().toString();
 		}
 		catch (MySQLIntegrityConstraintViolationException e) {
@@ -248,7 +268,7 @@ private static final long serialVersionUID = 1L;
 	 */
 	private String getSections(String libSiglum, String sectionID) throws Exception {
 		JSONArray sections = new JSONArray();
-		ArrayList<Section> results = SectionController.getSections(libSiglum, sectionID);
+		ArrayList<Section> results = sectionController.getSections(libSiglum, sectionID);
 		
 		for (Section s : results) {
 			sections.put(s.toJSON());
@@ -270,7 +290,7 @@ private static final long serialVersionUID = 1L;
 		JSONObject j = new JSONObject();
 		boolean success = false;
         try {
-			SectionController.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
+			sectionController.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
 			success = true;
 		}
 		catch (MYSQLException e) {
@@ -283,7 +303,7 @@ private static final long serialVersionUID = 1L;
     }
 	
 	private String getCenturies() throws Exception {
-		ArrayList<Century> centuries = SectionController.getCenturies();
+		ArrayList<Century> centuries = sectionController.getCenturies();
 		if (centuries == null) {
 			throw new Exception("Could not load centuries.");
 		}
@@ -304,41 +324,27 @@ private static final long serialVersionUID = 1L;
 	 */
 	private String updateCentury(String centuryID) throws Exception {
 		try {
-			Century s = SectionController.updateCentury(centuryID);
+			Century c = sectionController.updateCentury(centuryID);
 			return c.toJSON().toString();
 		}
-		catch (MySQLIntegrityConstraintViolationException e) {
+		catch (SQLIntegrityConstraintViolationException e) {
 			throw new Exception("An entry with the same primary key already exists.");
 		}
 	}
 	
 	private String createCentury(String centuryID) throws Exception {
 		try {
-			Century s = SectionController.createCentury(centuryID);
+			Century c = sectionController.createCentury(centuryID);
 			return c.toJSON().toString();
 		}
-		catch (MySQLIntegrityConstraintViolationException e) {
+		catch (SQLIntegrityConstraintViolationException e) {
 			throw new Exception("An entry with the same primary key already exists.");
 		}
 	}
 	
-	private String deleteCentury(String centuryID) throws Exception {
-		JSONObject j = new JSONObject();
-		boolean = success = false;
-		try {
-			SectionController.deleteCentury(centuryID);
-			success = true;
-		}
-		catch (MYSQLException e) {
-			success = false;
-		}
-		finally {
-			j.put("success", success);
-			return j.toString();
-		}
-	
 	private String getCursuses() throws Exception {
-		ArrayList<Cursus> cursuses = SectionController.getCursuses();
+		ArrayList<Cursus> cursuses = sectionController.getCursuses();
+		
 		if (cursuses == null) {
 			throw new Exception("Could not load cursuses.");
 		}
@@ -352,7 +358,8 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	private String getSourceCompletenesses() throws Exception {
-		ArrayList<SourceCompleteness> sc = SectionController.getSourceCompletenesses();
+		ArrayList<SourceCompleteness> sc = sectionController.getSourceCompletenesses();
+		
 		if (sc == null) {
 			throw new Exception("Could not load source completenesses");
 		}
@@ -366,7 +373,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	private String getProvenances() throws Exception {
-		ArrayList<Provenance> prov = SectionController.getProvenances();
+		ArrayList<Provenance> prov = sectionController.getProvenances();
 		if (prov == null) {
 			throw new Exception("Could not load provenance");
 		}
@@ -380,7 +387,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	private String getNotations() throws Exception {
-		ArrayList<Notation> note = SectionController.getNotations();
+		ArrayList<Notation> note = sectionController.getNotations();
 		if (note == null) {
 			throw new Exception("Could not load notation");
 		}
@@ -391,6 +398,22 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		return j.toString();
+	}
+	
+	private String deleteCentury(String centuryID) throws Exception {
+		JSONObject j = new JSONObject();
+		boolean success = false;
+		try {
+			sectionController.deleteCentury(centuryID);
+			success = true;
+		}
+		catch (SQLException e) {
+			success = false;
+		}
+		finally {
+			j.put("success", success);
+			return j.toString();
+		}
 	}
 			
 }

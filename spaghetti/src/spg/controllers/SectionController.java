@@ -198,28 +198,6 @@ public class SectionController extends SpgController {
 		
 		return sections;
 	}
-	
-	/**
-	 * deleteSection = deletes a Section.
-	 * @params = the primary keys.
-	 * @return = true/exception.
-	 * @throws Exception = anything.
-	 */
-	public boolean deleteSection(String sectionID, String libSiglum, String msSiglum) throws Exception {
-		String query;
-		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
-
-		pkNamesToValues.put("sectionID", sectionID);
-		pkNamesToValues.put("libSiglum", libSiglum);
-		pkNamesToValues.put("msSiglum", msSiglum);
-		
-		query = super.buildDeleteQuery(SECTION, pkNamesToValues);
-		
-		super.executeSQL(query);
-				
-		return true;
-	}
-
 
 	/**
 	 * for checking if a Section already exists.
@@ -333,6 +311,43 @@ public class SectionController extends SpgController {
 		}
 		catch (Exception e) {
 			return null;
+		}
+	}
+	
+	/**
+	 * deleteSection = deletes a Section.
+	 * @params = the primary keys.
+	 * @return = true/exception.
+	 * @throws Exception = anything.
+	 */
+	public boolean deleteSection(String sectionID, String libSiglum, String msSiglum) throws Exception {
+		String query;
+		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
+
+		pkNamesToValues.put("sectionID", sectionID);
+		pkNamesToValues.put("libSiglum", libSiglum);
+		pkNamesToValues.put("msSiglum", msSiglum);
+		
+		query = super.buildDeleteQuery(SECTION, pkNamesToValues);
+		
+		super.executeSQL(query);
+				
+		return true;
+	}
+	
+	public boolean deleteCentury(String centuryID) throws Exception {
+		String query;
+		HashMap<String, String> nvMap = new HashMap<String, String>();
+		
+		try {
+			nvMap.put("centuryID", centuryID);
+			
+			query = super.buildDeleteQuery("Century", nvMap);
+			super.executeSQL(query);
+			return true;
+		}
+		catch (Exception e) {
+			return false;
 		}
 	}
 }
