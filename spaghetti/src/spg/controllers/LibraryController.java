@@ -1,6 +1,8 @@
 package spg.controllers;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -10,15 +12,17 @@ import spg.models.Library;
 
 /**
  * LibraryController - Static methods used for handling Library and Country sql commands.
- * @author Carl Clermont
+ * @author Paul Barnhill, Carl Clermont
  *
  */
-public class LibraryController {
-
+public class LibraryController extends SpgController {
 	private final static String LIBRARY = "Library"; 
 	
+	/**
+	 * Set up the DB connection info.
+	 */
 	public LibraryController () {
-		
+		super();
 	}
 
 	/**
@@ -26,17 +30,16 @@ public class LibraryController {
 	 * @return - Arraylist of Country objects.
 	 * @throws Exception - any exception. 
 	 */
-	public static ArrayList<Country> getCountries() throws Exception{
-		String query = SpgController.buildSelectQuery("Country", null);
+	public ArrayList<Country> getCountries() throws Exception {
+		String query = super.buildSelectQuery("Country", null);
 		ResultSet resultSet;
-		resultSet = SpgController.getResultSet(query);
+		resultSet = super.getResultSet(query);
 
 		ArrayList<Country> countries = new ArrayList<Country>();
 		Country c;
 		
-		while (resultSet.next()) { //TODO still need to add new Country(resultSet); constructor
-			c = new Country(resultSet.getString("countryID"), 
-							resultSet.getString("countryName"));
+		while (resultSet.next()) {
+			c = new Country(resultSet);
 			countries.add(c);
 		}
 		
@@ -49,17 +52,12 @@ public class LibraryController {
 	 * @return - A Library object. (the one made from what was passed in.)
 	 * @throws Exception - anything.
 	 */
-	public static Library createLibrary(String libSiglum, String countryID, String city,
+	public Library createLibrary(String libSiglum, String countryID, String city,
 			String library, String address1, String address2, String postCode) throws Exception{
 		String query;
 		Library lib;
 		
 		HashMap<String, String> namesToValues = new HashMap<String, String>();
-
-		//Eventually move to SPG Controller and make generic for testing if primary keys are correct.
-		if(libSiglum == null) {
-			throw new Exception("libSiglum cannot be left empty or blank.");
-		}
 		
 		namesToValues.put("libSiglum", libSiglum);
 		namesToValues.put("countryID", countryID);
@@ -69,8 +67,8 @@ public class LibraryController {
 		namesToValues.put("address2", address2);
 		namesToValues.put("postCode", postCode);
 		
-		query = SpgController.buildInsertQuery(LIBRARY, namesToValues);
-		SpgController.executeSQL(query);
+		query = super.buildInsertQuery(LIBRARY, namesToValues);
+		super.executeSQL(query);
 		
 		lib = new Library(libSiglum, countryID, city, library, address1, address2, postCode);
 				
@@ -89,7 +87,7 @@ public class LibraryController {
 	 * @return - a the new Library element.
 	 * @throws Exception - any exception.
 	 */
-	public static Library updateLibrary(String libSiglum, String countryID , String city, 
+	public Library updateLibrary(String libSiglum, String countryID , String city, 
 			String library, String address1, String address2, String postCode) throws Exception {
 		Library l;
 		String query;
@@ -107,9 +105,9 @@ public class LibraryController {
 		
 		pkNamesToValues.put("libSiglum", libSiglum);
 		
-		query = SpgController.buildUpdateQuery(LIBRARY, pkNamesToValues, namesToValues);
+		query = super.buildUpdateQuery(LIBRARY, pkNamesToValues, namesToValues);
 
-		SpgController.executeSQL(query);
+		super.executeSQL(query);
 		l = new Library(libSiglum, countryID, city, library, address1, address2, postCode);
 		
 		return l;
@@ -122,16 +120,26 @@ public class LibraryController {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Library getLibraryOrNull(String libSiglum){
+	public Library getLibraryOrNull(String libSiglum){
 		HashMap<String, String> pkNamesToValues = new HashMap<String, String>();
 		Library l = null;
 		ResultSet resultSet;
 		String query;
+		String countryID;
 		
-		pkNamesToValues.put("libSiglum", libSiglum);
-		query = SpgController.buildSelectQuery(LIBRARY, pkNamesToValues);
 		try {
-			resultSet = SpgController.getResultSet(query);
+			int i = libSiglum.indexOf('-');
+			countryID = libSiglum.substring(0, i);
+		}
+		catch (NullPointerException | IndexOutOfBoundsException e) {
+			return null;
+		}
+		
+		pkNamesToValues.put("countryID", countryID);
+		pkNamesToValues.put("libSiglum", libSiglum);
+		query = super.buildSelectQuery(LIBRARY, pkNamesToValues);
+		try {
+			resultSet = super.getResultSet(query);
 			
 			resultSet.next();
 			l = new Library(resultSet);
@@ -143,15 +151,25 @@ public class LibraryController {
 		return l;
 	}
 	
-	public static Library getLibrary(String libSiglum) throws Exception {
+	public Library getLibrary(String libSiglum) throws Exception {
 		HashMap<String, String> pkNamesToValues = new HashMap<String, String>();
 		Library l = null;
 		ResultSet resultSet;
 		String query;
+		String countryID;
 		
+		try {
+			int i = libSiglum.indexOf('-');
+			countryID = libSiglum.substring(0, i);
+		}
+		catch (NullPointerException | IndexOutOfBoundsException e) {
+			return null;
+		}
+		
+		pkNamesToValues.put("countryID", countryID);
 		pkNamesToValues.put("libSiglum", libSiglum);
-		query = SpgController.buildSelectQuery(LIBRARY, pkNamesToValues);
-		resultSet = SpgController.getResultSet(query);
+		query = super.buildSelectQuery(LIBRARY, pkNamesToValues);
+		resultSet = super.getResultSet(query);
 			
 		resultSet.next();
 		l = new Library(resultSet);
@@ -165,7 +183,7 @@ public class LibraryController {
 	 * @return - Arraylist of Library objects.
 	 * @throws Exception - any exception. 
 	 */
-	public static ArrayList<Library> getLibraries(String countryID) throws Exception{
+	public ArrayList<Library> getLibraries(String countryID) throws Exception{
 		HashMap<String,String> namesToValues = new HashMap<String, String>();
 		String query;
 		ResultSet resultSet;
@@ -173,8 +191,8 @@ public class LibraryController {
 		Library l;
 		
 		namesToValues.put("countryID", countryID);
-		query = SpgController.buildSelectQuery(LIBRARY, namesToValues);
-		resultSet = SpgController.getResultSet(query);
+		query = super.buildSelectQuery(LIBRARY, namesToValues);
+		resultSet = super.getResultSet(query);
 		
 		libraries = new ArrayList<Library>();
 		
@@ -192,21 +210,21 @@ public class LibraryController {
 	 * @return The delete Library.
 	 * @throws Exception - any exception.
 	 */
-	public static boolean deleteLibrary(String libSiglum) throws Exception{
+	public boolean deleteLibrary(String libSiglum) throws Exception{
 		String query;
 		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
 
-		pkNamesToValues.put("libSiglum", libSiglum);
-		
-		query = SpgController.buildDeleteQuery(LIBRARY, pkNamesToValues);
-		
-		SpgController.executeSQL(query);
-				
-		return true; //currently unused.
+		try {
+			pkNamesToValues.put("libSiglum", libSiglum);
+			
+			query = super.buildDeleteQuery(LIBRARY, pkNamesToValues);
+			
+			super.executeSQL(query);
+					
+			return true;
+		}
+		catch (SQLException e) {
+			return false;
+		}
 	}
-
-
-	
-	
-	
 }

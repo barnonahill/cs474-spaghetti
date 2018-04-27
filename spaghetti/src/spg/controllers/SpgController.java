@@ -3,6 +3,7 @@ package spg.controllers;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
 import java.util.Properties;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServlet;
 
 public abstract class SpgController extends HttpServlet {
 	private Connection connection;
+	
 	public static Properties p = null;
 	public static final String DATABASE_ADDR = 
 			//"jdbc:mysql://mysql.cs.jmu.edu/BarnhillButtsClermontTran_Manuscript";
@@ -25,6 +27,15 @@ public abstract class SpgController extends HttpServlet {
 	
 	public SpgController() {
 		SpgController.initProperties();
+		this.connection = null;
+	}
+	
+	public void open() throws SQLException, ClassNotFoundException {
+		openConnection();
+	}
+	
+	public void close() throws SQLException {
+		closeConnection();
 	}
 	
 	/**
@@ -35,13 +46,11 @@ public abstract class SpgController extends HttpServlet {
 	 * @throws Exception - if it cant connect to the server.
 	 */
 	final ResultSet getResultSet(String queryString) throws Exception {
-		Connection connection;
 		Statement statement;
 		ResultSet resultSet;
+		
 		try {
 			initProperties();
-			Class.forName("com.mysql.jdbc.Driver");
-			connection = DriverManager.getConnection(DATABASE_ADDR, p);
 			statement = connection.createStatement();
 			resultSet = statement.executeQuery(queryString);
 			return resultSet; 
@@ -60,8 +69,25 @@ public abstract class SpgController extends HttpServlet {
 		}
 	}
 	
-	protected Connection getConnection() {
-		return DriverManager.getConnection(DATABASE_ADDR, p);
+	/**
+	 * Set the controller's current connection.
+	 * @throws SQLException connection open issue
+	 * @throws ClassNotFoundException 
+	 */
+	protected void openConnection() throws SQLException, ClassNotFoundException {
+		Class.forName("com.mysql.jdbc.Driver");
+		this.connection = DriverManager.getConnection(DATABASE_ADDR, p);
+	}
+	
+	/**
+	 * Close a connection after you're finished parsing data from it. Checks for connection
+	 * existence.
+	 * @throws SQLException connection close issue
+	 */
+	protected void closeConnection() throws SQLException {
+		if (this.connection != null) {
+			this.connection.close();
+		}
 	}
 	
 	/**
@@ -71,14 +97,11 @@ public abstract class SpgController extends HttpServlet {
 	 * @return
 	 * @throws Exception
 	 */
-	static final int executeSQL(String queryString) throws Exception {
-		Connection connection;
+	final int executeSQL(String queryString) throws Exception {
 		Statement statement;
 		int rows;
+		
 		try {
-			initProperties();
-			Class.forName("com.mysql.jdbc.Driver");
-			connection = DriverManager.getConnection(DATABASE_ADDR, p);
 			statement = connection.createStatement();
 			rows = statement.executeUpdate(queryString);
 			connection.close();
@@ -91,6 +114,7 @@ public abstract class SpgController extends HttpServlet {
 	
 	
 	/**
+	 * Builds an Inset Query.
 	 * 
 	 * @param tableName
 	 * @param createNames
@@ -99,7 +123,7 @@ public abstract class SpgController extends HttpServlet {
 	 * e.g.
 	 * INSERT INTO Library (libSiglum, city, address1) VALUES ('potato', 'H-Burg', 'Neverland st.');
 	 */
-	static final String buildInsertQuery(String tableName, Map<String,String> namesToValues) {
+	final String buildInsertQuery(String tableName, Map<String,String> namesToValues) {
 		StringBuilder query = new StringBuilder("");
 		
 		query.append("INSERT INTO ");
@@ -115,6 +139,7 @@ public abstract class SpgController extends HttpServlet {
 	
 	
 	/**
+	 * Builds an update query.
 	 * 
 	 * @param tableName - name of the updated table. 
 	 * e.g. Libary
@@ -125,7 +150,7 @@ public abstract class SpgController extends HttpServlet {
 	 * @return
 	 * UPDATE table SET column1 = val1, column2 = val2 WHERE pk = pkVal;
 	 */
-	static final String buildUpdateQuery(String tableName,  Map<String, String> pkNamesToValues, 
+	final String buildUpdateQuery(String tableName,  Map<String, String> pkNamesToValues, 
 			Map<String, String> namesToValues) {
 		StringBuilder query = new StringBuilder("UPDATE ");
 		query.append(tableName);
@@ -138,6 +163,8 @@ public abstract class SpgController extends HttpServlet {
 	}
 	
 	/**
+	 * Builds a select query.
+	 * 
 	 * buildSelectQuery - handles creating the strings for select queries.
 	 * @param tableName - the table to select from.
 	 * @param filterName - the variable to filter by.
@@ -147,7 +174,7 @@ public abstract class SpgController extends HttpServlet {
 	 * e.g. 
 	 * SELECT * FROM Library WHERE Libsiglum = 'potato';
 	 */
-	static final String buildSelectQuery(String tableName, Map<String,String> namesToValues) {
+	final String buildSelectQuery(String tableName, Map<String,String> namesToValues) {
 		StringBuilder query = new StringBuilder("SELECT * FROM ");
 		query.append(tableName);
 		
@@ -161,6 +188,8 @@ public abstract class SpgController extends HttpServlet {
 	
 
 	/**
+	 * Builds a delete query.
+	 * 
 	 * createDeleteString - creates the query needed to delete from a table.
 	 * @param tableName - ...
 	 * @param pkNames - a list of all the primary key column names.
@@ -169,7 +198,7 @@ public abstract class SpgController extends HttpServlet {
 	 * e.g.
 	 * DELETE FROM Library WHERE libSiglum = 'potato';
 	 */
-	static final String buildDeleteQuery(String tableName, Map<String, String> namesToValues) {	
+	final String buildDeleteQuery(String tableName, Map<String, String> namesToValues) {	
 		StringBuilder query = new StringBuilder("");
 		query.append("DELETE FROM ");
 		query.append(tableName);
@@ -189,7 +218,7 @@ public abstract class SpgController extends HttpServlet {
 	 * @param createVals
 	 * @return
 	 */
-	private static Object createColumnString(Map<String,String> namesToValues) {
+	private Object createColumnString(Map<String,String> namesToValues) {
 		StringBuilder updates = new StringBuilder("");
 		boolean addComma = false;
 		String val;
@@ -214,7 +243,7 @@ public abstract class SpgController extends HttpServlet {
 	 * @param createVals
 	 * @return
 	 */
-	private static Object ceateValueListString(Map<String,String> namesToValues) {
+	private Object ceateValueListString(Map<String,String> namesToValues) {
 		StringBuilder updates = new StringBuilder("");
 		boolean addComma = false;
 		String val;
@@ -247,7 +276,7 @@ public abstract class SpgController extends HttpServlet {
 	 * e.g.
 	 * "countryID = 'US', city = 'Harrisonburg', postCode = '22807'"
 	 */
-	private static final String ceateUpdatesString(Map<String,String> namesToValues) {
+	private final String ceateUpdatesString(Map<String,String> namesToValues) {
 	
 		StringBuilder updates = new StringBuilder("");
 		boolean addComma = false;
@@ -280,7 +309,7 @@ public abstract class SpgController extends HttpServlet {
 	 * e.g.
 	 * libSiglum = 'potato' AND msType = 'windex'
 	 */
-	private static final String createPredicate(Map<String,String> namesToValues) {
+	private final String createPredicate(Map<String,String> namesToValues) {
 		StringBuilder predicate = new StringBuilder("");
 		boolean addAnd = false;
 		String pkVal;
@@ -305,7 +334,7 @@ public abstract class SpgController extends HttpServlet {
 	 * @param var - a string.
 	 * @return filterValue or 'filterValue' where filterValue is a String.
 	 */
-	private static final String checkVarType(String var) {
+	private final String checkVarType(String var) {
 		String newValue = var;
 		
     	if (newValue.equalsIgnoreCase("true") || newValue.equalsIgnoreCase("false")) {
