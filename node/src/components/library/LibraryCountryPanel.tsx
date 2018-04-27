@@ -26,7 +26,7 @@ interface P {
 interface S {
 	options: Options
 	option: Option
-	loadDisabled: boolean
+	val: any
 }
 
 export default class LibraryCountryPanel extends React.Component<P, S> {
@@ -47,7 +47,7 @@ export default class LibraryCountryPanel extends React.Component<P, S> {
 		this.state = {
 			options: options,
 			option: option,
-			loadDisabled: option === null
+			val: null
 		};
 		this.onChange = this.onChange.bind(this);
 		this.onSubmit = this.onSubmit.bind(this);
@@ -56,13 +56,18 @@ export default class LibraryCountryPanel extends React.Component<P, S> {
 	onChange(option: Option) {
 		this.setState((state: S) => {
 			state.option = option;
-			state.loadDisabled = option === null;
 			return state;
 		});
 	}
 
 	onSubmit(e: React.FormEvent<Form>) {
 		e.preventDefault();
+		if (!this.state.option) {
+			return this.setState((s:S) => {
+				s.val = 'error';
+				return s;
+			});
+		}
 		var country: Country = this.props.countries.find((c: Country) => {
 			return this.state.option.value === c.countryID
 		});
@@ -83,14 +88,18 @@ export default class LibraryCountryPanel extends React.Component<P, S> {
 			</Alert>),
 
 			(<Form horizontal key="form" onSubmit={this.onSubmit}>
-				<FormGroup controlId="countryID">
-					<Col sm={3} componentClass={ControlLabel}>Country:</Col>
+				<FormGroup
+					controlId="countryID"
+					validationState={this.state.val}
+				>
+					<Col sm={3} componentClass={ControlLabel} className="required">Country:</Col>
 					<Col sm={4}>
 						<Select
 							name="countryID"
 							value={this.state.option}
 							options={this.state.options}
 							onChange={this.onChange}
+							className={this.state.val ? 'has-error': ''}
 						/>
 					</Col>
 				</FormGroup>
@@ -100,9 +109,7 @@ export default class LibraryCountryPanel extends React.Component<P, S> {
 						<Button
 							bsStyle="primary"
 							type="submit"
-							disabled={this.state.loadDisabled}
-							>Load
-						</Button>
+						>Load</Button>
 					</Col>
 				</FormGroup>
 			</Form>)

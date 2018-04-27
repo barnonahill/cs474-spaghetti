@@ -37272,7 +37272,7 @@ var LibraryCountryPanel = (function (_super) {
         _this.state = {
             options: options,
             option: option,
-            loadDisabled: option === null
+            val: null
         };
         _this.onChange = _this.onChange.bind(_this);
         _this.onSubmit = _this.onSubmit.bind(_this);
@@ -37281,13 +37281,18 @@ var LibraryCountryPanel = (function (_super) {
     LibraryCountryPanel.prototype.onChange = function (option) {
         this.setState(function (state) {
             state.option = option;
-            state.loadDisabled = option === null;
             return state;
         });
     };
     LibraryCountryPanel.prototype.onSubmit = function (e) {
         var _this = this;
         e.preventDefault();
+        if (!this.state.option) {
+            return this.setState(function (s) {
+                s.val = 'error';
+                return s;
+            });
+        }
         var country = this.props.countries.find(function (c) {
             return _this.state.option.value === c.countryID;
         });
@@ -37300,13 +37305,13 @@ var LibraryCountryPanel = (function (_super) {
             (React.createElement(react_bootstrap_1.Alert, { bsStyle: "info", className: "mb20 mr15p ml15p text-center", key: "alert" },
                 React.createElement("strong", null, "Select a country to view its libraries."))),
             (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form", onSubmit: this.onSubmit },
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
-                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID", validationState: this.state.val },
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Country:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_select_1.default, { name: "countryID", value: this.state.option, options: this.state.options, onChange: this.onChange }))),
+                        React.createElement(react_select_1.default, { name: "countryID", value: this.state.option, options: this.state.options, onChange: this.onChange, className: this.state.val ? 'has-error' : '' }))),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
                     React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
-                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit", disabled: this.state.loadDisabled }, "Load")))))
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", type: "submit" }, "Load")))))
         ];
     };
     return LibraryCountryPanel;
@@ -37603,7 +37608,7 @@ var LibraryEntityPanel = (function (_super) {
     LibraryEntityPanel.prototype.loadManuscripts = function (callback) {
         var _this = this;
         ProxyFactory_ts_1.default.getManuscriptProxy()
-            .getManuscripts(this.props.country.countryID, this.props.library.libSiglum, function (m, e) {
+            .getManuscripts(this.props.library.libSiglum, function (m, e) {
             if (e) {
                 alert(e);
             }
@@ -37816,7 +37821,7 @@ var ManuscriptApp = (function (_super) {
             if (_this.props.panel === Panel.TABLE) {
                 state.panel = Panel.LOADER;
                 state.loadMessage = 'Loading Manuscripts...';
-                _this.loadManuscripts(_this.props.country.countryID, _this.props.library.libSiglum, false, function (s, manuscripts) {
+                _this.loadManuscripts(_this.props.library.libSiglum, false, function (s, manuscripts) {
                     ms.Manuscript.destroyArray(s.manuscripts);
                     s.country = _this.props.country;
                     s.library = _this.props.library;
@@ -37847,7 +37852,7 @@ var ManuscriptApp = (function (_super) {
                         ? this.props.onBack
                         : function () { return _this.changePanel(Panel.INIT); } }));
             case Panel.ENTITY:
-                return (React.createElement(ManuscriptEntityPanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscript: this.state.manuscript, msType: this.state.msType, onBack: this.onEntityBack }));
+                return (React.createElement(ManuscriptEntityPanel_tsx_1.default, { countries: this.props.countries, libraries: this.state.libraries, manuscripts: this.state.manuscripts, msTypes: this.state.msTypes, country: this.state.country, library: this.state.library, manuscript: this.state.manuscript, msType: this.state.msType, onBack: this.onEntityBack }));
             case Panel.EDIT:
                 return (React.createElement(ManuscriptEditPanel_tsx_1.default, { countries: this.props.countries, msTypes: this.state.msTypes, manuscript: this.state.manuscript, onBack: function () { return _this.changePanel(Panel.TABLE); }, onSubmit: this.saveManuscript }));
             case Panel.MST:
@@ -37891,7 +37896,7 @@ var ManuscriptApp = (function (_super) {
     ManuscriptApp.prototype.onFilterLoad = function (c, l, libraries) {
         var countryID = c.countryID;
         var libSiglum = l ? l.libSiglum : null;
-        this.loadManuscripts(countryID, libSiglum, false, function (s, manuscripts) {
+        this.loadManuscripts(libSiglum, false, function (s, manuscripts) {
             s.panel = Panel.TABLE;
             ms.Manuscript.destroyArray(s.manuscripts);
             library_ts_1.Library.destroyArray(s.libraries);
@@ -37915,7 +37920,7 @@ var ManuscriptApp = (function (_super) {
                     s.panel = Panel.LOADER;
                     s.loadMessage = "Loading Manuscripts...";
                 });
-                this.loadManuscripts(null, null, false, function (s, manuscripts) {
+                this.loadManuscripts(null, false, function (s, manuscripts) {
                     s.panel = p;
                     library_ts_1.Library.destroyArray(s.libraries);
                     ms.Manuscript.destroyArray(s.manuscripts);
@@ -38032,13 +38037,12 @@ var ManuscriptApp = (function (_super) {
             }
         });
     };
-    ManuscriptApp.prototype.loadManuscripts = function (countryID, libSiglum, useState, stateSetter) {
+    ManuscriptApp.prototype.loadManuscripts = function (libSiglum, useState, stateSetter) {
         var _this = this;
         if (useState) {
-            countryID = this.state.country ? this.state.country.countryID : null;
             libSiglum = this.state.library ? this.state.library.libSiglum : null;
         }
-        ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(countryID, libSiglum, function (manuscripts, e) {
+        ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(libSiglum, function (manuscripts, e) {
             if (e) {
                 alert(e);
             }
@@ -38083,7 +38087,7 @@ var ManuscriptApp = (function (_super) {
             s.loadMessage = 'Loading Manuscripts...';
             return s;
         });
-        this.loadManuscripts(null, null, true, function (state, manuscripts) {
+        this.loadManuscripts(null, true, function (state, manuscripts) {
             ms.Manuscript.destroyArray(state.manuscripts);
             state.panel = Panel.TABLE;
             state.manuscripts = manuscripts;
@@ -38509,18 +38513,41 @@ var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
 var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SectionApp_tsx_1 = __webpack_require__(/*! @src/components/section/SectionApp.tsx */ "./src/components/section/SectionApp.tsx");
+var Panel;
+(function (Panel) {
+    Panel[Panel["ENT"] = 0] = "ENT";
+    Panel[Panel["STN"] = 1] = "STN";
+})(Panel || (Panel = {}));
 var ManuscriptEntityPanel = (function (_super) {
     __extends(ManuscriptEntityPanel, _super);
     function ManuscriptEntityPanel(p) {
-        return _super.call(this, p) || this;
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            panel: Panel.ENT
+        };
+        _this.renderEntity = _this.renderEntity.bind(_this);
+        _this.renderSectionTable = _this.renderSectionTable.bind(_this);
+        return _this;
     }
     ManuscriptEntityPanel.prototype.render = function () {
+        switch (this.state.panel) {
+            default:
+            case Panel.ENT:
+                return this.renderEntity();
+            case Panel.STN:
+                return this.renderSectionTable();
+        }
+    };
+    ManuscriptEntityPanel.prototype.renderEntity = function () {
+        var _this = this;
         return [
             (React.createElement(Header_tsx_1.default, { key: "header", min: true },
                 "Manuscripts - ",
                 this.props.library.libSiglum + ' ' + this.props.manuscript.msSiglum)),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "info", className: "fr", onClick: function () { return _this.changePanel(Panel.STN); } }, "Sections"))),
             (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
@@ -38559,6 +38586,23 @@ var ManuscriptEntityPanel = (function (_super) {
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Bibliography:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.manuscript.bibliography || 'NULL'))))
         ];
+    };
+    ManuscriptEntityPanel.prototype.renderSectionTable = function () {
+        var _this = this;
+        return (React.createElement(SectionApp_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.ENT); }, sideloads: {
+                country: this.props.country,
+                library: this.props.library,
+                manuscript: this.props.manuscript,
+                libraries: this.props.libraries,
+                manuscripts: this.props.manuscripts.filter(function (m) { return m.libSiglum === _this.props.library.libSiglum; }),
+                msTypes: this.props.msTypes
+            } }));
+    };
+    ManuscriptEntityPanel.prototype.changePanel = function (p) {
+        this.setState(function (s) {
+            s.panel = p;
+            return s;
+        });
     };
     return ManuscriptEntityPanel;
 }(React.Component));
@@ -39280,6 +39324,8 @@ var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader
 var SectionInitPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionInitPanel.tsx */ "./src/components/section/SectionInitPanel.tsx");
 var SectionFilterPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionFilterPanel.tsx */ "./src/components/section/SectionFilterPanel.tsx");
 var SectionTablePanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionTablePanel.tsx */ "./src/components/section/SectionTablePanel.tsx");
+var SectionEditPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionEditPanel.tsx */ "./src/components/section/SectionEditPanel.tsx");
+var country_ts_1 = __webpack_require__(/*! @src/models/country.ts */ "./src/models/country.ts");
 var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
 var sn = __webpack_require__(/*! @src/models/section.ts */ "./src/models/section.ts");
@@ -39313,7 +39359,7 @@ var SectionApp = (function (_super) {
             loadMessage: 'Loading Supports...',
             primaries: {},
             supports: {},
-            temp: {}
+            temps: {}
         };
         _this.renderInit = _this.renderInit.bind(_this);
         _this.renderEdit = _this.renderEdit.bind(_this);
@@ -39327,31 +39373,104 @@ var SectionApp = (function (_super) {
         _this.loadNotations = _this.loadNotations.bind(_this);
         _this.loadMsTypes = _this.loadMsTypes.bind(_this);
         _this.loadSupports = _this.loadSupports.bind(_this);
-        _this.loadSections = _this.loadSections.bind(_this);
         _this.loadLibraries = _this.loadLibraries.bind(_this);
         _this.loadManuscripts = _this.loadManuscripts.bind(_this);
+        _this.loadSections = _this.loadSections.bind(_this);
+        _this.reloadSections = _this.reloadSections.bind(_this);
+        _this.loadLibrary = _this.loadLibrary.bind(_this);
+        _this.loadManuscript = _this.loadManuscript.bind(_this);
         _this.changePanel = _this.changePanel.bind(_this);
         _this.setLoader = _this.setLoader.bind(_this);
-        _this.onInitSubmit = _this.onInitSubmit.bind(_this);
-        _this.onFilterSubmit = _this.onFilterSubmit.bind(_this);
-        _this.reloadSections = _this.reloadSections.bind(_this);
+        _this.loadTemps = _this.loadTemps.bind(_this);
+        _this.destroyTemps = _this.destroyTemps.bind(_this);
         _this.openEntity = _this.openEntity.bind(_this);
         _this.openEdit = _this.openEdit.bind(_this);
+        _this.getEditPrimaries = _this.getEditPrimaries.bind(_this);
+        _this.onInitSubmit = _this.onInitSubmit.bind(_this);
+        _this.onFilterSubmit = _this.onFilterSubmit.bind(_this);
         _this.confirmDelete = _this.confirmDelete.bind(_this);
-        _this.saveManuscript = _this.saveManuscript.bind(_this);
+        _this.saveSection = _this.saveSection.bind(_this);
         return _this;
     }
     SectionApp.prototype.componentDidMount = function () {
-        this.loadSupports(function (s) {
-            s.panel = Panel.INIT;
-            return s;
-        });
+        var _this = this;
+        if (this.props.sideloads) {
+            var finishLoad = function (libraries, sections) {
+                _this.loadSupports(true, function (s) {
+                    s.primaries.libraries = libraries;
+                    s.primaries.manuscripts = side.manuscripts;
+                    s.primaries.sections = sections;
+                    s.primaries.country = side.country;
+                    s.primaries.library = side.library;
+                    s.primaries.manuscript = side.manuscript;
+                    s.panel = Panel.TABLE;
+                    return s;
+                });
+            };
+            var side = this.props.sideloads;
+            this.setLoader('Loading Sections');
+            this.loadSections(side.manuscript.libSiglum, side.manuscript.msSiglum, function (sections) {
+                if (!side.libraries) {
+                    _this.setLoader('Loading Libraries...');
+                    _this.loadLibraries(side.country.countryID, function (libraries) {
+                        finishLoad(libraries, sections);
+                    });
+                }
+                else {
+                    finishLoad(side.libraries, sections);
+                }
+            });
+        }
+        else {
+            this.loadSupports(true, function (s) {
+                s.panel = Panel.INIT;
+                return s;
+            });
+        }
+    };
+    SectionApp.prototype.componentWillUnmount = function () {
+        var k;
+        var pri = this.state.primaries;
+        var sup = this.state.supports;
+        var side = this.props.sideloads;
+        if (side) {
+            if (!side.libraries) {
+                country_ts_1.Country.destroyArray(pri.libraries);
+            }
+            for (k in sup) {
+                if (sup[k] && k !== 'msTypes')
+                    country_ts_1.Country.destroyArray(sup[k]);
+            }
+        }
+        else {
+            for (k in pri) {
+                if (pri[k] && pri[k].constructor === Array) {
+                    if (k !== 'countries')
+                        country_ts_1.Country.destroyArray(pri[k]);
+                }
+                else if (pri[k] && k !== 'country') {
+                    pri[k].destroy();
+                }
+            }
+            for (k in sup) {
+                if (sup[k])
+                    country_ts_1.Country.destroyArray(sup[k]);
+            }
+        }
+        if (this.state.temps) {
+            for (k in this.state.temps) {
+                if (this.state.temps[k])
+                    this.state.temps[k].destroy();
+            }
+        }
     };
     SectionApp.prototype.render = function () {
         switch (this.state.panel) {
             default:
             case Panel.INIT:
                 return this.renderInit();
+            case Panel.EDIT:
+                return this.renderEdit();
             case Panel.FILTER:
                 return this.renderFilter();
             case Panel.TABLE:
@@ -39364,6 +39483,12 @@ var SectionApp = (function (_super) {
         return (React.createElement(SectionInitPanel_tsx_1.default, { onBack: this.props.onBack, onSubmit: this.onInitSubmit }));
     };
     SectionApp.prototype.renderEdit = function () {
+        var _this = this;
+        var isNew = Boolean();
+        return (React.createElement(SectionEditPanel_tsx_1.default, { loadLibraries: this.loadLibraries, loadManuscripts: this.loadManuscripts, primaries: this.getEditPrimaries(), supports: this.state.supports, temps: this.state.temps, onBack: function () {
+                _this.destroyTemps();
+                _this.changePanel(Panel.TABLE);
+            }, onSubmit: this.saveSection }));
     };
     SectionApp.prototype.renderEntity = function () { };
     SectionApp.prototype.renderFilter = function () {
@@ -39372,7 +39497,9 @@ var SectionApp = (function (_super) {
     };
     SectionApp.prototype.renderTable = function () {
         var _this = this;
-        return (React.createElement(SectionTablePanel_tsx_1.default, { library: this.state.primaries.library, manuscript: this.state.primaries.manuscript, sections: this.state.primaries.sections, onBack: function () { return _this.changePanel(Panel.INIT); }, onRefresh: this.reloadSections, onEdit: this.openEdit, onDelete: this.confirmDelete, onView: this.openEntity }));
+        return (React.createElement(SectionTablePanel_tsx_1.default, { library: this.state.primaries.library, manuscript: this.state.primaries.manuscript, sections: this.state.primaries.sections, onBack: function () { return _this.props.sideloads
+                ? _this.props.onBack()
+                : _this.changePanel(Panel.INIT); }, onRefresh: this.reloadSections, onEdit: this.openEdit, onDelete: this.confirmDelete, onView: this.openEntity }));
     };
     SectionApp.prototype.renderLoader = function () {
         return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
@@ -39431,32 +39558,35 @@ var SectionApp = (function (_super) {
             return callback(a);
         });
     };
-    SectionApp.prototype.loadSupports = function (callback) {
+    SectionApp.prototype.loadSupports = function (setSt, callback) {
         var _this = this;
+        var stateSetter = function (centuries, cursuses, srcComps, provs, notations, msTypes, callback) {
+            _this.setState(function (s) {
+                century_ts_1.Century.destroyArray(s.supports.centuries);
+                cursus_ts_1.Cursus.destroyArray(s.supports.cursuses);
+                sourceCompleteness_ts_1.SourceCompleteness.destroyArray(s.supports.srcComps);
+                provenance_ts_1.Provenance.destroyArray(s.supports.provs);
+                notation_ts_1.Notation.destroyArray(s.supports.notations);
+                msType_ts_1.MsType.destroyArray(s.supports.msTypes);
+                s.supports.centuries = centuries;
+                s.supports.cursuses = cursuses;
+                s.supports.srcComps = srcComps;
+                s.supports.provs = provs;
+                s.supports.notations = notations;
+                s.supports.msTypes = msTypes;
+                return callback(s);
+            });
+        };
         this.loadCenturies(function (centuries) {
             _this.loadCursuses(function (cursuses) {
                 _this.loadSrcComps(function (srcComps) {
                     _this.loadProvenances(function (provs) {
                         _this.loadNotations(function (notations) {
+                            if (_this.props.sideloads && _this.props.sideloads.msTypes) {
+                                return stateSetter(centuries, cursuses, srcComps, provs, notations, _this.props.sideloads.msTypes, callback);
+                            }
                             _this.loadMsTypes(function (msTypes) {
-                                _this.setState(function (s) {
-                                    century_ts_1.Century.destroyArray(s.supports.centuries);
-                                    cursus_ts_1.Cursus.destroyArray(s.supports.cursuses);
-                                    sourceCompleteness_ts_1.SourceCompleteness.destroyArray(s.supports.srcComps);
-                                    provenance_ts_1.Provenance.destroyArray(s.supports.provs);
-                                    notation_ts_1.Notation.destroyArray(s.supports.notations);
-                                    msType_ts_1.MsType.destroyArray(s.supports.msTypes);
-                                    s.supports.centuries = centuries;
-                                    s.supports.cursuses = cursuses;
-                                    s.supports.srcComps = srcComps;
-                                    s.supports.provs = provs;
-                                    s.supports.notations = notations;
-                                    s.supports.msTypes = msTypes;
-                                    if (callback)
-                                        return callback(s);
-                                    else
-                                        return s;
-                                });
+                                stateSetter(centuries, cursuses, srcComps, provs, notations, msTypes, callback);
                             });
                         });
                     });
@@ -39481,11 +39611,27 @@ var SectionApp = (function (_super) {
         });
     };
     SectionApp.prototype.loadManuscripts = function (libSiglum, callback) {
-        ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(null, libSiglum, function (a, e) {
+        ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(libSiglum, function (a, e) {
             if (e) {
                 return alert(e);
             }
             return callback(a);
+        });
+    };
+    SectionApp.prototype.loadLibrary = function (libSiglum, callback) {
+        ProxyFactory_ts_1.default.getLibraryProxy().getLibrary(libSiglum, function (l, e) {
+            if (e) {
+                return alert(e);
+            }
+            return callback(l);
+        });
+    };
+    SectionApp.prototype.loadManuscript = function (libSiglum, msSiglum, callback) {
+        ProxyFactory_ts_1.default.getManuscriptProxy().getManuscript(libSiglum, msSiglum, function (m, e) {
+            if (e) {
+                return alert(e);
+            }
+            callback(m);
         });
     };
     SectionApp.prototype.changePanel = function (p, callback) {
@@ -39531,6 +39677,7 @@ var SectionApp = (function (_super) {
                 s.primaries.library = null;
                 s.primaries.manuscript = null;
                 s.primaries.section = null;
+                s.primaries.country = c;
                 s.primaries.libraries = ls;
                 s.primaries.manuscripts = ms;
                 s.primaries.library = l;
@@ -39550,44 +39697,87 @@ var SectionApp = (function (_super) {
         var msSiglum = (this.state.primaries.manuscript
             ? this.state.primaries.manuscript.msSiglum
             : null);
-        this.loadSections(libSiglum, msSiglum, function (ss) {
+        this.loadSections(libSiglum, msSiglum, function (sections) {
             _this.setState(function (s) {
                 sn.Section.destroyArray(s.primaries.sections);
                 s.primaries.section = null;
-                s.primaries.sections = ss;
+                s.primaries.sections = sections;
                 s.panel = Panel.TABLE;
                 return s;
             });
         });
     };
-    SectionApp.prototype.openEntity = function (s) { };
-    SectionApp.prototype.openEdit = function (stn) {
+    SectionApp.prototype.loadTemps = function (stn, callback) {
         var _this = this;
-        this.setLoader('Loading Libraries...');
-        var i = stn.libSiglum.indexOf('-');
-        var countryID = stn.libSiglum.slice(0, i);
-        this.loadLibraries(countryID, function (ls) {
-            _this.setLoader('Loading Manuscripts...');
-            _this.loadManuscripts(stn.libSiglum, function (ms) {
-                _this.setState(function (s) {
-                    s.temp.library = ls.find(function (l) { return stn.libSiglum === l.libSiglum; });
-                    s.temp.manuscript = ms.find(function (m) { return stn.libSiglum === m.libSiglum
-                        && stn.msSiglum === m.msSiglum; });
+        var isNew = !Boolean(stn);
+        var isFiltered = Boolean(this.state.primaries.manuscript);
+        if (!(isFiltered || isNew)) {
+            var i = stn.libSiglum.indexOf('-');
+            var countryID = stn.libSiglum.slice(0, i);
+            var country = this.props.countries.find(function (c) { return countryID === c.countryID; });
+            this.setLoader('Loading Library ' + stn.libSiglum + '...');
+            this.loadLibrary(stn.libSiglum, function (library) {
+                _this.setLoader('Loading manuscript ' + stn.msSiglum + ' from ' + library.library);
+                _this.loadManuscript(stn.libSiglum, stn.msSiglum, function (manuscript) {
+                    _this.setState(function (s) {
+                        s.primaries.section = stn;
+                        s.temps.country = country;
+                        s.temps.library = library;
+                        s.temps.manuscript = manuscript;
+                        return callback(s);
+                    });
                 });
             });
+        }
+        else {
+            this.setState(function (s) {
+                s.primaries.section = stn;
+                return callback(s);
+            });
+        }
+    };
+    SectionApp.prototype.destroyTemps = function () {
+        if (this.state.temps) {
+            this.setState(function (s) {
+                if (s.temps.library) {
+                    s.temps.library.destroy();
+                    s.temps.library = null;
+                }
+                if (s.temps.manuscript) {
+                    s.temps.manuscript.destroy();
+                    s.temps.manuscript = null;
+                }
+                s.temps.country = null;
+                return s;
+            });
+        }
+    };
+    SectionApp.prototype.openEntity = function (stn) {
+        this.loadTemps(stn, function (s) {
+            s.panel = Panel.ENTITY;
+            return s;
         });
-        this.setState(function (s) {
-            s.primaries.section = stn;
+    };
+    SectionApp.prototype.openEdit = function (stn) {
+        this.loadTemps(stn, function (s) {
             s.panel = Panel.EDIT;
             return s;
         });
     };
-    SectionApp.prototype.confirmDelete = function (section) {
+    SectionApp.prototype.getEditPrimaries = function () {
+        var primaries = {};
+        for (var k in this.state.primaries) {
+            primaries[k] = this.state.primaries[k];
+        }
+        primaries.countries = this.props.countries;
+        return primaries;
+    };
+    SectionApp.prototype.confirmDelete = function (stn) {
         var _this = this;
-        var del = confirm('Delete ' + section.libSiglum + ' ' + section.msSiglum + ' ' + section.sectionID +
+        var del = confirm('Delete ' + stn.libSiglum + ' ' + stn.msSiglum + ' ' + stn.sectionID +
             '? This will delete all children of this section as well!');
         if (del) {
-            ProxyFactory_ts_1.default.getSectionProxy().deleteSection(section.libSiglum, section.msSiglum, section.sectionID, function (success, e) {
+            ProxyFactory_ts_1.default.getSectionProxy().deleteSection(stn.libSiglum, stn.msSiglum, stn.sectionID, function (success, e) {
                 if (e) {
                     return alert(e);
                 }
@@ -39596,8 +39786,9 @@ var SectionApp = (function (_super) {
                 }
                 _this.setState(function (s) {
                     var i = s.primaries.sections.findIndex(function (sec) {
-                        return section.libSiglum === sec.libSiglum && section.msSiglum === sec.msSiglum &&
-                            section.sectionID === sec.sectionID;
+                        return (stn.libSiglum === sec.libSiglum
+                            && stn.msSiglum === sec.msSiglum
+                            && stn.sectionID === sec.sectionID);
                     });
                     s.primaries.sections[i].destroy();
                     s.primaries.sections.splice(i, 1);
@@ -39606,7 +39797,7 @@ var SectionApp = (function (_super) {
             });
         }
     };
-    SectionApp.prototype.saveManuscript = function (p, isNew) {
+    SectionApp.prototype.saveSection = function (p, isNew) {
         var _this = this;
         this.setLoader('Saving Section...');
         if (isNew) {
@@ -39638,10 +39829,543 @@ var SectionApp = (function (_super) {
                 });
             });
         }
+        this.destroyTemps();
     };
     return SectionApp;
 }(React.Component));
 exports.default = SectionApp;
+
+
+/***/ }),
+
+/***/ "./src/components/section/SectionEditPanel.tsx":
+/*!*****************************************************!*\
+  !*** ./src/components/section/SectionEditPanel.tsx ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_select_1 = __webpack_require__(/*! react-select */ "./node_modules/react-select/dist/react-select.es.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
+var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
+var ManuscriptEditPanel = (function (_super) {
+    __extends(ManuscriptEditPanel, _super);
+    function ManuscriptEditPanel(p) {
+        var _this = _super.call(this, p) || this;
+        var sOpts = {
+            century: null,
+            centuries: p.supports.centuries.map(function (c) {
+                return { label: c.centuryName, value: c.centuryID };
+            }),
+            cursus: null,
+            cursuses: p.supports.cursuses.map(function (c) {
+                return { label: c.cursusName, value: c.cursusID };
+            }),
+            srcComp: null,
+            srcComps: p.supports.srcComps.map(function (s) {
+                return { label: s.sourceCompletenessName, value: s.sourceCompletenessID };
+            }),
+            prov: null,
+            provs: p.supports.provs.map(function (p) {
+                return { label: p.provenanceName || p.provenanceID, value: p.provenanceID };
+            }),
+            notation: null,
+            notations: p.supports.notations.map(function (s) {
+                return { label: s.notationName, value: s.notationID };
+            }),
+            secType: null,
+            secTypes: p.supports.msTypes.map(function (m) {
+                return { label: m.msTypeName, value: m.msType };
+            }),
+        };
+        var isNew = !Boolean(p.primaries.section);
+        var isFiltered = Boolean(p.primaries.manuscript);
+        var parents = {
+            country: p.temps.country || p.primaries.country,
+            library: p.temps.library || p.primaries.library,
+            manuscript: p.temps.manuscript || p.primaries.manuscript
+        };
+        var state = {
+            isNew: isNew,
+            parents: parents,
+            opts: {
+                s: sOpts
+            },
+            val: {
+                countryID: null,
+                libSiglum: null,
+                msSiglum: null,
+                sectionID: null
+            }
+        };
+        if (isNew) {
+            state.possibleParents = {
+                countries: p.primaries.countries,
+                libraries: p.primaries.libraries || null,
+                manuscripts: p.primaries.manuscripts || null
+            };
+            state.snProps = {
+                libSiglum: '',
+                msSiglum: '',
+                sectionID: 0,
+                sectionType: '',
+                liturgicalOccasion: '',
+                notationID: '',
+                numGatherings: 0,
+                numColumns: 0,
+                linesPerColumn: 0,
+                scribe: '',
+                date: '',
+                centuryID: '',
+                cursusID: '',
+                provenanceID: '',
+                provenanceDetail: '',
+                commissioner: '',
+                inscription: '',
+                colophon: '',
+                sourceCompletenessID: ''
+            };
+            var primaryOptions = {
+                countries: state.possibleParents.countries.map(function (c) {
+                    return { label: c.country, value: c.countryID };
+                })
+            };
+            if (isFiltered) {
+                state.snProps.libSiglum = parents.manuscript.libSiglum;
+                state.snProps.msSiglum = parents.manuscript.msSiglum;
+                primaryOptions.libraries = state.possibleParents.libraries.map(function (l) {
+                    return { label: l.library, value: l.libSiglum };
+                });
+                primaryOptions.manuscripts = state.possibleParents.manuscripts.map(function (m) {
+                    return { label: m.msSiglum, value: m.msSiglum };
+                });
+                primaryOptions.country = primaryOptions.countries
+                    .find(function (o) { return state.parents.country.countryID === o.value; });
+                primaryOptions.library = primaryOptions.libraries
+                    .find(function (o) { return state.parents.library.libSiglum === o.value; });
+                primaryOptions.manuscript = primaryOptions.manuscripts
+                    .find(function (o) { return state.parents.manuscript.msSiglum === o.value; });
+            }
+            else {
+                primaryOptions.libraries = null;
+                primaryOptions.manuscripts = null;
+                primaryOptions.country = null;
+                primaryOptions.library = null;
+                primaryOptions.manuscript = null;
+            }
+            state.opts.p = primaryOptions;
+        }
+        else {
+            state.snProps = p.primaries.section.toProperties();
+            state.snProps.sectionType = state.snProps.sectionType || '';
+            state.snProps.liturgicalOccasion = state.snProps.liturgicalOccasion || '';
+            state.snProps.notationID = state.snProps.notationID || '';
+            state.snProps.numGatherings = state.snProps.numGatherings || 0;
+            state.snProps.numColumns = state.snProps.numColumns || 0;
+            state.snProps.linesPerColumn = state.snProps.linesPerColumn || 0;
+            state.snProps.scribe = state.snProps.scribe || '';
+            state.snProps.date = state.snProps.date || '';
+            state.snProps.centuryID = state.snProps.centuryID || '';
+            state.snProps.cursusID = state.snProps.cursusID || '';
+            state.snProps.provenanceID = state.snProps.provenanceID || '';
+            state.snProps.provenanceDetail = state.snProps.provenanceDetail || '';
+            state.snProps.commissioner = state.snProps.commissioner || '';
+            state.snProps.inscription = state.snProps.inscription || '';
+            state.snProps.colophon = state.snProps.colophon || '';
+            state.snProps.sourceCompletenessID = state.snProps.sourceCompletenessID || '';
+            if (state.snProps.centuryID) {
+                state.opts.s.century = state.opts.s.centuries
+                    .find(function (c) { return state.snProps.centuryID === c.value; });
+            }
+            if (state.snProps.cursusID) {
+                state.opts.s.cursus = state.opts.s.cursuses
+                    .find(function (c) { return state.snProps.cursusID === c.value; });
+            }
+            if (state.snProps.provenanceID) {
+                state.opts.s.prov = state.opts.s.provs
+                    .find(function (p) { return state.snProps.provenanceID === p.value; });
+            }
+            if (state.snProps.notationID) {
+                state.opts.s.notation = state.opts.s.notations
+                    .find(function (n) { return state.snProps.notationID === n.value; });
+            }
+            if (state.snProps.sourceCompletenessID) {
+                state.opts.s.srcComp = state.opts.s.srcComps
+                    .find(function (s) { return state.snProps.sourceCompletenessID === s.value; });
+            }
+            if (state.snProps.sectionType) {
+                state.opts.s.secType = state.opts.s.secTypes
+                    .find(function (s) { return state.snProps.sectionType === s.value; });
+            }
+        }
+        _this.state = state;
+        _this.getCountryIDFormGroup = _this.getCountryIDFormGroup.bind(_this);
+        _this.getLibSiglumFormGroup = _this.getLibSiglumFormGroup.bind(_this);
+        _this.getMsSiglumFormGroup = _this.getMsSiglumFormGroup.bind(_this);
+        _this.getSectionIDFormGroup = _this.getSectionIDFormGroup.bind(_this);
+        _this.onCountrySelect = _this.onCountrySelect.bind(_this);
+        _this.onLibrarySelect = _this.onLibrarySelect.bind(_this);
+        _this.onManuscriptSelect = _this.onManuscriptSelect.bind(_this);
+        _this.onSectionTypeSelect = _this.onSectionTypeSelect.bind(_this);
+        _this.onCenturySelect = _this.onCenturySelect.bind(_this);
+        _this.onCursusSelect = _this.onCursusSelect.bind(_this);
+        _this.onProvSelect = _this.onProvSelect.bind(_this);
+        _this.onNotationSelect = _this.onNotationSelect.bind(_this);
+        _this.onSrcCompSelect = _this.onSrcCompSelect.bind(_this);
+        _this.onTextInputChange = _this.onTextInputChange.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
+        return _this;
+    }
+    ManuscriptEditPanel.prototype.render = function () {
+        var x = [];
+        var h = (this.state.isNew
+            ? 'Create a Section'
+            : 'Edit Section #' + this.state.snProps.sectionID + ': '
+                + this.state.snProps.msSiglum + ', ' + this.state.parents.library.library);
+        x.push(React.createElement(Header_tsx_1.default, { min: true, key: "header" }, h));
+        x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+            React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
+        x.push(React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form", onSubmit: this.onSubmit },
+            this.getCountryIDFormGroup(),
+            this.getLibSiglumFormGroup(),
+            this.getMsSiglumFormGroup(),
+            this.getSectionIDFormGroup(),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "sectionType" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Section Type:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_select_1.default, { name: "sectionType", value: this.state.opts.s.secType, options: this.state.opts.s.secTypes, onChange: this.onSectionTypeSelect }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "liturgicalOccasion" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Liturgical Occasion:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { componentClass: "textarea", value: this.state.snProps.liturgicalOccasion, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "notationID" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Notation:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_select_1.default, { name: "notationID", value: this.state.opts.s.notation, options: this.state.opts.s.notations, onChange: this.onNotationSelect }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "numGatherings" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Number of Gatherings:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "number", value: this.state.snProps.numGatherings, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "numColumns" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Number of Columns:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "number", value: this.state.snProps.numColumns, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "linesPerColumn" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Number of Lines per Column:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "number", value: this.state.snProps.linesPerColumn, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "scribe" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Scribe:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.snProps.scribe, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "date" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Date:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.snProps.date, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryID" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Century:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_select_1.default, { name: "centuryID", value: this.state.opts.s.century, options: this.state.opts.s.centuries, onChange: this.onCenturySelect }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "cursusID" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Cursus:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_select_1.default, { name: "cursusID", value: this.state.opts.s.cursus, options: this.state.opts.s.cursuses, onChange: this.onCursusSelect }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "provenanceID" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Provenance:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_select_1.default, { name: "provenanceID", value: this.state.opts.s.prov, options: this.state.opts.s.provs, onChange: this.onProvSelect }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "provenanceDetail" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Provenance Details:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.snProps.provenanceDetail, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "commissioner" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Commissioner:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.snProps.commissioner, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "inscription" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Inscription:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { componentClass: "textarea", value: this.state.snProps.inscription, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "colophon" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Colophon:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { componentClass: "textarea", value: this.state.snProps.colophon, onChange: this.onTextInputChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "sourceCompletenessID" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Source Completeness:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_select_1.default, { name: "sourceCompletenessID", value: this.state.opts.s.srcComp, options: this.state.opts.s.srcComps, onChange: this.onSrcCompSelect }))),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))));
+        return x;
+    };
+    ManuscriptEditPanel.prototype.getCountryIDFormGroup = function () {
+        var label, value;
+        if (this.state.isNew) {
+            label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Country:"));
+            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4 },
+                React.createElement(react_select_1.default, { name: "countryID", value: this.state.opts.p.country, options: this.state.opts.p.countries, className: this.state.val.countryID === null ? '' : 'has-error', onChange: this.onCountrySelect })));
+        }
+        else {
+            label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"));
+            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl27" }, this.state.parents.country.country));
+        }
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID", validationState: this.state.val.countryID },
+            label,
+            value));
+    };
+    ManuscriptEditPanel.prototype.getLibSiglumFormGroup = function () {
+        var label, value;
+        if (this.state.isNew) {
+            label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Library:"));
+            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4 },
+                React.createElement(react_select_1.default, { name: "libSiglum", value: this.state.opts.p.library, options: this.state.opts.p.libraries, className: this.state.val.libSiglum === null ? '' : 'has-error', onChange: this.onLibrarySelect, disabled: !this.state.opts.p.country })));
+        }
+        else {
+            label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library:"));
+            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl27" }, this.state.parents.library.library));
+        }
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "libSiglum", validationState: this.state.val.libSiglum },
+            label,
+            value));
+    };
+    ManuscriptEditPanel.prototype.getMsSiglumFormGroup = function () {
+        var label, value;
+        if (this.state.isNew) {
+            label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Manuscript Siglum:"));
+            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4 },
+                React.createElement(react_select_1.default, { name: "msSiglum", value: this.state.opts.p.manuscript, options: this.state.opts.p.manuscripts, className: this.state.val.msSiglum === null ? '' : 'has-error', onChange: this.onManuscriptSelect, disabled: !this.state.opts.p.library })));
+        }
+        else {
+            label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Manuscript Siglum:"));
+            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl27" }, this.state.snProps.msSiglum));
+        }
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "msSiglum", validationState: this.state.val.countryID },
+            label,
+            value));
+    };
+    ManuscriptEditPanel.prototype.getSectionIDFormGroup = function () {
+        var label, value;
+        if (this.state.isNew) {
+            label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Section ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.snProps.sectionID, onChange: this.onTextInputChange })));
+        }
+        else {
+            label = (React.createElement(react_bootstrap_1.Col, { key: "l", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Section ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { key: "v", sm: 4, className: "pt7 pl27" }, this.state.snProps.sectionID));
+        }
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "sectionID", validationState: this.state.val.sectionID },
+            label,
+            value));
+    };
+    ManuscriptEditPanel.prototype.onCountrySelect = function (o) {
+        var _this = this;
+        var wipeManuscript = function (s) {
+            if (_this.props.primaries.manuscripts !== s.possibleParents.manuscripts) {
+                manuscript_ts_1.Manuscript.destroyArray(s.possibleParents.manuscripts);
+            }
+            s.parents.manuscript = null;
+            s.opts.p.manuscript = null;
+            s.snProps.msSiglum = '';
+        };
+        var wipeLibrary = function (s) {
+            if (_this.props.primaries.libraries !== s.possibleParents.libraries) {
+                library_ts_1.Library.destroyArray(s.possibleParents.libraries);
+            }
+            s.parents.library = null;
+            s.opts.p.library = null;
+            s.snProps.libSiglum = '';
+            wipeManuscript(s);
+        };
+        var wipeCountry = function (s) {
+            s.opts.p.country = null;
+            wipeLibrary(s);
+        };
+        if (o) {
+            this.props.loadLibraries(o.value, function (libraries) {
+                _this.setState(function (s) {
+                    wipeLibrary(s);
+                    s.possibleParents.libraries = libraries;
+                    s.opts.p.libraries = libraries.map(function (l) {
+                        return { label: l.library, value: l.libSiglum };
+                    });
+                    return s;
+                });
+            });
+            this.setState(function (s) {
+                s.opts.p.country = o;
+                s.parents.country = s.possibleParents.countries.find(function (c) { return o.value === c.countryID; });
+                return s;
+            });
+        }
+        else {
+            this.setState(function (s) {
+                wipeCountry(s);
+                return s;
+            });
+        }
+    };
+    ManuscriptEditPanel.prototype.onLibrarySelect = function (o) {
+        var _this = this;
+        var wipeManuscript = function (s) {
+            if (_this.props.primaries.manuscripts !== s.possibleParents.manuscripts) {
+                manuscript_ts_1.Manuscript.destroyArray(s.possibleParents.manuscripts);
+            }
+            s.parents.manuscript = null;
+            s.opts.p.manuscript = null;
+            s.snProps.msSiglum = '';
+        };
+        var wipeLibrary = function (s) {
+            s.parents.library = null;
+            s.opts.p.library = null;
+            s.snProps.libSiglum = '';
+            wipeManuscript(s);
+        };
+        this.setState(function (s) {
+            s.opts.p.library = o;
+            s.parents.library = s.possibleParents.libraries.find(function (l) { return o.value === l.libSiglum; });
+            return s;
+        });
+        if (o) {
+            this.props.loadManuscripts(o.value, function (manuscripts) {
+                _this.setState(function (s) {
+                    wipeManuscript(s);
+                    s.possibleParents.manuscripts = manuscripts;
+                    s.opts.p.manuscripts = manuscripts.map(function (m) {
+                        return { label: m.msSiglum, value: m.msSiglum };
+                    });
+                });
+            });
+            this.setState(function (s) {
+                s.opts.p.library = o;
+                s.parents.library = s.possibleParents.libraries.find(function (l) { return o.value === l.libSiglum; });
+                s.snProps.libSiglum = s.parents.library.libSiglum;
+            });
+        }
+        else {
+            this.setState(function (s) {
+                wipeLibrary(s);
+            });
+        }
+    };
+    ManuscriptEditPanel.prototype.onManuscriptSelect = function (o) {
+        var wipeManuscript = function (s) {
+            s.parents.manuscript = null;
+            s.opts.p.manuscript = null;
+            s.snProps.msSiglum = '';
+        };
+        this.setState(function (s) {
+            wipeManuscript(s);
+            if (o) {
+                s.opts.p.manuscript = o;
+                s.snProps.manuscript = o.value;
+            }
+            return s;
+        });
+    };
+    ManuscriptEditPanel.prototype.onSectionTypeSelect = function (o) {
+        this.setState(function (s) {
+            s.opts.s.secType = o;
+            s.snProps.sectionType = o ? o.value : '';
+            return s;
+        });
+    };
+    ManuscriptEditPanel.prototype.onCenturySelect = function (o) {
+        this.setState(function (s) {
+            s.opts.s.century = o;
+            s.snProps.centuryID = o ? o.value : '';
+            return s;
+        });
+    };
+    ManuscriptEditPanel.prototype.onCursusSelect = function (o) {
+        this.setState(function (s) {
+            s.opts.s.cursus = o;
+            s.snProps.cursusID = o ? o.value : '';
+            return s;
+        });
+    };
+    ManuscriptEditPanel.prototype.onSrcCompSelect = function (o) {
+        this.setState(function (s) {
+            s.opts.s.srcComp = o;
+            s.snProps.sourceCompletenessID = o ? o.value : '';
+            return s;
+        });
+    };
+    ManuscriptEditPanel.prototype.onProvSelect = function (o) {
+        this.setState(function (s) {
+            s.opts.s.prov = o;
+            s.snProps.provenanceID = o ? o.value : '';
+            return s;
+        });
+    };
+    ManuscriptEditPanel.prototype.onNotationSelect = function (o) {
+        this.setState(function (s) {
+            s.opts.s.notation = o;
+            s.snProps.notationID = o ? o.value : '';
+            return s;
+        });
+    };
+    ManuscriptEditPanel.prototype.onTextInputChange = function (e) {
+        var target = e.target;
+        var k = target.id;
+        var v = target.value;
+        this.setState(function (s) {
+            s.snProps[k] = v;
+            return s;
+        });
+    };
+    ManuscriptEditPanel.prototype.onSubmit = function (e) {
+        e.preventDefault();
+        if (this.state.isNew) {
+            var val = {
+                countryID: this.state.opts.p.country ? null : 'error',
+                libSiglum: this.state.snProps.libSiglum ? null : 'error',
+                msSiglum: this.state.snProps.msSiglum ? null : 'error',
+                sectionID: this.state.snProps.sectionID ? null : 'error'
+            };
+            for (var k in val) {
+                if (val[k] !== null) {
+                    return this.setState(function (s) {
+                        s.val = val;
+                        return s;
+                    });
+                }
+            }
+        }
+        var snProps = this.state.snProps;
+        var isNew = this.state.isNew;
+        if (typeof snProps.numGatherings === 'string') {
+            snProps.leaves = Number.parseInt(snProps.numGatherings);
+        }
+        if (typeof snProps.numColumns === 'string') {
+            snProps.leaves = Number.parseInt(snProps.numColumns);
+        }
+        if (typeof snProps.linesPerColumn === 'string') {
+            snProps.leaves = Number.parseInt(snProps.linesPerColumn);
+        }
+        this.props.onSubmit(snProps, isNew);
+    };
+    return ManuscriptEditPanel;
+}(React.Component));
+exports.default = ManuscriptEditPanel;
 
 
 /***/ }),
@@ -39759,7 +40483,7 @@ var SectionFilterPanel = (function (_super) {
     SectionFilterPanel.prototype.onLibrarySelect = function (o) {
         var _this = this;
         if (o) {
-            ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(null, o.value, function (ms, e) {
+            ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(o.value, function (ms, e) {
                 if (e) {
                     return alert(e);
                 }
@@ -39921,14 +40645,9 @@ var SectionTablePanel = (function (_super) {
         return _this;
     }
     SectionTablePanel.prototype.getHeader = function () {
-        var h = 'Section';
+        var h = 'Sections';
         if (this.props.manuscript) {
-            if (this.props.library) {
-                h += ' - ' + this.props.library.library + ' ' + this.props.manuscript.msSiglum;
-            }
-            else {
-                h += ' - ' + this.props.manuscript.msSiglum;
-            }
+            h += ': ' + this.props.manuscript.msSiglum + ', ' + this.props.library.library;
         }
         return h;
     };
@@ -40561,15 +41280,14 @@ var Section = (function (_super) {
     function Section(props) {
         var _this = _super.call(this) || this;
         for (var k in props) {
-            if (k === 'libSiglum' || k === 'msSiglum' || k === 'notationID' || k === 'centuryID' ||
-                k === 'cursusID' || k === 'provenanceID' || k === 'sourceCompletenessID') {
+            if (k === 'libSiglum' || k === 'msSiglum' || k === 'secionID') {
                 if (!(props && props[k].length)) {
                     throw Error(k + ' cannot be empty.');
                 }
                 _this[k] = props[k];
             }
             else {
-                _this[k] = props[k] || null;
+                _this[k] = props[k];
             }
         }
         return _this;
@@ -40817,10 +41535,23 @@ var ManuScriptProxy = (function (_super) {
     function ManuScriptProxy() {
         return _super.call(this, 'manuscript') || this;
     }
-    ManuScriptProxy.prototype.getManuscripts = function (countryID, libSiglum, callback) {
+    ManuScriptProxy.prototype.getManuscript = function (libSiglum, msSiglum, callback) {
+        var params = {
+            action: 'GetManuscript',
+            libSiglum: libSiglum,
+            msSiglum: msSiglum
+        };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, res.err);
+            }
+            callback(new ms.Manuscript(d), null);
+        });
+    };
+    ManuScriptProxy.prototype.getManuscripts = function (libSiglum, callback) {
         var params = {
             action: 'GetManuscripts',
-            countryID: countryID,
             libSiglum: libSiglum
         };
         _super.prototype.doPost.call(this, params, function (res) {

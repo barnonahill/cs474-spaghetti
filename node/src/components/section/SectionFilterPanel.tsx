@@ -205,7 +205,7 @@ export default class SectionFilterPanel extends React.Component<P,S> {
 
 	onLibrarySelect(o:Option) {
 		if (o) {
-			proxyFactory.getManuscriptProxy().getManuscripts(null, o.value as string, (ms, e?) => {
+			proxyFactory.getManuscriptProxy().getManuscripts(o.value as string, (ms, e?) => {
 				if (e) {
 					return alert(e);
 				}

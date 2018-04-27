@@ -56,14 +56,9 @@ export default class SectionTablePanel extends React.Component<P,S> {
 	}
 
 	getHeader() {
-		var h = 'Section';
+		var h = 'Sections';
 		if (this.props.manuscript) {
-			if (this.props.library) {
-				h += ' - ' + this.props.library.library + ' ' + this.props.manuscript.msSiglum;
-			}
-			else {
-				h += ' - ' + this.props.manuscript.msSiglum;
-			}
+			h += ': ' + this.props.manuscript.msSiglum + ', ' + this.props.library.library;
 		}
 		return h;
 	}

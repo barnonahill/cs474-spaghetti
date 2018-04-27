@@ -46,7 +46,7 @@ export interface Properties {
  */
 export class Section extends SpgModel implements Properties {
 	public libSiglum: string;
-	public msSiglum: string;
+	public readonly msSiglum: string;
 	public readonly sectionID: number;
 	public sectionType: string;
 	public liturgicalOccasion: string;
@@ -69,8 +69,7 @@ export class Section extends SpgModel implements Properties {
 	constructor(props: Properties) {
 		super();
 		for (let k in props) {
-			if (k === 'libSiglum' || k === 'msSiglum' || k === 'notationID' || k === 'centuryID' ||
-				k === 'cursusID' || k === 'provenanceID' || k === 'sourceCompletenessID')
+			if (k === 'libSiglum' || k === 'msSiglum' || k === 'secionID')
 			{
 				if (!(props && props[k].length)) {
 					throw Error(k + ' cannot be empty.');
@@ -78,7 +77,7 @@ export class Section extends SpgModel implements Properties {
 				this[k] = props[k];
 			}
 			else {
-				this[k] = props[k] || null;
+				this[k] = props[k];
 			}
 		}
 	}

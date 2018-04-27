@@ -23,10 +23,9 @@ export default class ManuScriptProxy extends SpgProxy {
 		})
 	}
 
-	getManuscripts(countryID:string, libSiglum:string, callback: (manuscripts: Array<ms.Manuscript>, err?: string) => void) {
+	getManuscripts(libSiglum:string, callback: (manuscripts: Array<ms.Manuscript>, err?: string) => void) {
 		var params:any = {
 			action: 'GetManuscripts',
-			countryID: countryID,
 			libSiglum: libSiglum
 		};
 

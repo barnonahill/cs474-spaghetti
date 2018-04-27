@@ -14,22 +14,57 @@ import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
 import { Manuscript } from '@src/models/manuscript.ts';
 import { MsType } from '@src/models/msType.ts';
+import
+	SectionApp,
+	{ Panel as StnPanelEnum }
+from '@src/components/section/SectionApp.tsx';
+
+enum Panel {
+	ENT=0,
+	STN=1
+}
 
 interface P {
+	// Needed if we're opening sections
+	countries: Country[]
+	libraries: Library[] // if we don't have these SectionApp will get them.
+	manuscripts: Manuscript[]
+	msTypes: MsType[]
+
 	country: Country
 	library: Library
 	manuscript: Manuscript
 	msType: MsType
 	onBack: () => void
 }
-interface S {}
+interface S {
+	panel: Panel
+}
 
 export default class ManuscriptEntityPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
+
+		this.state = {
+			panel: Panel.ENT
+		};
+
+		this.renderEntity = this.renderEntity.bind(this);
+		this.renderSectionTable = this.renderSectionTable.bind(this);
 	}
 
 	render() {
+		switch (this.state.panel) {
+			default:
+			case Panel.ENT:
+				return this.renderEntity();
+
+			case Panel.STN:
+				return this.renderSectionTable();
+		}
+	}
+
+	renderEntity() {
 		return [
 			(<Header key="header" min>
 				Manuscripts - {this.props.library.libSiglum + ' ' + this.props.manuscript.msSiglum}
@@ -39,6 +74,11 @@ export default class ManuscriptEntityPanel extends React.Component<P,S> {
 					bsStyle="default"
 					onClick={this.props.onBack}
 				>Back</Button>
+				<Button
+					bsStyle="info"
+					className="fr"
+					onClick={() => this.changePanel(Panel.STN)}
+				>Sections</Button>
 			</PanelMenu>),
 
 			(<Form horizontal key="form">
@@ -140,5 +180,28 @@ export default class ManuscriptEntityPanel extends React.Component<P,S> {
 				</FormGroup>
 			</Form>)
 		];
+	}
+
+	renderSectionTable() {
+		return (<SectionApp
+			countries={this.props.countries}
+			onBack={() => this.changePanel(Panel.ENT)}
+
+			sideloads = {{
+				country: this.props.country,
+				library: this.props.library,
+				manuscript: this.props.manuscript,
+				libraries: this.props.libraries,
+				manuscripts: this.props.manuscripts.filter(m => m.libSiglum === this.props.library.libSiglum),
+				msTypes: this.props.msTypes
+			}}
+		/>);
+	}
+
+	changePanel(p:Panel) {
+		this.setState((s:S) => {
+			s.panel = p;
+			return s;
+		});
 	}
 }

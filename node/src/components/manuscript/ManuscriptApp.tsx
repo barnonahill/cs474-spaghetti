@@ -94,7 +94,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 				state.panel = Panel.LOADER;
 				state.loadMessage = 'Loading Manuscripts...';
 
-				this.loadManuscripts(this.props.country.countryID, this.props.library.libSiglum, false,
+				this.loadManuscripts(this.props.library.libSiglum, false,
 						(s:S, manuscripts:ms.Manuscript[]) =>
 				{
 					ms.Manuscript.destroyArray(s.manuscripts);
@@ -149,9 +149,17 @@ export default class ManuscriptApp extends React.Component<P,S> {
 
 			case Panel.ENTITY:
 				return (<EntityPanel
+					// Needed if EntityPanel opens SectionApp
+					countries={this.props.countries}
+					libraries={this.state.libraries}
+					manuscripts={this.state.manuscripts}
+					msTypes={this.state.msTypes}
+
+					// Needed for Entity view
 					country={this.state.country}
 					library={this.state.library}
 					manuscript={this.state.manuscript}
+
 					msType={this.state.msType}
 					onBack={this.onEntityBack}
 				/>);
@@ -215,7 +223,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 		var countryID = c.countryID;
 		var libSiglum = l ? l.libSiglum : null;
 
-		this.loadManuscripts(countryID, libSiglum, false, (s:S, manuscripts: Array<ms.Manuscript>) => {
+		this.loadManuscripts(libSiglum, false, (s:S, manuscripts: Array<ms.Manuscript>) => {
 			s.panel = Panel.TABLE;
 
 			ms.Manuscript.destroyArray(s.manuscripts);
@@ -244,7 +252,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					s.loadMessage = "Loading Manuscripts...";
 				});
 
-				this.loadManuscripts(null, null, false, (s:S, manuscripts:Array<ms.Manuscript>) => {
+				this.loadManuscripts(null, false, (s:S, manuscripts:Array<ms.Manuscript>) => {
 					s.panel = p;
 					Library.destroyArray(s.libraries);
 					ms.Manuscript.destroyArray(s.manuscripts);
@@ -377,15 +385,14 @@ export default class ManuscriptApp extends React.Component<P,S> {
 		});
 	}
 
-	loadManuscripts(countryID:string, libSiglum:string, useState:boolean,
+	loadManuscripts(libSiglum:string, useState:boolean,
 		stateSetter?: (s:S, m:Array<ms.Manuscript>) => S)
 	{
 		if (useState) {
-			countryID = this.state.country ? this.state.country.countryID : null;
 			libSiglum = this.state.library ? this.state.library.libSiglum : null
 		}
 
-		proxyFactory.getManuscriptProxy().getManuscripts(countryID, libSiglum,
+		proxyFactory.getManuscriptProxy().getManuscripts(libSiglum,
 			(manuscripts: Array<ms.Manuscript>, e?:string) =>
 		{
 			if (e) {
@@ -434,7 +441,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 			return s;
 		});
 
-		this.loadManuscripts(null, null, true, (state:S, manuscripts:ms.Manuscript[]) => {
+		this.loadManuscripts(null, true, (state:S, manuscripts:ms.Manuscript[]) => {
 			ms.Manuscript.destroyArray(state.manuscripts);
 
 			state.panel = Panel.TABLE;

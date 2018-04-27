@@ -170,16 +170,16 @@ public class SectionController {
 		Section s;
 		ArrayList<Section> sections= new ArrayList<Section>();
 
-		//
-		if(libSiglum != null) {
+		
+		// What heathen doesn't put spaces after his ifs - Paul
+		if (libSiglum != null) {
 			namesToValues = new HashMap<String, String>();
 			namesToValues.put("libSiglum", libSiglum);
 		}
-		if(msSiglum != null) {
+		if (msSiglum != null) {
 			namesToValues = new HashMap<String, String>();
 			namesToValues.put("msSiglum", msSiglum);
 		}
-		//@Paul, I thought we went over this. since countryID is in libSiglum we don't need it. we just need libSiglum.
 		
 		query = SpgController.buildSelectQuery(SECTION, namesToValues);
 		

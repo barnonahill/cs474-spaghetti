@@ -184,7 +184,7 @@ export default class LibraryEntityPanel extends React.Component<P,S> {
 
 	loadManuscripts(callback?: (s:S) => S) {
 		proxyFactory.getManuscriptProxy()
-			.getManuscripts(this.props.country.countryID, this.props.library.libSiglum, (m, e?) =>
+			.getManuscripts(this.props.library.libSiglum, (m, e?) =>
 		{
 			if (e) {
 				alert(e);
