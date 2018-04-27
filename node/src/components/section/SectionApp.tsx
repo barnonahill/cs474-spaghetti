@@ -6,6 +6,7 @@ import InitPanel from '@src/components/section/SectionInitPanel.tsx';
 import FilterPanel from '@src/components/section/SectionFilterPanel.tsx';
 import TablePanel from '@src/components/section/SectionTablePanel.tsx';
 import EditPanel from '@src/components/section/SectionEditPanel.tsx';
+import EntityPanel from '@src/components/section/SectionEntityPanel.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
@@ -150,8 +151,9 @@ export default class SectionApp extends React.Component<P,S> {
 	componentDidMount() {
 		if (this.props.sideloads) {
 			// Sideload from ManuscriptEntityPanel
+			console.log('');
 			var finishLoad = (libraries:Library[], sections:sn.Section[]) => {
-				this.loadSupports(true, (s:S) => {
+				this.loadSupports((s:S) => {
 					s.primaries.libraries = libraries;
 					s.primaries.manuscripts = side.manuscripts;
 					s.primaries.sections = sections;
@@ -183,7 +185,7 @@ export default class SectionApp extends React.Component<P,S> {
 
 		else {
 			// Normal load
-			this.loadSupports(true, (s:S) => {
+			this.loadSupports((s:S) => {
 				s.panel = Panel.INIT;
 				return s;
 			});
@@ -191,6 +193,9 @@ export default class SectionApp extends React.Component<P,S> {
 		// Load all support entities upon mount
 	}
 
+	/**
+	 * Destroys all the Cantus data that was loaded in the Section App, before it's unmounted.
+	 */
 	componentWillUnmount() {
 		var k:string;
 		// Make sure there's no memory leakage.
@@ -240,9 +245,9 @@ export default class SectionApp extends React.Component<P,S> {
 
 			case Panel.EDIT:
 			 	return this.renderEdit();
-			//
-			// case Panel.ENTITY:
-			// 	return this.renderEntity();
+
+			case Panel.ENTITY:
+				return this.renderEntity();
 
 			case Panel.FILTER:
 				return this.renderFilter();
@@ -257,6 +262,10 @@ export default class SectionApp extends React.Component<P,S> {
 
 	/* Panel JSX getters */
 
+	/**
+	 * Gets the initial view of the Section App, asking the user if they want to filter by country,
+	 * library, and manuscript, or load all the sections in Cantus.
+	 */
 	renderInit() {
 		return (<InitPanel
 			onBack={this.props.onBack}
@@ -264,6 +273,9 @@ export default class SectionApp extends React.Component<P,S> {
 		/>);
 	}
 
+	/**
+	 * Gets the edit screen to create a new Section or edit an existing one.
+	 */
 	renderEdit() {
 		var isNew = Boolean();
 
@@ -281,8 +293,59 @@ export default class SectionApp extends React.Component<P,S> {
 		/>)
 	}
 
-	renderEntity() {}
+	/**
+	 * Gets the entity view of a Section.
+	 */
+	renderEntity() {
+		// interface P {
+		// 	entities: {
+		// 		country: Country
+		// 		library: Library
+		// 		manuscript: Manuscript
+		// 		section: Section
+		//
+		// 		century?: Century
+		// 		cursus?: Cursus
+		// 		provenance?: Provenance
+		// 		notation?: Notation
+		// 		sectionType?: MsType
+		// 		sourceComp: SourceCompleteness
+		// 	}
+		//
+		// 	onBack: () => void
+		// }
+		return (<EntityPanel
+		 	onBack={() => this.changePanel(Panel.TABLE)}
+			entities = {{
+				country: this.state.temps.country || this.state.primaries.country,
+				library: this.state.temps.library || this.state.primaries.library,
+				manuscript: this.state.temps.manuscript || this.state.primaries.manuscript,
+				section: this.state.primaries.section,
 
+				century: this.state.supports.centuries
+					.find(c => this.state.primaries.section.centuryID === c.centuryID),
+
+				cursus: this.state.supports.cursuses
+					.find(c => this.state.primaries.section.cursusID === c.cursusID),
+
+				provenance: this.state.supports.provs
+					.find(p => this.state.primaries.section.provenanceID === p.provenanceID),
+
+				notation: this.state.supports.notations
+					.find(n => this.state.primaries.section.notationID === n.notationID),
+
+				sectionType: this.state.supports.msTypes
+					.find(mt => this.state.primaries.section.sectionType === mt.msType),
+
+				sourceComp: this.state.supports.srcComps
+					.find(sc => this.state.primaries.section.sourceCompletenessID === sc.sourceCompletenessID)
+			}}
+		/>);
+	}
+
+	/**
+	 * Gets the view for the user to select filtering entities.
+	 */
 	renderFilter() {
 		return (<FilterPanel
 			countries={this.props.countries}
@@ -291,6 +354,10 @@ export default class SectionApp extends React.Component<P,S> {
 		/>);
 	}
 
+	/**
+	 * Gets the table showing the loaded Sections, with CRUD and refresh options.
+	 * @return {[type]}
+	 */
 	renderTable() {
 		return (<TablePanel
 			library={this.state.primaries.library}
@@ -307,12 +374,18 @@ export default class SectionApp extends React.Component<P,S> {
 		/>);
 	}
 
+	/**
+	 * Gets the loading screen.
+	 */
 	renderLoader() {
 		return <PageLoader inner={this.state.loadMessage} />;
 	}
 
 	/* Support loaders */
 
+	/**
+	 * Loads the centuries from Cantus.
+	 */
 	loadCenturies(callback: (a:Century[]) => void) {
 		this.setLoader('Loading Centuries...');
 		proxyFactory.getSectionProxy().getCenturies((a, e?) => {
@@ -323,6 +396,9 @@ export default class SectionApp extends React.Component<P,S> {
 		});
 	}
 
+	/**
+	 * Loads the cursuses from Cantus.
+	 */
 	loadCursuses(callback: (a:Cursus[]) => void) {
 		this.setLoader('Loading Cursuses...');
 		proxyFactory.getSectionProxy().getCursuses((a, e?) => {
@@ -333,6 +409,9 @@ export default class SectionApp extends React.Component<P,S> {
 		});
 	}
 
+	/**
+	 * Loads the Source Completeness from Cantus.
+	 */
 	loadSrcComps(callback: (a:SourceCompleteness[]) => void) {
 		this.setLoader('Loading Source Completenesses...');
 		proxyFactory.getSectionProxy().getSourceCompletenesses((a, e?) => {
@@ -343,6 +422,9 @@ export default class SectionApp extends React.Component<P,S> {
 		});
 	}
 
+	/**
+	 * Loads the Provenances from Cantus.
+	 */
 	loadProvenances(callback: (a:Provenance[]) => void) {
 		this.setLoader('Loading Provenances...');
 		proxyFactory.getSectionProxy().getProvenances((a, e?) => {
@@ -353,6 +435,9 @@ export default class SectionApp extends React.Component<P,S> {
 		})
 	}
 
+	/**
+	 * Loads the Notations from Cantus.
+	 */
 	loadNotations(callback: (a:Notation[]) => void) {
 		this.setLoader('Loading Notations...');
 		proxyFactory.getSectionProxy().getNotations((a, e?) => {
@@ -363,6 +448,9 @@ export default class SectionApp extends React.Component<P,S> {
 		})
 	}
 
+	/**
+	 * Loads the Section Types (Manuscript Types) from Cantus.
+	 */
 	loadMsTypes(callback: (a:MsType[]) => void) {
 		this.setLoader('Loading Manuscript Types...');
 		proxyFactory.getManuscriptProxy().getMsTypes((a, e?) => {
@@ -373,7 +461,11 @@ export default class SectionApp extends React.Component<P,S> {
 		})
 	}
 
-	loadSupports(setSt:boolean, callback: (s:S) => S): void
+	/**
+	 * Loads all the supporting entities of a Section, sets them in state,
+	 * and takes a callback to finish setting state.
+	 */
+	loadSupports(callback: (s:S) => S): void
 	{
 		var stateSetter = (centuries:Century[], cursuses: Cursus[], srcComps: SourceCompleteness[],
 			provs: Provenance[], notations: Notation[], msTypes: MsType[], callback: (s:S) => S) =>
@@ -425,6 +517,9 @@ export default class SectionApp extends React.Component<P,S> {
 
 	/* Primary loaders */
 
+	/**
+	 * Loads the Sections from Cantus, with optionals libSiglum and msSiglum.
+	 */
 	loadSections(libSiglum:string, msSiglum:string, callback:(a: sn.Section[]) => void) {
 		proxyFactory.getSectionProxy().getSections(libSiglum, msSiglum, (a, e?) => {
 			if (e) {
@@ -434,6 +529,9 @@ export default class SectionApp extends React.Component<P,S> {
 		});
 	}
 
+	/**
+	 * Loads the Libraries from Cantus, with a countryID.
+	 */
 	loadLibraries(countryID:string, callback: (a: Library[]) => void) {
 		proxyFactory.getLibraryProxy().getLibraries(countryID, (a, e?) => {
 			if (e) {
@@ -443,6 +541,9 @@ export default class SectionApp extends React.Component<P,S> {
 		});
 	}
 
+	/**
+	 * Loads the Manuscripts from Cantus, with an optional libSiglum.
+	 */
 	loadManuscripts(libSiglum: string, callback: (a: Manuscript[]) => void) {
 		proxyFactory.getManuscriptProxy().getManuscripts(libSiglum, (a, e?) => {
 			if (e) {
@@ -454,6 +555,9 @@ export default class SectionApp extends React.Component<P,S> {
 
 	/* Temp loaders */
 
+	/**
+	 * Loads an individual Library from Cantus, with its libSiglum.
+	 */
 	loadLibrary(libSiglum:string, callback: (l:Library) => void) {
 		proxyFactory.getLibraryProxy().getLibrary(libSiglum, (l, e?) => {
 			if (e) {
@@ -463,6 +567,9 @@ export default class SectionApp extends React.Component<P,S> {
 		});
 	}
 
+	/**
+	 * Loads an individual Library from Cantus, with its libSiglum and msSiglum.
+	 */
 	loadManuscript(libSiglum:string, msSiglum:string, callback:(m:Manuscript) => void) {
 		proxyFactory.getManuscriptProxy().getManuscript(libSiglum, msSiglum, (m, e?) => {
 			if (e) {
@@ -472,30 +579,45 @@ export default class SectionApp extends React.Component<P,S> {
 		});
 	}
 
-	changePanel(p:Panel, callback?: (s:S) => S) {
-		this.setState((s:S) => {
+	/**
+	 * Changes the current panel of the Section App.
+	 */
+	changePanel(p:Panel, callback?: (s:S) => S, s?:S) {
+		if (s) {
 			s.panel = p;
-
-			if (callback) return callback(s);
-			else return s;
-		})
+		}
+		else {
+			this.setState((s:S) => {
+				s.panel = p;
+				if (callback) return callback(s);
+				else return s;
+			});
+		}
 	}
 
-	setLoader(msg:string) {
-		this.setState((s:S) => {
-			s.panel = Panel.LOADER;
+	setLoader(msg:string, callback?: (s:S) => S, s?:S) {
+		if (s) {
+			this.changePanel(Panel.LOADER);
 			s.loadMessage = msg;
-			return s;
-		});
+		}
+		else {
+			this.setState((s:S) => {
+				this.changePanel(Panel.LOADER, null, s);
+				s.loadMessage = msg;
+				if (callback) return callback(s);
+				return s;
+			});
+		}
 	}
 
 	onInitSubmit(p:Panel) {
 		if (p === Panel.TABLE) {
 			this.setLoader('Loading Sections...');
-			this.loadSections(null, null, ss => {
+			this.loadSections(null, null, sections => {
 				this.setState((s:S) => {
-					s.primaries.sections = ss;
-					s.panel = p;
+					sn.Section.destroyArray(s.primaries.sections);
+					s.primaries.sections = sections;
+					this.changePanel(p, null, s);
 					return s;
 				});
 			});
@@ -524,7 +646,7 @@ export default class SectionApp extends React.Component<P,S> {
 				s.primaries.manuscript = m;
 				s.primaries.sections = ss;
 
-				s.panel = Panel.TABLE;
+				this.changePanel(Panel.TABLE, null, s);
 				return s;
 			});
 		});
@@ -554,7 +676,7 @@ export default class SectionApp extends React.Component<P,S> {
 					s.primaries.sections = sections;
 
 					// Return to the table panel when finished.
-					s.panel = Panel.TABLE;
+					this.changePanel(Panel.TABLE, null, s);
 					return s;
 				});
 			});
@@ -621,7 +743,7 @@ export default class SectionApp extends React.Component<P,S> {
 
 	openEntity(stn:sn.Section) {
 		this.loadTemps(stn, s => {
-			s.panel = Panel.ENTITY;
+			this.changePanel(Panel.ENTITY, null, s);
 			return s;
 		});
 	}

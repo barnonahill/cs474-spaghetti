@@ -78,7 +78,7 @@ export default class ManuscriptEntityPanel extends React.Component<P,S> {
 					bsStyle="info"
 					className="fr"
 					onClick={() => this.changePanel(Panel.STN)}
-				>Sections</Button>
+				>View Sections</Button>
 			</PanelMenu>),
 
 			(<Form horizontal key="form">

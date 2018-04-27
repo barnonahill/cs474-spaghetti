@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServlet;
  */
 
 public abstract class SpgController extends HttpServlet {
+	private Connection connection;
 	public static Properties p = null;
 	public static final String DATABASE_ADDR = 
 			//"jdbc:mysql://mysql.cs.jmu.edu/BarnhillButtsClermontTran_Manuscript";
@@ -22,6 +23,10 @@ public abstract class SpgController extends HttpServlet {
 	public static final String USER = "root";
 	//public static final String DB_PASS = "cs474";	
 	
+	public SpgController() {
+		SpgController.initProperties();
+	}
+	
 	/**
 	 * getResultSet - for SELECT.
 	 * makes a connection to the database and returns whatever the query that was received outputs.
@@ -29,7 +34,7 @@ public abstract class SpgController extends HttpServlet {
 	 * @return - the resultSet of the sql command.
 	 * @throws Exception - if it cant connect to the server.
 	 */
-	static final ResultSet getResultSet(String queryString) throws Exception {
+	final ResultSet getResultSet(String queryString) throws Exception {
 		Connection connection;
 		Statement statement;
 		ResultSet resultSet;
@@ -55,6 +60,10 @@ public abstract class SpgController extends HttpServlet {
 		}
 	}
 	
+	protected Connection getConnection() {
+		return DriverManager.getConnection(DATABASE_ADDR, p);
+	}
+	
 	/**
 	 * executeSQL - for CREATE, UPDATE, DELETE.
 	 * same as getResultSet but for ^.
@@ -72,6 +81,7 @@ public abstract class SpgController extends HttpServlet {
 			connection = DriverManager.getConnection(DATABASE_ADDR, p);
 			statement = connection.createStatement();
 			rows = statement.executeUpdate(queryString);
+			connection.close();
 			return rows; 
 		} catch (Exception e) {
 	        e.printStackTrace();

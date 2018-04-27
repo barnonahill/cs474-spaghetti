@@ -37575,11 +37575,11 @@ var LibraryEntityPanel = (function (_super) {
         x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
             React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
             React.createElement("a", { href: this.state.google, target: "_blank", className: "ml15" },
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "info" }, "Google Maps")),
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "primary" }, "Google Maps")),
             React.createElement(react_bootstrap_1.Button, { bsStyle: "info", className: "fr", onClick: function () { return _this.setState(function (s) {
                     s.panel = Panel.MS;
                     return s;
-                }); } }, "Manuscripts")));
+                }); } }, "View Manuscripts")));
         x.push(React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:"),
@@ -38547,7 +38547,7 @@ var ManuscriptEntityPanel = (function (_super) {
                 this.props.library.libSiglum + ' ' + this.props.manuscript.msSiglum)),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
                 React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "info", className: "fr", onClick: function () { return _this.changePanel(Panel.STN); } }, "Sections"))),
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "info", className: "fr", onClick: function () { return _this.changePanel(Panel.STN); } }, "View Sections"))),
             (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
                 React.createElement(react_bootstrap_1.FormGroup, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
@@ -39325,6 +39325,7 @@ var SectionInitPanel_tsx_1 = __webpack_require__(/*! @src/components/section/Sec
 var SectionFilterPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionFilterPanel.tsx */ "./src/components/section/SectionFilterPanel.tsx");
 var SectionTablePanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionTablePanel.tsx */ "./src/components/section/SectionTablePanel.tsx");
 var SectionEditPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionEditPanel.tsx */ "./src/components/section/SectionEditPanel.tsx");
+var SectionEntityPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionEntityPanel.tsx */ "./src/components/section/SectionEntityPanel.tsx");
 var country_ts_1 = __webpack_require__(/*! @src/models/country.ts */ "./src/models/country.ts");
 var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
@@ -39395,8 +39396,9 @@ var SectionApp = (function (_super) {
     SectionApp.prototype.componentDidMount = function () {
         var _this = this;
         if (this.props.sideloads) {
+            console.log('');
             var finishLoad = function (libraries, sections) {
-                _this.loadSupports(true, function (s) {
+                _this.loadSupports(function (s) {
                     s.primaries.libraries = libraries;
                     s.primaries.manuscripts = side.manuscripts;
                     s.primaries.sections = sections;
@@ -39422,7 +39424,7 @@ var SectionApp = (function (_super) {
             });
         }
         else {
-            this.loadSupports(true, function (s) {
+            this.loadSupports(function (s) {
                 s.panel = Panel.INIT;
                 return s;
             });
@@ -39471,6 +39473,8 @@ var SectionApp = (function (_super) {
                 return this.renderInit();
             case Panel.EDIT:
                 return this.renderEdit();
+            case Panel.ENTITY:
+                return this.renderEntity();
             case Panel.FILTER:
                 return this.renderFilter();
             case Panel.TABLE:
@@ -39490,7 +39494,27 @@ var SectionApp = (function (_super) {
                 _this.changePanel(Panel.TABLE);
             }, onSubmit: this.saveSection }));
     };
-    SectionApp.prototype.renderEntity = function () { };
+    SectionApp.prototype.renderEntity = function () {
+        var _this = this;
+        return (React.createElement(SectionEntityPanel_tsx_1.default, { onBack: function () { return _this.changePanel(Panel.TABLE); }, entities: {
+                country: this.state.temps.country || this.state.primaries.country,
+                library: this.state.temps.library || this.state.primaries.library,
+                manuscript: this.state.temps.manuscript || this.state.primaries.manuscript,
+                section: this.state.primaries.section,
+                century: this.state.supports.centuries
+                    .find(function (c) { return _this.state.primaries.section.centuryID === c.centuryID; }),
+                cursus: this.state.supports.cursuses
+                    .find(function (c) { return _this.state.primaries.section.cursusID === c.cursusID; }),
+                provenance: this.state.supports.provs
+                    .find(function (p) { return _this.state.primaries.section.provenanceID === p.provenanceID; }),
+                notation: this.state.supports.notations
+                    .find(function (n) { return _this.state.primaries.section.notationID === n.notationID; }),
+                sectionType: this.state.supports.msTypes
+                    .find(function (mt) { return _this.state.primaries.section.sectionType === mt.msType; }),
+                sourceComp: this.state.supports.srcComps
+                    .find(function (sc) { return _this.state.primaries.section.sourceCompletenessID === sc.sourceCompletenessID; })
+            } }));
+    };
     SectionApp.prototype.renderFilter = function () {
         var _this = this;
         return (React.createElement(SectionFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.changePanel(Panel.INIT); }, onSubmit: this.onFilterSubmit }));
@@ -39558,7 +39582,7 @@ var SectionApp = (function (_super) {
             return callback(a);
         });
     };
-    SectionApp.prototype.loadSupports = function (setSt, callback) {
+    SectionApp.prototype.loadSupports = function (callback) {
         var _this = this;
         var stateSetter = function (centuries, cursuses, srcComps, provs, notations, msTypes, callback) {
             _this.setState(function (s) {
@@ -39634,30 +39658,45 @@ var SectionApp = (function (_super) {
             callback(m);
         });
     };
-    SectionApp.prototype.changePanel = function (p, callback) {
-        this.setState(function (s) {
+    SectionApp.prototype.changePanel = function (p, callback, s) {
+        if (s) {
             s.panel = p;
-            if (callback)
-                return callback(s);
-            else
-                return s;
-        });
+        }
+        else {
+            this.setState(function (s) {
+                s.panel = p;
+                if (callback)
+                    return callback(s);
+                else
+                    return s;
+            });
+        }
     };
-    SectionApp.prototype.setLoader = function (msg) {
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
+    SectionApp.prototype.setLoader = function (msg, callback, s) {
+        var _this = this;
+        if (s) {
+            this.changePanel(Panel.LOADER);
             s.loadMessage = msg;
-            return s;
-        });
+        }
+        else {
+            this.setState(function (s) {
+                _this.changePanel(Panel.LOADER, null, s);
+                s.loadMessage = msg;
+                if (callback)
+                    return callback(s);
+                return s;
+            });
+        }
     };
     SectionApp.prototype.onInitSubmit = function (p) {
         var _this = this;
         if (p === Panel.TABLE) {
             this.setLoader('Loading Sections...');
-            this.loadSections(null, null, function (ss) {
+            this.loadSections(null, null, function (sections) {
                 _this.setState(function (s) {
-                    s.primaries.sections = ss;
-                    s.panel = p;
+                    sn.Section.destroyArray(s.primaries.sections);
+                    s.primaries.sections = sections;
+                    _this.changePanel(p, null, s);
                     return s;
                 });
             });
@@ -39683,7 +39722,7 @@ var SectionApp = (function (_super) {
                 s.primaries.library = l;
                 s.primaries.manuscript = m;
                 s.primaries.sections = ss;
-                s.panel = Panel.TABLE;
+                _this.changePanel(Panel.TABLE, null, s);
                 return s;
             });
         });
@@ -39702,7 +39741,7 @@ var SectionApp = (function (_super) {
                 sn.Section.destroyArray(s.primaries.sections);
                 s.primaries.section = null;
                 s.primaries.sections = sections;
-                s.panel = Panel.TABLE;
+                _this.changePanel(Panel.TABLE, null, s);
                 return s;
             });
         });
@@ -39753,8 +39792,9 @@ var SectionApp = (function (_super) {
         }
     };
     SectionApp.prototype.openEntity = function (stn) {
+        var _this = this;
         this.loadTemps(stn, function (s) {
-            s.panel = Panel.ENTITY;
+            _this.changePanel(Panel.ENTITY, null, s);
             return s;
         });
     };
@@ -40366,6 +40406,143 @@ var ManuscriptEditPanel = (function (_super) {
     return ManuscriptEditPanel;
 }(React.Component));
 exports.default = ManuscriptEditPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/section/SectionEntityPanel.tsx":
+/*!*******************************************************!*\
+  !*** ./src/components/section/SectionEntityPanel.tsx ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var Panel;
+(function (Panel) {
+    Panel[Panel["ENT"] = 0] = "ENT";
+    Panel[Panel["STN"] = 1] = "STN";
+})(Panel || (Panel = {}));
+var SectionEntityPanel = (function (_super) {
+    __extends(SectionEntityPanel, _super);
+    function SectionEntityPanel(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            panel: Panel.ENT
+        };
+        _this.out = _this.out.bind(_this);
+        _this.renderEntity = _this.renderEntity.bind(_this);
+        return _this;
+    }
+    SectionEntityPanel.prototype.out = function (a) {
+        return a || 'NULL';
+    };
+    SectionEntityPanel.prototype.render = function () {
+        switch (this.state.panel) {
+            default:
+            case Panel.ENT:
+                return this.renderEntity();
+        }
+    };
+    SectionEntityPanel.prototype.renderEntity = function () {
+        return [
+            (React.createElement(Header_tsx_1.default, { key: "header", min: true },
+                "Section #",
+                this.props.entities.section.sectionID,
+                " of Manuscript ",
+                this.props.entities.section.msSiglum,
+                " from Library l ",
+                this.props.entities.library.library)),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
+            (React.createElement(react_bootstrap_1.Form, { horizontal: true, key: "form" },
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.entities.country.country)),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.entities.library.library)),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Manuscript Siglum:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.entities.manuscript.msSiglum)),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Section Number:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.props.entities.section.sectionID)),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Section Type:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.sectionType.msTypeName))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Notation:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.notation.notationName))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Century:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.century.centuryName))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Date:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.date))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Cursus:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.cursus.cursusName))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Provenance:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.provenance.provenanceID))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Provenance Details:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.provenanceDetail))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Source Completeness:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.sourceComp.sourceCompletenessName))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Scribe:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.scribe))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Commissioner:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.commissioner))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Number of Gatherings:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.numGatherings))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Number of Columns:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.numColumns))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Number of Lines per Column:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.linesPerColumn))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Inscription:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.inscription))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Colophon:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.colophon))),
+                React.createElement(react_bootstrap_1.FormGroup, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Commissioner:"),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7" }, this.out(this.props.entities.section.commissioner)))))
+        ];
+    };
+    SectionEntityPanel.prototype.changePanel = function (p) {
+        this.setState(function (s) {
+            s.panel = p;
+            return s;
+        });
+    };
+    return SectionEntityPanel;
+}(React.Component));
+exports.default = SectionEntityPanel;
 
 
 /***/ }),

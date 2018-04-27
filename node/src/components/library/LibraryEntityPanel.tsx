@@ -125,7 +125,7 @@ export default class LibraryEntityPanel extends React.Component<P,S> {
 			<Button bsStyle="default" onClick={this.props.onBack}>Back</Button>
 
 			<a href={this.state.google} target="_blank" className="ml15">
-				<Button bsStyle="info">Google Maps</Button>
+				<Button bsStyle="primary">Google Maps</Button>
 			</a>
 
 			<Button
@@ -135,7 +135,7 @@ export default class LibraryEntityPanel extends React.Component<P,S> {
 					s.panel = Panel.MS;
 					return s;
 				})}
-			>Manuscripts</Button>
+			>View Manuscripts</Button>
 		</PanelMenu>);
 
 		x.push(<Form horizontal key="form">
