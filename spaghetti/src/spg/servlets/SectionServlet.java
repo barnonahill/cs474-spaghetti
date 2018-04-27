@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import spg.controllers.ManuscriptController;
 import spg.controllers.SectionController;
 import spg.models.Century;
 import spg.models.Cursus;
@@ -27,7 +28,7 @@ import spg.models.SourceCompleteness;
 @WebServlet(name="SectionServices", urlPatterns= {"/section"})
 public class SectionServlet extends SpgHttpServlet{
 private static final long serialVersionUID = 1L;
-	
+private SectionController sectionController;
 	
 	public static final String CREATE_SECTION 	= "createsection";
 	public static final String UPDATE_SECTION 	= "updatesection";
@@ -42,10 +43,16 @@ private static final long serialVersionUID = 1L;
 	public static final String GET_NOTATIONS = "GetNotations";
 	
 	
+	public SectionServlet() {
+		super();
+		this.sectionController = new SectionController();
+	}
+	
 	@Override
 	public void handleRequest(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		try 
 		{
+			sectionController.open();
 			Map<String, String> params = super.getParameters(req);
 			String action = super.getParameter(params, "action").toLowerCase();
 			String msg = null;
@@ -176,12 +183,12 @@ private static final long serialVersionUID = 1L;
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
-		if(SectionController.getSectionOrNull(libSiglum, msSiglum, sectionID) != null) {
+		if(sectionController.getSectionOrNull(libSiglum, msSiglum, sectionID) != null) {
 			throw new Exception("Section with same libSiglum, msType, and sectionID already exists.");
 		}
 		
 		
-		Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
+		Section s = sectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 		return s.toJSON().toString();
@@ -199,7 +206,7 @@ private static final long serialVersionUID = 1L;
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
-		Section s = SectionController.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
+		Section s = sectionController.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 		return s.toJSON().toString();
@@ -214,7 +221,7 @@ private static final long serialVersionUID = 1L;
 	 * @throws Exception 
 	 */
 	private String getSection(String libSiglum, String msSiglum, String sectionID) throws Exception {
-		Section s = SectionController.getSection(libSiglum, msSiglum, sectionID);
+		Section s = sectionController.getSection(libSiglum, msSiglum, sectionID);
 		return s.toJSON().toString();
 	}
 	
@@ -228,7 +235,7 @@ private static final long serialVersionUID = 1L;
 	 */
 	private String getSections(String libSiglum, String sectionID) throws Exception {
 		JSONArray sections = new JSONArray();
-		ArrayList<Section> results = SectionController.getSections(libSiglum, sectionID);
+		ArrayList<Section> results = sectionController.getSections(libSiglum, sectionID);
 		
 		for (Section s : results) {
 			sections.put(s.toJSON());
@@ -247,14 +254,14 @@ private static final long serialVersionUID = 1L;
 	 * @throws Exception 
 	 */
 	private String deleteSection(String deleteLibSiglum, String deleteMSSiglum, String deletesectionID) throws Exception {
-		SectionController.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
+		sectionController.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
 		JSONObject j = new JSONObject();
         j.put("success", true);
 		return j.toString();
 	}
 	
 	private String getCenturies() throws Exception {
-		ArrayList<Century> centuries = SectionController.getCenturies();
+		ArrayList<Century> centuries = sectionController.getCenturies();
 		if (centuries == null) {
 			throw new Exception("Could not load centuries.");
 		}
@@ -268,7 +275,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	private String getCursuses() throws Exception {
-		ArrayList<Cursus> cursuses = SectionController.getCursuses();
+		ArrayList<Cursus> cursuses = sectionController.getCursuses();
 		if (cursuses == null) {
 			throw new Exception("Could not load cursuses.");
 		}
@@ -282,7 +289,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	private String getSourceCompletenesses() throws Exception {
-		ArrayList<SourceCompleteness> sc = SectionController.getSourceCompletenesses();
+		ArrayList<SourceCompleteness> sc = sectionController.getSourceCompletenesses();
 		if (sc == null) {
 			throw new Exception("Could not load source completenesses");
 		}
@@ -296,7 +303,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	private String getProvenances() throws Exception {
-		ArrayList<Provenance> prov = SectionController.getProvenances();
+		ArrayList<Provenance> prov = sectionController.getProvenances();
 		if (prov == null) {
 			throw new Exception("Could not load provenance");
 		}
@@ -310,7 +317,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	private String getNotations() throws Exception {
-		ArrayList<Notation> note = SectionController.getNotations();
+		ArrayList<Notation> note = sectionController.getNotations();
 		if (note == null) {
 			throw new Exception("Could not load notation");
 		}
