@@ -15,7 +15,7 @@ public class Section {
 	private final String msSiglum;
 	private final int sectionID;
 	private final String sectionType;
-	private final String liturgicalOccassion;
+	private final String liturgicalOccasion;
 	private final String notationID;
 	private final int numGatherings;
 	private final int numColumns;
@@ -37,7 +37,7 @@ public class Section {
 	 * @params
 	 */
 	public Section(String libSiglum, String msSiglum, int sectionID, String sectionType,
-			String liturgicalOccassion, String notationID, int numGatherings, int numColumns,
+			String liturgicalOccasion, String notationID, int numGatherings, int numColumns,
 			int linesPerColumn, String scribe, String date, String centuryID, String cursusID,
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) {
@@ -45,7 +45,7 @@ public class Section {
 		this.msSiglum = msSiglum;
 		this.sectionID = sectionID;
 		this.sectionType = sectionType;
-		this.liturgicalOccassion = liturgicalOccassion;
+		this.liturgicalOccasion = liturgicalOccasion;
 		this.notationID = notationID;
 		this.numGatherings = numGatherings;
 		this.numColumns = numColumns;
@@ -75,7 +75,7 @@ public class Section {
 		this.msSiglum = msSiglum;
 		this.sectionID = Integer.parseInt(sectionID);
 		this.sectionType = sectionType;
-		this.liturgicalOccassion = liturgicalOccassion;
+		this.liturgicalOccasion = liturgicalOccassion;
 		this.notationID = notationID;
 		this.numGatherings = Integer.parseInt(numGatherings);
 		this.numColumns = Integer.parseInt(numColumns);
@@ -97,7 +97,7 @@ public class Section {
 		this.msSiglum = resultSet.getString("msSiglum");
 		this.sectionID = resultSet.getInt("sectionID");
 		this.sectionType = resultSet.getString("sectionType");
-		this.liturgicalOccassion = resultSet.getString("liturgicalOccasion");
+		this.liturgicalOccasion = resultSet.getString("liturgicalOccasion");
 		this.notationID = resultSet.getString("notationID");
 		this.numGatherings = resultSet.getInt("numGatherings");
 		this.numColumns = resultSet.getInt("numColumns");
@@ -133,7 +133,7 @@ public class Section {
 	}
 	
 	public String getLiturgicalOccassion() {
-		return this.liturgicalOccassion;
+		return this.liturgicalOccasion;
 	}
 	
 	public String getNotationID() {
@@ -201,7 +201,7 @@ public class Section {
 		j.put("msSiglum", this.msSiglum);
 		j.put("sectionID", this.sectionID);
 		j.put("sectionType", this.sectionType);
-		j.put("liturgicalOccassion", this.liturgicalOccassion);
+		j.put("liturgicalOccasion", this.liturgicalOccasion);
 		j.put("notationID", this.notationID);
 		j.put("numGatherings", this.numGatherings);
 		j.put("numColumns", this.numColumns);

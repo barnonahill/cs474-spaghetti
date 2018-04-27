@@ -55,7 +55,7 @@ private static final long serialVersionUID = 1L;
 				String msSiglum = super.getParameter(params, "msSiglum");
 				String sectionID = super.getParameter(params, "sectionID");
 				String sectionType = super.getParameter(params, "sectionType");
-				String liturgicalOccassions = super.getParameter(params, "liturgicalOccassions");
+				String liturgicalOccasions = super.getParameter(params, "liturgicalOccasions");
 				String notationID = super.getParameter(params, "notationID");
 				String numGatherings = super.getParameter(params, "numGatherings");
 				String numColumns = super.getParameter(params, "numColumns");
@@ -71,7 +71,7 @@ private static final long serialVersionUID = 1L;
 				String colophon = super.getParameter(params, "colophon");
 				String sourceCompletenessID = super.getParameter(params, "sourceCompletenessID");
 					
-				msg = this.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassions, 
+				msg = this.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasions, 
 						notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 						provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
             }
@@ -82,7 +82,7 @@ private static final long serialVersionUID = 1L;
 				String msSiglum = super.getParameter(params, "msSiglum");
 				String sectionID = super.getParameter(params, "sectionID");
 				String sectionType = super.getParameter(params, "sectionType");
-				String liturgicalOccassions = super.getParameter(params, "liturgicalOccassions");
+				String liturgicalOccasions = super.getParameter(params, "liturgicalOccasions");
 				String notationID = super.getParameter(params, "notationID");
 				String numGatherings = super.getParameter(params, "numGatherings");
 				String numColumns = super.getParameter(params, "numColumns");
@@ -98,7 +98,7 @@ private static final long serialVersionUID = 1L;
 				String colophon = super.getParameter(params, "colophon");
 				String sourceCompletenessID = super.getParameter(params, "sourceCompletenessID");
 					
-				msg = this.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassions, 
+				msg = this.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasions, 
 						notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 						provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
             }
@@ -172,7 +172,7 @@ private static final long serialVersionUID = 1L;
 	 * @throws Exception -
 	 */
 	private String createSection(String libSiglum, String msSiglum, String sectionID, String sectionType,
-			String liturgicalOccassion, String notationID, String numGatherings, String numColumns,
+			String liturgicalOccasion, String notationID, String numGatherings, String numColumns,
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
@@ -181,7 +181,7 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		
-		Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, 
+		Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 		return s.toJSON().toString();
@@ -195,11 +195,11 @@ private static final long serialVersionUID = 1L;
 	 * @throws Exception 
 	 */
 	private String updateSection(String libSiglum, String msSiglum, String sectionID, String sectionType,
-			String liturgicalOccassion, String notationID, String numGatherings, String numColumns,
+			String liturgicalOccasion, String notationID, String numGatherings, String numColumns,
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
-		Section s = SectionController.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, 
+		Section s = SectionController.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 		return s.toJSON().toString();
