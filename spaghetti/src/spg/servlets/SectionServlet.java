@@ -131,6 +131,11 @@ private static final long serialVersionUID = 1L;
             	msg = this.getCenturies();
             }
 			
+			else if (action.equalsIgnoreCase(UPDATE_CENTURY))
+			{
+				String centuryID = super.getParameter(params, "centuryID");
+				msg = this.deleteCentury(centuryID);
+			}
 			else if (action.equalsIgnoreCase(GET_CURSUSES))
 			{
 				msg = this.getCursuses();
@@ -176,15 +181,20 @@ private static final long serialVersionUID = 1L;
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
-		if(SectionController.getSectionOrNull(libSiglum, msSiglum, sectionID) != null) {
-			throw new Exception("Section with same libSiglum, msType, and sectionID already exists.");
-		}
-		
-		
+
 		Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 		return s.toJSON().toString();
+		try {
+			Section s = SectionController.createSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
+					notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
+					provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
+			return s.toJSON().toString();
+		}
+		catch (MySQLIntegrityConstraintViolationException e) {
+			throw new Exception("An entry with the same primary key already exists.");
+    }
 	}
 	
 
@@ -199,10 +209,15 @@ private static final long serialVersionUID = 1L;
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID,
 			String provenanceID, String provenanceDetail, String commissioner,
 			String inscription, String colophon, String sourceCompletenessID) throws Exception {
-		Section s = SectionController.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
+		try {
+			Section s = SectionController.updateSection(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, 
 				notationID, numGatherings, numColumns,	linesPerColumn, scribe, date, centuryID, cursusID,
 				provenanceID, provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 		return s.toJSON().toString();
+		}
+		catch (MySQLIntegrityConstraintViolationException e) {
+			throw new Exception("An entry with the same primary key already exists.");
+		}
 	}
 	
 	/**
@@ -214,8 +229,13 @@ private static final long serialVersionUID = 1L;
 	 * @throws Exception 
 	 */
 	private String getSection(String libSiglum, String msSiglum, String sectionID) throws Exception {
-		Section s = SectionController.getSection(libSiglum, msSiglum, sectionID);
-		return s.toJSON().toString();
+		try {
+			Section s = SectionController.getSection(libSiglum, msSiglum, sectionID);
+			return s.toJSON().toString();
+		}
+		catch (MySQLIntegrityConstraintViolationException e) {
+			throw new Exception("An entry with the same primary key already exists.");
+		}
 	}
 	
 
@@ -247,11 +267,20 @@ private static final long serialVersionUID = 1L;
 	 * @throws Exception 
 	 */
 	private String deleteSection(String deleteLibSiglum, String deleteMSSiglum, String deletesectionID) throws Exception {
-		SectionController.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
 		JSONObject j = new JSONObject();
-        j.put("success", true);
-		return j.toString();
-	}
+		boolean success = false;
+        try {
+			SectionController.deleteSection(deleteLibSiglum, deleteMSSiglum, deletesectionID);
+			success = true;
+		}
+		catch (MYSQLException e) {
+			success = false;
+        }
+		finally {
+			j.put("success", success);
+			return j.toString();
+		}
+    }
 	
 	private String getCenturies() throws Exception {
 		ArrayList<Century> centuries = SectionController.getCenturies();
@@ -266,6 +295,47 @@ private static final long serialVersionUID = 1L;
 		
 		return j.toString();
 	}
+	
+	/**
+	 * updateCentury - 
+	 * @params -
+	 * @return -
+	 * @throws Exception 
+	 */
+	private String updateCentury(String centuryID) throws Exception {
+		try {
+			Century s = SectionController.updateCentury(centuryID);
+			return c.toJSON().toString();
+		}
+		catch (MySQLIntegrityConstraintViolationException e) {
+			throw new Exception("An entry with the same primary key already exists.");
+		}
+	}
+	
+	private String createCentury(String centuryID) throws Exception {
+		try {
+			Century s = SectionController.createCentury(centuryID);
+			return c.toJSON().toString();
+		}
+		catch (MySQLIntegrityConstraintViolationException e) {
+			throw new Exception("An entry with the same primary key already exists.");
+		}
+	}
+	
+	private String deleteCentury(String centuryID) throws Exception {
+		JSONObject j = new JSONObject();
+		boolean = success = false;
+		try {
+			SectionController.deleteCentury(centuryID);
+			success = true;
+		}
+		catch (MYSQLException e) {
+			success = false;
+		}
+		finally {
+			j.put("success", success);
+			return j.toString();
+		}
 	
 	private String getCursuses() throws Exception {
 		ArrayList<Cursus> cursuses = SectionController.getCursuses();

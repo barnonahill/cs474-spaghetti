@@ -18,6 +18,14 @@ public class ManuscriptController extends SpgController {
 	private final static String MANUSCRIPT = "Manuscript";
 	private final static String MSTYPE = "MSType"; 
 	
+	
+	/**
+	 * Set up the DB connection info.
+	 */
+	public ManuscriptController () {
+		super();
+	}
+	
 	/**
 	 * createMSType -
 	 * @param msType -
