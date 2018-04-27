@@ -12,7 +12,7 @@ import spg.models.Manuscript;
  * @author Carl Clermont
  *
  */
-public class ManuscriptController {
+public class ManuscriptController extends SpgController {
 
 	private final static String MANUSCRIPT = "Manuscript";
 	private final static String MSTYPE = "MSType"; 
@@ -24,7 +24,7 @@ public class ManuscriptController {
 	 * @return - 
 	 * @throws Exception -
 	 */
-	public static MSType createMSType(String msType, String msTypeName) throws Exception {
+	public MSType createMSType(String msType, String msTypeName) throws Exception {
 		String query;
 		MSType mst;
 		
@@ -37,8 +37,8 @@ public class ManuscriptController {
 		namesToValues.put("msType", msType);
 		namesToValues.put("msTypeName", msTypeName);
 		
-		query = SpgController.buildInsertQuery(MSTYPE, namesToValues);
-		SpgController.executeSQL(query);
+		query = super.buildInsertQuery(MSTYPE, namesToValues);
+		super.executeSQL(query);
 		
 		mst = new MSType(msType, msTypeName);
 				
@@ -53,7 +53,7 @@ public class ManuscriptController {
 	 * @return - 
 	 * @throws Exception -
 	 */
-	public static MSType updateMSType(String msType, String msTypeName) throws Exception {
+	public MSType updateMSType(String msType, String msTypeName) throws Exception {
 		String query;
 		MSType mst;
 		
@@ -63,8 +63,8 @@ public class ManuscriptController {
 		pkNamesToValues.put("msType", msType);
 		namesToValues.put("msTypeName", msTypeName);
 		
-		query = SpgController.buildUpdateQuery(MSTYPE, pkNamesToValues, namesToValues);
-		SpgController.executeSQL(query);
+		query = super.buildUpdateQuery(MSTYPE, pkNamesToValues, namesToValues);
+		super.executeSQL(query);
 		
 		mst = new MSType(msType, msTypeName);
 				
@@ -72,14 +72,14 @@ public class ManuscriptController {
 	}
 
 	
-	public static ArrayList<MSType> getMSTypes() throws Exception {
+	public ArrayList<MSType> getMSTypes() throws Exception {
 		ArrayList<MSType> msts = new ArrayList<MSType>();
 		String query;
 		ResultSet resultSet;
 		MSType mst;
 		
-		query = SpgController.buildSelectQuery(MSTYPE, null);
-		resultSet = SpgController.getResultSet(query);
+		query = super.buildSelectQuery(MSTYPE, null);
+		resultSet = super.getResultSet(query);
 		
 		while (resultSet.next()) {
 			mst = new MSType(resultSet);
@@ -98,15 +98,15 @@ public class ManuscriptController {
 	 * @return -
 	 * @throws Exception -
 	 */
-	public static boolean deleteMSType(String msType) throws Exception {
+	public boolean deleteMSType(String msType) throws Exception {
 		String query;
 		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
 
 		pkNamesToValues.put("msType", msType);
 		
-		query = SpgController.buildDeleteQuery(MSTYPE, pkNamesToValues);
+		query = super.buildDeleteQuery(MSTYPE, pkNamesToValues);
 		
-		SpgController.executeSQL(query);
+		super.executeSQL(query);
 				
 		return true;
 	}
@@ -119,7 +119,7 @@ public class ManuscriptController {
 	 * @return - 
 	 * @throws Exception - 
 	 */
-	public static Manuscript createManuscript(String libSiglum, String msSiglum, String msType,
+	public Manuscript createManuscript(String libSiglum, String msSiglum, String msType,
 			String dimensions, String leaves, String foliated, String vellum,
 			String binding, String sourceNotes, String summary, String bibliography) throws Exception {
 		String query;
@@ -144,8 +144,8 @@ public class ManuscriptController {
 		namesToValues.put("summary", summary);
 		namesToValues.put("bibliography", bibliography);
 		
-		query = SpgController.buildInsertQuery(MANUSCRIPT, namesToValues);
-		SpgController.executeSQL(query);
+		query = super.buildInsertQuery(MANUSCRIPT, namesToValues);
+		super.executeSQL(query);
 		
 		ms = new Manuscript(libSiglum, msSiglum, msType, dimensions, leaves, foliated, vellum,
 				binding, sourceNotes, summary, bibliography);
@@ -159,7 +159,7 @@ public class ManuscriptController {
 	 * @return -
 	 * @throws Exception -
 	 */
-	public static Manuscript updateManuscript(String libSiglum, String msSiglum, String msType,
+	public Manuscript updateManuscript(String libSiglum, String msSiglum, String msType,
 			String dimensions, String leaves, String foliated, String vellum,
 			String binding, String sourceNotes, String summary, String bibliography) throws Exception {
 		String query;
@@ -181,8 +181,8 @@ public class ManuscriptController {
 		pkNamesToValues.put("libSiglum", libSiglum);
 		pkNamesToValues.put("msSiglum", msSiglum);
 		
-		query = SpgController.buildUpdateQuery(MANUSCRIPT, pkNamesToValues, namesToValues);
-		SpgController.executeSQL(query);
+		query = super.buildUpdateQuery(MANUSCRIPT, pkNamesToValues, namesToValues);
+		super.executeSQL(query);
 		
 		ms = new Manuscript(libSiglum, msSiglum, msType, dimensions, leaves, foliated, vellum,
 				binding, sourceNotes, summary, bibliography);
@@ -198,7 +198,7 @@ public class ManuscriptController {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Manuscript getManuscript(String libSiglum, String msSiglum) throws Exception {
+	public Manuscript getManuscript(String libSiglum, String msSiglum) throws Exception {
 		HashMap<String, String> namesToValues = new HashMap<String, String>();
 		Manuscript ms;
 		String query;
@@ -206,8 +206,8 @@ public class ManuscriptController {
 		
 		namesToValues.put("libSiglum", libSiglum);
 		namesToValues.put("msSiglum", msSiglum);
-		query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
-		resultSet = SpgController.getResultSet(query);
+		query = super.buildSelectQuery(MANUSCRIPT, namesToValues);
+		resultSet = super.getResultSet(query);
 		
 		resultSet.next();
 		ms = new Manuscript(resultSet);
@@ -222,7 +222,7 @@ public class ManuscriptController {
 	 * @return
 	 * @throws Exception
 	 */
-	public static ArrayList<Manuscript> getManuscripts(String libSiglum) throws Exception {
+	public ArrayList<Manuscript> getManuscripts(String libSiglum) throws Exception {
 		HashMap<String, String> namesToValues = null;
 		String query;
 		ResultSet resultSet;
@@ -233,9 +233,9 @@ public class ManuscriptController {
 			namesToValues = new HashMap<String, String>();
 			namesToValues.put("libSiglum", libSiglum);
 		}
-		query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
+		query = super.buildSelectQuery(MANUSCRIPT, namesToValues);
 		
-		resultSet = SpgController.getResultSet(query);
+		resultSet = super.getResultSet(query);
 		
 		while (resultSet.next()) {
 			ms = new Manuscript(resultSet);
@@ -253,25 +253,20 @@ public class ManuscriptController {
 	 * @return -
 	 * @throws Exception -
 	 */
-	public static boolean deleteManuscript(String libSiglum, String msSiglum) throws Exception {
+	public boolean deleteManuscript(String libSiglum, String msSiglum) throws Exception {
 		String query;
 		HashMap<String, String> pkNamesToValues = new HashMap<String,String>();
 
 		pkNamesToValues.put("libSiglum", libSiglum);
 		pkNamesToValues.put("msSiglum", msSiglum);
 		
-		query = SpgController.buildDeleteQuery(MANUSCRIPT, pkNamesToValues);
+		query = super.buildDeleteQuery(MANUSCRIPT, pkNamesToValues);
 		
-		SpgController.executeSQL(query);
+		super.executeSQL(query);
 				
 		return true;
 	}
 
-
-
-	
-	
-	
 	/**
 	 * 
 	 * @param getLibSiglum
@@ -279,7 +274,7 @@ public class ManuscriptController {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Manuscript getManuscriptOrNull(String libSiglum, String msSiglum) {
+	public Manuscript getManuscriptOrNull(String libSiglum, String msSiglum) {
 		HashMap<String, String> namesToValues = new HashMap<String, String>();
 		Manuscript ms = null;
 		String query;
@@ -287,10 +282,10 @@ public class ManuscriptController {
 		
 		namesToValues.put("libSiglum", libSiglum);
 		namesToValues.put("msSiglum", msSiglum);
-		query = SpgController.buildSelectQuery(MANUSCRIPT, namesToValues);
+		query = super.buildSelectQuery(MANUSCRIPT, namesToValues);
 
 		try {
-			resultSet = SpgController.getResultSet(query);
+			resultSet = super.getResultSet(query);
 			resultSet.next();
 			ms = new Manuscript(resultSet);
 		} catch (Exception e) {
