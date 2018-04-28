@@ -44434,7 +44434,7 @@ exports.default = SectionProxy;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-var BASE_SERVICES = "http://localhost:8080/spaghetti";
+var BASE_SERVICES = CONNECTION.base;
 var SpgProxy = (function () {
     function SpgProxy(service) {
         this.service = service;

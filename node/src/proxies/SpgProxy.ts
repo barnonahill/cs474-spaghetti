@@ -1,5 +1,6 @@
 import axios from 'axios';
-const BASE_SERVICES = "http://localhost:8080/spaghetti";
+/// @ts-ignore
+const BASE_SERVICES = CONNECTION.base;
 //const BASE_SERVICES = "http://mysql.cs.jmu.edu/tomcat/spaghetti";
 
 /**
