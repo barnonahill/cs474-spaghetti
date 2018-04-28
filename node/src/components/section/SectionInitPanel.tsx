@@ -85,7 +85,25 @@ export default class SectionInitPanel extends React.Component<P,{}> {
 						bsSize="large"
 						className="w100p"
 						onClick={() => this.props.onSubmit(Panel.PROVENANCE)}
-					>Source Completenesses</Button>
+					>Provenances</Button>
+				</Col>
+
+				<Col xs={12} sm={4}>
+					<Button
+						bsStyle="info"
+						bsSize="large"
+						className="w100p"
+						onClick={() => this.props.onSubmit(Panel.NOTATION)}
+					>Notations</Button>
+				</Col>
+
+				<Col xs={12} sm={4}>
+					<Button
+						bsStyle="info"
+						bsSize="large"
+						className="w100p"
+						onClick={() => this.props.onSubmit(Panel.MS_TYPE)}
+					>Manuscript Types</Button>
 				</Col>
 			</Row>)
 		];

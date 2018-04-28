@@ -12,6 +12,8 @@ import CenturyApp from '@src/components/century/CenturyApp.tsx';
 import CursusApp from '@src/components/cursus/CursusApp.tsx';
 import SourceCompletenessApp from '@src/components/sourceCompleteness/SourceCompletenessApp.tsx';
 import ProvenanceApp from '@src/components/provenance/ProvenanceApp.tsx';
+import NotationApp from '@src/components/notation/NotationApp.tsx';
+import MsTypeApp from '@src/components/MsType/MsTypeApp.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
@@ -37,7 +39,8 @@ export enum Panel {
 	CURSUS = 7,
 	SRC_COMP = 8,
 	PROVENANCE = 9,
-	NOTATION = 10
+	NOTATION = 10,
+	MS_TYPE = 11
 }
 
 interface P {
@@ -117,6 +120,8 @@ export default class SectionApp extends React.Component<P,S> {
 		this.renderCursusApp = this.renderCursusApp.bind(this);
 		this.renderSourceCompletenessApp = this.renderSourceCompletenessApp.bind(this);
 		this.renderProvenanceApp = this.renderProvenanceApp.bind(this);
+		this.renderNotationApp = this.renderNotationApp.bind(this);
+		this.renderMsTypeApp = this.renderMsTypeApp.bind(this);
 
 		// Support load bindings
 		this.loadCenturies = this.loadCenturies.bind(this);
@@ -282,7 +287,10 @@ export default class SectionApp extends React.Component<P,S> {
 				return this.renderProvenanceApp();
 
 			case Panel.NOTATION:
-				return null;
+				return this.renderNotationApp();
+
+			case Panel.MS_TYPE:
+				return this.renderMsTypeApp();
 		}
 	}
 
@@ -430,13 +438,43 @@ export default class SectionApp extends React.Component<P,S> {
 
 	renderProvenanceApp() {
 		return (<ProvenanceApp
-			provenances={this.state.supports.provenances}
+			provenances={this.state.supports.provs}
 			onBack={() => this.setPanel(Panel.INIT)}
 			reloadProvenances={() => this.loadProvenances(provs => {
 				this.setState((s:S) => {
 					Cursus.destroyArray(s.supports.provs);
 					s.supports.provs = provs;
 					this.setPanel(Panel.PROVENANCE, null, s);
+					return s;
+				});
+			})}
+		/>);
+	}
+
+	renderNotationApp() {
+		return (<NotationApp
+			notations={this.state.supports.notations}
+			onBack={() => this.setPanel(Panel.INIT)}
+			reloadNotations={() => this.loadNotations(notations => {
+				this.setState((s:S) => {
+					Cursus.destroyArray(s.supports.notations);
+					s.supports.notations = notations;
+					this.setPanel(Panel.NOTATION, null, s);
+					return s;
+				});
+			})}
+		/>);
+	}
+
+	renderMsTypeApp() {
+		return (<MsTypeApp
+			msTypes={this.state.supports.msTypes}
+			onBack={() => this.setPanel(Panel.INIT)}
+			replaceMsTypes={() => this.loadMsTypes(msTypes => {
+				this.setState((s:S) => {
+					Cursus.destroyArray(s.supports.msTypes);
+					s.supports.msTypes = msTypes;
+					this.setPanel(Panel.MS_TYPE, null, s);
 					return s;
 				});
 			})}

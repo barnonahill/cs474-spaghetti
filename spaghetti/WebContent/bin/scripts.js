@@ -36776,6 +36776,176 @@ module.exports = g;
 
 /***/ }),
 
+/***/ "./src/components/MsType/MsTypeApp.tsx":
+/*!*********************************************!*\
+  !*** ./src/components/MsType/MsTypeApp.tsx ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
+var MsTypeTablePanel_tsx_1 = __webpack_require__(/*! @src/components/msType/MsTypeTablePanel.tsx */ "./src/components/msType/MsTypeTablePanel.tsx");
+var MsTypeEditPanel_tsx_1 = __webpack_require__(/*! @src/components/msType/MsTypeEditPanel.tsx */ "./src/components/msType/MsTypeEditPanel.tsx");
+var mst = __webpack_require__(/*! @src/models/msType.ts */ "./src/models/msType.ts");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var Panel;
+(function (Panel) {
+    Panel[Panel["TABLE"] = 0] = "TABLE";
+    Panel[Panel["EDIT"] = 1] = "EDIT";
+    Panel[Panel["LOADER"] = 2] = "LOADER";
+})(Panel || (Panel = {}));
+var MsTypeApp = (function (_super) {
+    __extends(MsTypeApp, _super);
+    function MsTypeApp(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            msTypes: p.msTypes,
+            msType: null,
+            panel: Panel.TABLE,
+            loadMessage: ''
+        };
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.openEdit = _this.openEdit.bind(_this);
+        _this.loadMsTypes = _this.loadMsTypes.bind(_this);
+        _this.saveMsType = _this.saveMsType.bind(_this);
+        return _this;
+    }
+    MsTypeApp.prototype.render = function () {
+        var _this = this;
+        switch (this.state.panel) {
+            case Panel.TABLE:
+                return (React.createElement(MsTypeTablePanel_tsx_1.default, { msTypes: this.state.msTypes, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: this.loadMsTypes }));
+            case Panel.EDIT:
+                return (React.createElement(MsTypeEditPanel_tsx_1.default, { msType: this.state.msType, onBack: function () { return _this.setState(function (s) {
+                        s.panel = Panel.TABLE;
+                        return s;
+                    }); }, onSubmit: this.saveMsType }));
+            case Panel.LOADER:
+                return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
+            default:
+                return null;
+        }
+    };
+    MsTypeApp.prototype.confirmDelete = function (msType) {
+        var _this = this;
+        var del = confirm('Delete ' + msType.msTypeName +
+            '? This will delete all manuscripts of this type!');
+        if (del) {
+            this.setState(function (s) {
+                s.panel = Panel.LOADER;
+                s.loadMessage = 'Deleting ' + msType.msType + '...';
+            });
+            ProxyFactory_ts_1.default.getManuscriptProxy().deleteMsType(msType.msType, function (s, e) {
+                if (e) {
+                    alert(e);
+                }
+                else if (s) {
+                    _this.setState(function (s) {
+                        var i = s.msTypes.findIndex(function (m) {
+                            return m.msType === msType.msType;
+                        });
+                        s.msTypes[i].destroy();
+                        s.msTypes.splice(i, 1);
+                        s.panel = Panel.TABLE;
+                        _this.props.replaceMsTypes(s.msTypes);
+                        return s;
+                    });
+                }
+            });
+        }
+    };
+    MsTypeApp.prototype.loadMsTypes = function () {
+        var _this = this;
+        this.setState(function (s) {
+            s.panel = Panel.LOADER;
+            s.loadMessage = 'Loading Manuscript Types...';
+            return s;
+        });
+        ProxyFactory_ts_1.default.getManuscriptProxy().getMsTypes(function (msTypes, e) {
+            if (e) {
+                alert(e);
+            }
+            else {
+                _this.setState(function (s) {
+                    mst.MsType.destroyArray(s.msTypes);
+                    s.msTypes = msTypes;
+                    s.msType = null;
+                    s.panel = Panel.TABLE;
+                    _this.props.replaceMsTypes(s.msTypes);
+                    return s;
+                });
+            }
+        });
+    };
+    MsTypeApp.prototype.openEdit = function (msType) {
+        this.setState(function (s) {
+            s.panel = Panel.EDIT;
+            s.msType = msType;
+            return s;
+        });
+    };
+    MsTypeApp.prototype.saveMsType = function (p, isNew) {
+        var _this = this;
+        this.setState(function (s) {
+            s.panel = Panel.LOADER;
+            s.loadMessage = 'Saving ' + p.msType + '...';
+        });
+        if (isNew) {
+            ProxyFactory_ts_1.default.getManuscriptProxy().createMsType(p, function (msType, e) {
+                if (e) {
+                    alert(e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        s.msTypes.push(msType);
+                        s.panel = Panel.TABLE;
+                        _this.props.replaceMsTypes(s.msTypes);
+                        return s;
+                    });
+                }
+            });
+        }
+        else {
+            ProxyFactory_ts_1.default.getManuscriptProxy().updateMsType(p, function (msType, e) {
+                if (e) {
+                    alert(e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        var i = s.msTypes.findIndex(function (m) {
+                            return m.msType === p.msType;
+                        });
+                        s.msTypes[i].destroy();
+                        s.msTypes[i] = msType;
+                        s.panel = Panel.TABLE;
+                        _this.props.replaceMsTypes(s.msTypes);
+                        return s;
+                    });
+                }
+            });
+        }
+    };
+    return MsTypeApp;
+}(React.Component));
+exports.default = MsTypeApp;
+
+
+/***/ }),
+
 /***/ "./src/components/SpaghettiApp.tsx":
 /*!*****************************************!*\
   !*** ./src/components/SpaghettiApp.tsx ***!
@@ -40043,6 +40213,378 @@ exports.default = MsTypeTablePanel;
 
 /***/ }),
 
+/***/ "./src/components/notation/NotationApp.tsx":
+/*!*************************************************!*\
+  !*** ./src/components/notation/NotationApp.tsx ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
+var NotationTablePanel_tsx_1 = __webpack_require__(/*! @src/components/notation/NotationTablePanel.tsx */ "./src/components/notation/NotationTablePanel.tsx");
+var NotationEditPanel_tsx_1 = __webpack_require__(/*! @src/components/notation/NotationEditPanel.tsx */ "./src/components/notation/NotationEditPanel.tsx");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var Panel;
+(function (Panel) {
+    Panel[Panel["TABLE"] = 0] = "TABLE";
+    Panel[Panel["EDIT"] = 1] = "EDIT";
+    Panel[Panel["LOADER"] = 2] = "LOADER";
+})(Panel || (Panel = {}));
+var NotationApp = (function (_super) {
+    __extends(NotationApp, _super);
+    function NotationApp(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            panel: Panel.TABLE,
+            notations: _this.props.notations
+        };
+        _this.openEdit = _this.openEdit.bind(_this);
+        _this.saveNotation = _this.saveNotation.bind(_this);
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.setPanel = _this.setPanel.bind(_this);
+        _this.setLoader = _this.setLoader.bind(_this);
+        return _this;
+    }
+    NotationApp.prototype.render = function () {
+        var _this = this;
+        switch (this.state.panel) {
+            case Panel.TABLE:
+                return (React.createElement(NotationTablePanel_tsx_1.default, { notations: this.props.notations, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: function () {
+                        _this.setLoader('Loading Notations...');
+                        _this.props.reloadNotations();
+                    } }));
+            case Panel.EDIT:
+                return (React.createElement(NotationEditPanel_tsx_1.default, { notation: this.state.notation, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveNotation }));
+            case Panel.LOADER:
+                return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
+            default:
+                return null;
+        }
+    };
+    NotationApp.prototype.confirmDelete = function (notation) {
+        var _this = this;
+        var del = confirm('Delete notation ' + notation.notationID + '?');
+        if (del) {
+            this.setLoader('Deleting ' + notation.notationID + '...');
+            ProxyFactory_ts_1.default.getSectionProxy().deleteNotation(notation.notationID, function (success, e) {
+                if (e) {
+                    alert(e);
+                }
+                else if (success) {
+                    _this.setState(function (s) {
+                        var i = s.notations.findIndex(function (c) { return notation.notationID === c.notationID; });
+                        s.notations[i].destroy();
+                        s.notations.splice(i, 1);
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+                else {
+                    _this.setPanel(Panel.TABLE);
+                    alert('Failed to delete notation ' + notation.notationName + '.');
+                }
+            });
+        }
+    };
+    NotationApp.prototype.openEdit = function (notation) {
+        var _this = this;
+        this.setState(function (s) {
+            s.notation = notation;
+            _this.setPanel(Panel.EDIT, null, s);
+            return s;
+        });
+    };
+    NotationApp.prototype.saveNotation = function (ntProps, isNew) {
+        var _this = this;
+        this.setLoader('Saving Notation ' + ntProps.notationID + '...');
+        if (isNew) {
+            ProxyFactory_ts_1.default.getSectionProxy().createNotation(ntProps, function (notation, e) {
+                if (e) {
+                    alert('Error creating new Notation: ' + e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        s.notations.push(notation);
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+            });
+        }
+        else {
+            ProxyFactory_ts_1.default.getSectionProxy().updateNotation(ntProps, function (notation, e) {
+                if (e) {
+                    alert('Error updating Notation: ' + e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        var i = s.notations.findIndex(function (c) { return notation.notationID === c.notationID; });
+                        s.notations[i].destroy();
+                        s.notations[i] = notation;
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+            });
+        }
+    };
+    NotationApp.prototype.setPanel = function (p, callback, s) {
+        if (s) {
+            s.panel = p;
+        }
+        else {
+            this.setState(function (s) {
+                s.panel = p;
+                if (callback)
+                    return callback(s);
+                else
+                    return s;
+            });
+        }
+    };
+    NotationApp.prototype.setLoader = function (msg, callback, s) {
+        var _this = this;
+        if (s) {
+            this.setPanel(Panel.LOADER);
+            s.loadMessage = msg;
+        }
+        else {
+            this.setState(function (s) {
+                _this.setPanel(Panel.LOADER, null, s);
+                s.loadMessage = msg;
+                if (callback)
+                    return callback(s);
+                return s;
+            });
+        }
+    };
+    return NotationApp;
+}(React.Component));
+exports.default = NotationApp;
+
+
+/***/ }),
+
+/***/ "./src/components/notation/NotationEditPanel.tsx":
+/*!*******************************************************!*\
+  !*** ./src/components/notation/NotationEditPanel.tsx ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var NotationEditPanel = (function (_super) {
+    __extends(NotationEditPanel, _super);
+    function NotationEditPanel(p) {
+        var _this = _super.call(this, p) || this;
+        var isNew = !Boolean(p.notation);
+        var ntProps;
+        if (isNew) {
+            ntProps = {
+                notationID: '',
+                notationName: ''
+            };
+        }
+        else {
+            ntProps = p.notation.toProperties();
+            ntProps.notationName = ntProps.notationName || '';
+        }
+        _this.state = {
+            isNew: isNew,
+            ntProps: ntProps,
+            val: null
+        };
+        _this.getNotationIDFormGroup = _this.getNotationIDFormGroup.bind(_this);
+        _this.onChange = _this.onChange.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
+        return _this;
+    }
+    NotationEditPanel.prototype.render = function () {
+        var x = [];
+        x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
+            ? 'Create a Notation'
+            : 'Edit Notation: ' + this.props.notation.notationName));
+        x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+            React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
+        x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
+            this.getNotationIDFormGroup(),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "notationName" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Notation Name:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.ntProps.notationName, onChange: this.onChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))));
+        return x;
+    };
+    NotationEditPanel.prototype.getNotationIDFormGroup = function () {
+        var label, value;
+        if (this.state.isNew) {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Notation ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.ntProps.notationID, onChange: this.onChange })));
+        }
+        else {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Notation ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.notation.notationID));
+        }
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "notationID", validationState: this.state.val },
+            label,
+            value));
+    };
+    NotationEditPanel.prototype.onChange = function (e) {
+        var target = e.target;
+        var k = target.id;
+        var v = target.value;
+        this.setState(function (s) {
+            s.ntProps[k] = v;
+            return s;
+        });
+    };
+    NotationEditPanel.prototype.onSubmit = function (e) {
+        e.preventDefault();
+        var val = this.state.ntProps.notationID ? null : 'error';
+        this.setState(function (s) {
+            s.val = val;
+            return s;
+        });
+        if (val === null) {
+            this.props.onSubmit(this.state.ntProps, this.state.isNew);
+        }
+    };
+    return NotationEditPanel;
+}(React.Component));
+exports.default = NotationEditPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/notation/NotationTablePanel.tsx":
+/*!********************************************************!*\
+  !*** ./src/components/notation/NotationTablePanel.tsx ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SearchBar_tsx_1 = __webpack_require__(/*! @src/components/common/SearchBar.tsx */ "./src/components/common/SearchBar.tsx");
+var index_tsx_1 = __webpack_require__(/*! @src/index.tsx */ "./src/index.tsx");
+var NotationTablePanel = (function (_super) {
+    __extends(NotationTablePanel, _super);
+    function NotationTablePanel(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            notations: _this.props.notations,
+            rowGetter: function (i) { return _this.state.notations[i.index]; },
+        };
+        _this.renderDelete = _this.renderDelete.bind(_this);
+        _this.renderEdit = _this.renderEdit.bind(_this);
+        _this.filter = _this.filter.bind(_this);
+        return _this;
+    }
+    NotationTablePanel.prototype.render = function () {
+        var _this = this;
+        return [
+            React.createElement(Header_tsx_1.default, { min: true, key: "header" }, "Notations"),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Row, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "success", onClick: function () { return _this.props.onEdit(null); }, className: "ml15" }, "New")),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(SearchBar_tsx_1.default, { onSubmit: this.filter, placeholder: "Filter by notationID and notationName..." })),
+                    React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.notations.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_virtualized_1.Column, { width: 200, label: "Notation ID", dataKey: "notationID" }),
+                React.createElement(react_virtualized_1.Column, { width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 330, label: "Notation Name", dataKey: "notationName" }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderEdit }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderDelete })))
+        ];
+    };
+    NotationTablePanel.prototype.renderDelete = function (p) {
+        var _this = this;
+        var ct = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onDelete(ct); } }, "Delete"));
+    };
+    NotationTablePanel.prototype.renderEdit = function (p) {
+        var _this = this;
+        var ct = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onEdit(ct); } }, "Edit"));
+    };
+    NotationTablePanel.prototype.filter = function (v) {
+        var _this = this;
+        this.setState(function (s) {
+            if (v) {
+                s.notations = _this.props.notations.filter(function (c) {
+                    var f = false;
+                    f = c.notationID.toLowerCase().indexOf(v) !== -1;
+                    if (!f && c.notationName) {
+                        f = c.notationName.toLowerCase().indexOf(v) !== -1;
+                    }
+                    return f;
+                });
+            }
+            else {
+                s.notations = _this.props.notations;
+            }
+            return s;
+        });
+    };
+    return NotationTablePanel;
+}(React.Component));
+exports.default = NotationTablePanel;
+
+
+/***/ }),
+
 /***/ "./src/components/provenance/ProvenanceApp.tsx":
 /*!*****************************************************!*\
   !*** ./src/components/provenance/ProvenanceApp.tsx ***!
@@ -40369,7 +40911,7 @@ var ProvenanceTablePanel = (function (_super) {
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "success", onClick: function () { return _this.props.onEdit(null); }, className: "ml15" }, "New")),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by countryID and countryName...", onSubmit: this.filter })),
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by provenanceID and provenanceName...", onSubmit: this.filter })),
                     React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
             (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.provenances.length, rowGetter: this.state.rowGetter },
@@ -40446,6 +40988,8 @@ var CenturyApp_tsx_1 = __webpack_require__(/*! @src/components/century/CenturyAp
 var CursusApp_tsx_1 = __webpack_require__(/*! @src/components/cursus/CursusApp.tsx */ "./src/components/cursus/CursusApp.tsx");
 var SourceCompletenessApp_tsx_1 = __webpack_require__(/*! @src/components/sourceCompleteness/SourceCompletenessApp.tsx */ "./src/components/sourceCompleteness/SourceCompletenessApp.tsx");
 var ProvenanceApp_tsx_1 = __webpack_require__(/*! @src/components/provenance/ProvenanceApp.tsx */ "./src/components/provenance/ProvenanceApp.tsx");
+var NotationApp_tsx_1 = __webpack_require__(/*! @src/components/notation/NotationApp.tsx */ "./src/components/notation/NotationApp.tsx");
+var MsTypeApp_tsx_1 = __webpack_require__(/*! @src/components/MsType/MsTypeApp.tsx */ "./src/components/MsType/MsTypeApp.tsx");
 var country_ts_1 = __webpack_require__(/*! @src/models/country.ts */ "./src/models/country.ts");
 var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
@@ -40470,6 +41014,7 @@ var Panel;
     Panel[Panel["SRC_COMP"] = 8] = "SRC_COMP";
     Panel[Panel["PROVENANCE"] = 9] = "PROVENANCE";
     Panel[Panel["NOTATION"] = 10] = "NOTATION";
+    Panel[Panel["MS_TYPE"] = 11] = "MS_TYPE";
 })(Panel = exports.Panel || (exports.Panel = {}));
 var SectionApp = (function (_super) {
     __extends(SectionApp, _super);
@@ -40491,6 +41036,8 @@ var SectionApp = (function (_super) {
         _this.renderCursusApp = _this.renderCursusApp.bind(_this);
         _this.renderSourceCompletenessApp = _this.renderSourceCompletenessApp.bind(_this);
         _this.renderProvenanceApp = _this.renderProvenanceApp.bind(_this);
+        _this.renderNotationApp = _this.renderNotationApp.bind(_this);
+        _this.renderMsTypeApp = _this.renderMsTypeApp.bind(_this);
         _this.loadCenturies = _this.loadCenturies.bind(_this);
         _this.loadCursuses = _this.loadCursuses.bind(_this);
         _this.loadSrcComps = _this.loadSrcComps.bind(_this);
@@ -40615,7 +41162,9 @@ var SectionApp = (function (_super) {
             case Panel.PROVENANCE:
                 return this.renderProvenanceApp();
             case Panel.NOTATION:
-                return null;
+                return this.renderNotationApp();
+            case Panel.MS_TYPE:
+                return this.renderMsTypeApp();
         }
     };
     SectionApp.prototype.renderInit = function () {
@@ -40695,11 +41244,33 @@ var SectionApp = (function (_super) {
     };
     SectionApp.prototype.renderProvenanceApp = function () {
         var _this = this;
-        return (React.createElement(ProvenanceApp_tsx_1.default, { provenances: this.state.supports.provenances, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadProvenances: function () { return _this.loadProvenances(function (provs) {
+        return (React.createElement(ProvenanceApp_tsx_1.default, { provenances: this.state.supports.provs, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadProvenances: function () { return _this.loadProvenances(function (provs) {
                 _this.setState(function (s) {
                     cursus_ts_1.Cursus.destroyArray(s.supports.provs);
                     s.supports.provs = provs;
                     _this.setPanel(Panel.PROVENANCE, null, s);
+                    return s;
+                });
+            }); } }));
+    };
+    SectionApp.prototype.renderNotationApp = function () {
+        var _this = this;
+        return (React.createElement(NotationApp_tsx_1.default, { notations: this.state.supports.notations, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadNotations: function () { return _this.loadNotations(function (notations) {
+                _this.setState(function (s) {
+                    cursus_ts_1.Cursus.destroyArray(s.supports.notations);
+                    s.supports.notations = notations;
+                    _this.setPanel(Panel.NOTATION, null, s);
+                    return s;
+                });
+            }); } }));
+    };
+    SectionApp.prototype.renderMsTypeApp = function () {
+        var _this = this;
+        return (React.createElement(MsTypeApp_tsx_1.default, { msTypes: this.state.supports.msTypes, onBack: function () { return _this.setPanel(Panel.INIT); }, replaceMsTypes: function () { return _this.loadMsTypes(function (msTypes) {
+                _this.setState(function (s) {
+                    cursus_ts_1.Cursus.destroyArray(s.supports.msTypes);
+                    s.supports.msTypes = msTypes;
+                    _this.setPanel(Panel.MS_TYPE, null, s);
                     return s;
                 });
             }); } }));
@@ -41916,9 +42487,62 @@ exports.default = SectionFilterPanel;
   !*** ./src/components/section/SectionInitPanel.tsx ***!
   \*****************************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-throw new Error("Module build failed: Error: Typescript emitted no output for C:\\Users\\ptida\\Documents\\eclipse-workspace\\jee-oxygen\\cs474-workspace\\cs474-spaghetti\\node\\src\\components\\section\\SectionInitPanel.tsx.\n    at successLoader (C:\\Users\\ptida\\Documents\\eclipse-workspace\\jee-oxygen\\cs474-workspace\\cs474-spaghetti\\node\\node_modules\\ts-loader\\dist\\index.js:39:15)\n    at Object.loader (C:\\Users\\ptida\\Documents\\eclipse-workspace\\jee-oxygen\\cs474-workspace\\cs474-spaghetti\\node\\node_modules\\ts-loader\\dist\\index.js:21:12)");
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SectionApp_tsx_1 = __webpack_require__(/*! @src/components/section/SectionApp.tsx */ "./src/components/section/SectionApp.tsx");
+var SectionInitPanel = (function (_super) {
+    __extends(SectionInitPanel, _super);
+    function SectionInitPanel(p) {
+        return _super.call(this, p) || this;
+    }
+    SectionInitPanel.prototype.render = function () {
+        var _this = this;
+        return [
+            React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Sections"),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
+            (React.createElement(react_bootstrap_1.Row, { key: "actions", className: "mb60" },
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 1 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.FILTER); } }, "Filter Sections")),
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 2 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.TABLE); } }, "Load all Sections")))),
+            (React.createElement(react_bootstrap_1.Row, { key: "entities", className: "mb30" },
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.CENTURY); } }, "Centuries")),
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.CURSUS); } }, "Cursuses")),
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.SRC_COMP); } }, "Source Completenesses")))),
+            (React.createElement(react_bootstrap_1.Row, { key: "ents2", className: "mb30" },
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.PROVENANCE); } }, "Provenances")),
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.NOTATION); } }, "Notations")),
+                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.MS_TYPE); } }, "Manuscript Types"))))
+        ];
+    };
+    return SectionInitPanel;
+}(React.Component));
+exports.default = SectionInitPanel;
+
 
 /***/ }),
 

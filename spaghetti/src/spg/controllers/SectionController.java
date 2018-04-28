@@ -496,7 +496,7 @@ public class SectionController extends SpgController {
 		HashMap<String, String> nvMap = new HashMap<>();
 		
 		primaryMap.put("notationID", nID);
-		nvMap.put("provenanceName", nName);
+		nvMap.put("notationName", nName);
 		
 		query = super.buildUpdateQuery("Notation", primaryMap, nvMap);
 		super.executeSQL(query);

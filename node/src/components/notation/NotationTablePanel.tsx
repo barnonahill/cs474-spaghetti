@@ -15,28 +15,28 @@ import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
 import SearchBar from '@src/components/common/SearchBar.tsx';
 
-import { Provenance } from '@src/models/provenance.ts';
+import { Notation } from '@src/models/notation.ts';
 import { TABLE_CONSTANTS } from '@src/index.tsx';
 
 interface P {
-	provenances: Provenance[]
-	onEdit: (c:Provenance) => void
-	onDelete: (c:Provenance) => void
+	notations: Notation[]
+	onEdit: (c:Notation) => void
+	onDelete: (c:Notation) => void
 	onRefresh: () => void
 	onBack: () => void
 }
 interface S {
-	provenances: Provenance[]
-	rowGetter: (i:Index) => Provenance
+	notations: Notation[]
+	rowGetter: (i:Index) => Notation
 }
 
-export default class ProvenanceTablePanel extends React.Component<P,S> {
+export default class NotationTablePanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
 		this.state = {
-			provenances: this.props.provenances,
-			rowGetter: (i:Index) => this.state.provenances[i.index],
+			notations: this.props.notations,
+			rowGetter: (i:Index) => this.state.notations[i.index],
 		};
 
 		this.renderDelete = this.renderDelete.bind(this);
@@ -46,7 +46,7 @@ export default class ProvenanceTablePanel extends React.Component<P,S> {
 
 	render() {
 		return [
-			<Header min key="header">Provenances</Header>,
+			<Header min key="header">Notations</Header>,
 			(<PanelMenu key="panelMenu">
 				<Row>
 					<Col sm={4}>
@@ -62,8 +62,8 @@ export default class ProvenanceTablePanel extends React.Component<P,S> {
 					</Col>
 					<Col sm={4}>
 						<SearchBar
-							placeholder="Filter by provenanceID and provenanceName..."
 							onSubmit={this.filter}
+							placeholder="Filter by notationID and notationName..."
 						/>
 					</Col>
 					<Col sm={2} smOffset={2}>
@@ -83,20 +83,20 @@ export default class ProvenanceTablePanel extends React.Component<P,S> {
 				width={TABLE_CONSTANTS.WIDTH}
 				headerHeight={TABLE_CONSTANTS.HEADER_HEIGHT}
 				rowHeight={TABLE_CONSTANTS.ROW_HEIGHT}
-				rowCount={this.state.provenances.length}
+				rowCount={this.state.notations.length}
 				rowGetter={this.state.rowGetter}
 			>
 
 				<Column
 					width={200}
-					label="Provenance ID"
-					dataKey="provenanceID"
+					label="Notation ID"
+					dataKey="notationID"
 				/>
 
 				<Column
 					width={TABLE_CONSTANTS.WIDTH - 330}
-					label="Provenance Name"
-					dataKey="provenanceName"
+					label="Notation Name"
+					dataKey="notationName"
 				/>
 
 				<Column
@@ -117,7 +117,7 @@ export default class ProvenanceTablePanel extends React.Component<P,S> {
 	}
 
 	renderDelete(p: TableCellProps) {
-		const ct:Provenance = p.rowData;
+		const ct:Notation = p.rowData;
 		return (<Button
 			bsStyle="danger"
 			bsSize="small"
@@ -127,7 +127,7 @@ export default class ProvenanceTablePanel extends React.Component<P,S> {
 	}
 
 	renderEdit(p: TableCellProps) {
-		const ct:Provenance = p.rowData;
+		const ct:Notation = p.rowData;
 		return (<Button
 			bsStyle="success"
 			bsSize="small"
@@ -139,18 +139,18 @@ export default class ProvenanceTablePanel extends React.Component<P,S> {
 	filter(v: string) {
 		this.setState((s:S) => {
 			if (v) {
-				s.provenances = this.props.provenances.filter(c => {
+				s.notations = this.props.notations.filter(c => {
 					var f = false;
-					f = c.provenanceID.toLowerCase().indexOf(v) !== -1;
+					f = c.notationID.toLowerCase().indexOf(v) !== -1;
 
-					if (!f && c.provenanceName) {
-							f = c.provenanceName.toLowerCase().indexOf(v) !== -1;
+					if (!f && c.notationName) {
+							f = c.notationName.toLowerCase().indexOf(v) !== -1;
 					}
 					return f;
 				});
 			}
 			else {
-				s.provenances = this.props.provenances;
+				s.notations = this.props.notations;
 			}
 			return s;
 		});

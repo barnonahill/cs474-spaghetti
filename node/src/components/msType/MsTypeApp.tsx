@@ -52,7 +52,8 @@ export default class MsTypeApp extends React.Component<P,S> {
 					onEdit={this.openEdit}
 					onDelete={this.confirmDelete}
 					onRefresh={this.loadMsTypes}
-				/>)
+				/>);
+				
 			case Panel.EDIT:
 				return (<EditPanel
 					msType={this.state.msType}
