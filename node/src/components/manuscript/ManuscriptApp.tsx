@@ -8,6 +8,8 @@ import EditPanel from '@src/components/manuscript/ManuscriptEditPanel.tsx';
 import MsTypeApp from '@src/components/msType/MsTypeApp.tsx';
 import PageLoader from '@src/components/common/PageLoader.tsx';
 
+import StateUtils from '@src/components/StateUtilities.ts'
+
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
 import * as ms from '@src/models/manuscript.ts';
@@ -48,6 +50,12 @@ interface S {
 }
 
 export default class ManuscriptApp extends React.Component<P,S> {
+	public readonly props: P
+	public readonly state: S
+
+	private setPanel: (panel: Panel, callback?: (s:S) => S, state?:S) => void
+	private setLoader: (loadMessage: string, callback?: (s:S) => S, state?:S) => void
+
 	constructor(p:P) {
 		super(p);
 
@@ -65,53 +73,64 @@ export default class ManuscriptApp extends React.Component<P,S> {
 			tempLibrary: false
 		};
 
-		this.setPanel = this.setPanel.bind(this);
-		this.confirmDelete = this.confirmDelete.bind(this);
-
-		this.onFilterLoad = this.onFilterLoad.bind(this);
-		this.onInitSelect = this.onInitSelect.bind(this);
+		// Panel event listeners
+		this.onFilterSubmit = this.onFilterSubmit.bind(this);
+		this.onInitSubmit = this.onInitSubmit.bind(this);
 		this.onEntityBack = this.onEntityBack.bind(this);
 
+		// Panel openers
 		this.openEditPanel = this.openEditPanel.bind(this);
 		this.openEntityPanel = this.openEntityPanel.bind(this);
 
+		// Data loaders
 		this.loadLibraries = this.loadLibraries.bind(this);
 		this.loadManuscripts = this.loadManuscripts.bind(this);
 		this.loadMsTypes = this.loadMsTypes.bind(this);
 
-		this.reloadManuscripts = this.reloadManuscripts.bind(this);
+		// Data manipulators
 		this.saveManuscript = this.saveManuscript.bind(this);
+		this.confirmDelete = this.confirmDelete.bind(this);
+
+		// State helpers
+		this.setPanel = StateUtils.setPanel.bind(this);
+		this.setLoader = StateUtils.setLoader.bind(this, Panel.LOADER);
 	}
 
 	componentDidMount() {
 		// Async, uses proxy.
-		this.loadMsTypes((state:S, msTypes:Array<MsType>) => {
-			state.msType = null;
-			MsType.destroyArray(state.msTypes);
+		this.setLoader('Loading Manuscript Types...');
+		this.loadMsTypes(msTypes => {
 
 			if (this.props.panel === Panel.TABLE) {
 				// Opened from LibraryEntityPanel
-				state.panel = Panel.LOADER;
-				state.loadMessage = 'Loading Manuscripts...';
+				this.setLoader('Loading Manuscripts...');
+				this.loadManuscripts(this.props.library.libSiglum, manuscripts => {
+					this.setState((s:S) => {
+						Country.destroyArray(s.msTypes);
+						Country.destroyArray(s.manuscripts);
+						s.msType = null;
+						s.manuscript = null;
 
-				this.loadManuscripts(this.props.library.libSiglum, false,
-						(s:S, manuscripts:ms.Manuscript[]) =>
-				{
-					ms.Manuscript.destroyArray(s.manuscripts);
+						s.msTypes = msTypes;
+						s.manuscripts = manuscripts;
+						s.country = this.props.country;
+						s.library = this.props.library;
+						this.setPanel(Panel.TABLE, null, s);
+						return s;
+					});
+				});
+			}
 
-					s.country = this.props.country;
-					s.library = this.props.library;
-					s.manuscripts = manuscripts;
-					s.panel = Panel.TABLE;
+			else {
+				this.setState((s:S) => {
+					Country.destroyArray(s.msTypes);
+					s.msType = null;
+
+					s.msTypes = msTypes;
+					this.setPanel(Panel.INIT, null, s);
 					return s;
 				});
 			}
-			else {
-				state.panel = Panel.INIT;
-			}
-
-			state.msTypes = msTypes;
-			return state;
 		});
 	}
 
@@ -123,14 +142,14 @@ export default class ManuscriptApp extends React.Component<P,S> {
 			default:
 				return (<InitPanel
 					onBack={this.props.onBack}
-					onSelect={this.onInitSelect}
+					onSelect={this.onInitSubmit}
 				/>);
 
 			case Panel.FILTER:
 				return (<FilterPanel
 					countries={this.props.countries}
 					onBack={() => this.setPanel(Panel.INIT)}
-					onSelect={this.onFilterLoad}
+					onSelect={this.onFilterSubmit}
 				/>);
 
 			case Panel.TABLE:
@@ -138,7 +157,21 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					country={this.state.country}
 					library={this.state.library}
 					manuscripts={this.state.manuscripts}
-					onRefresh={this.reloadManuscripts}
+
+					onRefresh={() => {
+						var libSiglum = (this.state.library ? this.state.library.libSiglum : null);
+						this.loadManuscripts(libSiglum, manuscripts => {
+							this.setState((s:S) => {
+								Country.destroyArray(s.manuscripts);
+								s.manuscript = null;
+
+								s.manuscripts = manuscripts;
+								this.setPanel(Panel.TABLE, null, s);
+								return s;
+							});
+						});
+					}}
+
 					onEdit={this.openEditPanel}
 					onDelete={this.confirmDelete}
 					onView={this.openEntityPanel}
@@ -177,29 +210,33 @@ export default class ManuscriptApp extends React.Component<P,S> {
 				return (<MsTypeApp
 					msTypes={this.state.msTypes}
 					onBack={() => this.setPanel(Panel.INIT)}
-					replaceMsTypes={(m) => this.setState((s:S) => {
-						s.msTypes = m;
-						return s;
-					})}
+
+					reloadMsTypes={() => {
+						this.loadMsTypes(msTypes => {
+							this.setState((s:S) => {
+								Country.destroyArray(s.msTypes);
+								s.msType = null;
+
+								s.msTypes = msTypes;
+								this.setPanel(Panel.MST, null, s);
+								return s;
+							});
+						})
+					}}
 				/>);
 		}
-	}
-
-	setPanel(p:Panel) {
-		this.setState((s:S) => {
-			s.panel = p;
-			return s;
-		});
 	}
 
 	confirmDelete(manuscript:ms.Manuscript) {
 		var del = confirm('Delete ' + manuscript.libSiglum + ' ' + manuscript.msSiglum + '?');
 		if (del) {
+			this.setLoader('Deleting Manuscript ' + manuscript.libSiglum + ' ' + manuscript.msSiglum + '...');
 			proxyFactory.getManuscriptProxy().deleteManuscript(manuscript.libSiglum, manuscript.msSiglum,
 				(s:boolean, e?:string) =>
 			{
 				if (e) {
-					alert(e);
+					alert('Error deleting Manuscript: ' + e);
+					this.setPanel(Panel.TABLE);
 				}
 				else if (s) {
 					this.setState((s:S) => {
@@ -213,65 +250,51 @@ export default class ManuscriptApp extends React.Component<P,S> {
 					});
 				}
 				else {
-					alert('Could not delete ' + manuscript.libSiglum + ' ' + manuscript.msSiglum);
+					alert('Could not delete ' + manuscript.libSiglum + ' ' + manuscript.msSiglum +
+						'. No error was provided.');
+					this.setPanel(Panel.TABLE);
 				}
 			});
 		}
 	}
 
-	onFilterLoad(c:Country, l:Library, libraries:Array<Library>) {
+	onFilterSubmit(c:Country, l:Library, libraries:Array<Library>) {
 		var countryID = c.countryID;
 		var libSiglum = l ? l.libSiglum : null;
+		this.setLoader('Loading manuscripts for ' + l.library + ', ' + c.country);
 
-		this.loadManuscripts(libSiglum, false, (s:S, manuscripts: Array<ms.Manuscript>) => {
-			s.panel = Panel.TABLE;
+		this.loadManuscripts(libSiglum, manuscripts => {
+			this.setPanel(Panel.TABLE, (s:S) => {
+				ms.Manuscript.destroyArray(s.manuscripts);
+				Library.destroyArray(s.libraries);
 
-			ms.Manuscript.destroyArray(s.manuscripts);
-			Library.destroyArray(s.libraries);
-
-			s.country = c;
-			s.library = l;
-			s.libraries = libraries;
-			s.manuscripts = manuscripts;
-			return s;
+				s.country = c;
+				s.library = l;
+				s.libraries = libraries;
+				s.manuscripts = manuscripts;
+				return s;
+			});
 		});
 	}
 
-	onInitSelect(p:Panel) {
-		switch (p) {
-			case Panel.FILTER:
-				this.setState((s:S) => {
-					s.panel = p;
-					return s;
-				});
-				break;
+	onInitSubmit(p:Panel) {
+		if (p === Panel.TABLE) {
+			this.setLoader("Loading Manuscripts...");
 
-			case Panel.TABLE:
-				this.setState((s:S) => {
-					s.panel = Panel.LOADER;
-					s.loadMessage = "Loading Manuscripts...";
-				});
-
-				this.loadManuscripts(null, false, (s:S, manuscripts:Array<ms.Manuscript>) => {
-					s.panel = p;
+			this.loadManuscripts(null, manuscripts => {
+				this.setPanel(p, (s:S) => {
 					Library.destroyArray(s.libraries);
 					ms.Manuscript.destroyArray(s.manuscripts);
-
 					s.country = null;
-					s.libraries = null;
+					s.library = null;
+
 					s.manuscripts = manuscripts;
 					return s;
 				});
-				break;
-
-			case Panel.MST:
-				this.setState((s:S) => {
-					s.panel = p;
-					return s;
-				});
-				break;
-			default:
-				break;
+			});
+		}
+		else {
+			this.setPanel(p);
 		}
 	}
 
@@ -385,68 +408,38 @@ export default class ManuscriptApp extends React.Component<P,S> {
 		});
 	}
 
-	loadManuscripts(libSiglum:string, useState:boolean,
-		stateSetter?: (s:S, m:Array<ms.Manuscript>) => S)
+	loadManuscripts(libSiglum:string, callback: (manuscripts: ms.Manuscript[]) => void)
 	{
-		if (useState) {
-			libSiglum = this.state.library ? this.state.library.libSiglum : null
-		}
+		var loadMessage = 'Loading Manuscripts';
+		loadMessage += (libSiglum
+			? ' for library ' + libSiglum
+			: '...');
+		this.setLoader(loadMessage);
 
 		proxyFactory.getManuscriptProxy().getManuscripts(libSiglum,
-			(manuscripts: Array<ms.Manuscript>, e?:string) =>
+			(manuscripts: ms.Manuscript[], e?:string) =>
 		{
 			if (e) {
-				alert(e);
+				alert('Error loading manuscripts: ' + e);
+				this.setPanel(Panel.INIT);
 			}
 			else {
-				this.setState((s:S) => {
-					if (stateSetter) {
-						return stateSetter(s, manuscripts);
-					}
-					else {
-						ms.Manuscript.destroyArray(s.manuscripts);
-						s.manuscripts = manuscripts;
-						return s;
-					}
-				});
+				callback(manuscripts);
 			}
 		});
 	}
 
-	loadMsTypes(stateSetter?: (s:S, msTypes: Array<MsType>) => S) {
+	loadMsTypes(callback: (msTypes: MsType[]) => void) {
+		this.setLoader('Loading Manuscript Types...');
+
 		proxyFactory.getManuscriptProxy().getMsTypes((msTypes:Array<MsType>, e?:string) => {
 			if (e) {
-				alert(e);
+				alert('Error loading Manuscript Types: ' + e);
+				this.props.onBack();
 			}
 			else {
-				this.setState((s:S) => {
-					if (stateSetter) {
-						return stateSetter(s, msTypes);
-					}
-					else {
-						s.msType = null;
-						MsType.destroyArray(s.msTypes);
-						s.msTypes = msTypes;
-						return s;
-					}
-				});
+				callback(msTypes);
 			}
-		});
-	}
-
-	reloadManuscripts() {
-		this.setState((s:S) => {
-			s.panel = Panel.LOADER;
-			s.loadMessage = 'Loading Manuscripts...';
-			return s;
-		});
-
-		this.loadManuscripts(null, true, (state:S, manuscripts:ms.Manuscript[]) => {
-			ms.Manuscript.destroyArray(state.manuscripts);
-
-			state.panel = Panel.TABLE;
-			state.manuscripts = manuscripts;
-			return state;
 		});
 	}
 

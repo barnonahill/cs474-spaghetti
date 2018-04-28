@@ -13,7 +13,7 @@ import CursusApp from '@src/components/cursus/CursusApp.tsx';
 import SourceCompletenessApp from '@src/components/sourceCompleteness/SourceCompletenessApp.tsx';
 import ProvenanceApp from '@src/components/provenance/ProvenanceApp.tsx';
 import NotationApp from '@src/components/notation/NotationApp.tsx';
-import MsTypeApp from '@src/components/MsType/MsTypeApp.tsx';
+import MsTypeApp from '@src/components/msType/MsTypeApp.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
@@ -470,7 +470,7 @@ export default class SectionApp extends React.Component<P,S> {
 		return (<MsTypeApp
 			msTypes={this.state.supports.msTypes}
 			onBack={() => this.setPanel(Panel.INIT)}
-			replaceMsTypes={() => this.loadMsTypes(msTypes => {
+			reloadMsTypes={() => this.loadMsTypes(msTypes => {
 				this.setState((s:S) => {
 					Cursus.destroyArray(s.supports.msTypes);
 					s.supports.msTypes = msTypes;
@@ -741,7 +741,7 @@ export default class SectionApp extends React.Component<P,S> {
 	}
 
 	onFilterSubmit(c:Country, l:Library, m:Manuscript, ls:Library[], ms:Manuscript[]) {
-		this.setLoader('Loading Manuscripts for ' + l.libSiglum + ' ' + m.msSiglum + '...');
+		this.setLoader('Loading Sections for Manuscript ' + l.libSiglum + ' ' + m.msSiglum + '...');
 
 		this.loadSections(l.libSiglum, m.msSiglum, ss => {
 			this.setState((s:S) => {

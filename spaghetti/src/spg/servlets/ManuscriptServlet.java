@@ -46,10 +46,11 @@ public class ManuscriptServlet extends SpgHttpServlet{
 	public void handleRequest(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		try 
 		{
-			manuscriptController.open();
 			Map<String, String> params = super.getParameters(req);
 			String action = super.getRequiredParameter(params, "action").toLowerCase();
 			String msg = null;
+			
+			manuscriptController.open();
 			if(action.equalsIgnoreCase(CREATE_MSTYPE))
             {
                 String msType = super.getRequiredParameter(params, "msType");
@@ -147,7 +148,9 @@ public class ManuscriptServlet extends SpgHttpServlet{
 			try {
 				manuscriptController.close();
 			}
-			catch (Exception e) {}
+			catch (Exception e) {
+				System.err.println("Exception closing manuscriptController: " + e.getMessage());
+			}
 		}
 	}
 

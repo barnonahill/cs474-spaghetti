@@ -14,40 +14,46 @@ import PanelMenu from '@src/components/common/PanelMenu.tsx';
 
 import * as mst from '@src/models/msType.ts';
 
+interface ValState {
+	msType: null | 'error'
+	msTypeName: null | 'error'
+	[x: string]: any
+}
+
 interface P {
-	msType: mst.MsType
+	isNew?: boolean
+	mProps?: mst.Properties
+	val?: ValState
 	onBack: () => void
 	onSubmit: (p:mst.Properties,isNew:boolean) => void
 }
 interface S {
 	isNew: boolean
 	mProps: mst.Properties
-	val: {
-		msType: any
-		msTypeName: any
-	}
+	val: ValState
 }
 
 export default class MsTypeEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
-		var isNew = !Boolean(p.msType);
-		var mProps: mst.Properties
-		if (isNew) {
-			mProps = {
-				msType: '',
-				msTypeName: ''
-			};
+		var isNew: boolean;
+		if (typeof this.props.isNew === 'boolean') {
+			isNew = this.props.isNew;
 		}
 		else {
-			mProps = p.msType.toProperties();
+			isNew = !Boolean(p.mProps)
 		}
 
 		this.state = {
 			isNew: isNew,
-			mProps: mProps,
-			val: {
+
+			mProps: p.mProps || {
+				msType: '',
+				msTypeName: ''
+			},
+
+			val: p.val || {
 				msType: null,
 				msTypeName: null
 			}
@@ -129,7 +135,7 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 			>Manuscript Type:</Col>);
 
 			value = (<Col sm={4} className="pt7 pl27">
-				{this.props.msType.msType}
+				{this.props.mProps.msType}
 			</Col>);
 		}
 
@@ -154,7 +160,7 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 
 	onSubmit(e:React.FormEvent<Form>) {
 		e.preventDefault();
-		var val:any = {
+		var val: Partial<ValState> = {
 			msTypeName: this.state.mProps.msTypeName ? null : 'error'
 		};
 
@@ -165,7 +171,7 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 		for (let k in val) {
 			if (val[k] !== null) {
 				return this.setState((s:S) => {
-					s.val = val;
+					s.val = val as ValState;
 					return s;
 				});
 			}
@@ -173,9 +179,9 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 
 		// Update validation state while submit is processing
 		this.setState((s:S) => {
-			s.val = val;
-			this.props.onSubmit(s.mProps, this.state.isNew);
+			s.val = val as ValState;
 			return s;
 		});
+		this.props.onSubmit(this.state.mProps, this.state.isNew);
 	}
 }

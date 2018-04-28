@@ -36776,176 +36776,6 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./src/components/MsType/MsTypeApp.tsx":
-/*!*********************************************!*\
-  !*** ./src/components/MsType/MsTypeApp.tsx ***!
-  \*********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __webpack_require__(/*! react */ "react");
-var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
-var MsTypeTablePanel_tsx_1 = __webpack_require__(/*! @src/components/msType/MsTypeTablePanel.tsx */ "./src/components/msType/MsTypeTablePanel.tsx");
-var MsTypeEditPanel_tsx_1 = __webpack_require__(/*! @src/components/msType/MsTypeEditPanel.tsx */ "./src/components/msType/MsTypeEditPanel.tsx");
-var mst = __webpack_require__(/*! @src/models/msType.ts */ "./src/models/msType.ts");
-var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
-var Panel;
-(function (Panel) {
-    Panel[Panel["TABLE"] = 0] = "TABLE";
-    Panel[Panel["EDIT"] = 1] = "EDIT";
-    Panel[Panel["LOADER"] = 2] = "LOADER";
-})(Panel || (Panel = {}));
-var MsTypeApp = (function (_super) {
-    __extends(MsTypeApp, _super);
-    function MsTypeApp(p) {
-        var _this = _super.call(this, p) || this;
-        _this.state = {
-            msTypes: p.msTypes,
-            msType: null,
-            panel: Panel.TABLE,
-            loadMessage: ''
-        };
-        _this.confirmDelete = _this.confirmDelete.bind(_this);
-        _this.openEdit = _this.openEdit.bind(_this);
-        _this.loadMsTypes = _this.loadMsTypes.bind(_this);
-        _this.saveMsType = _this.saveMsType.bind(_this);
-        return _this;
-    }
-    MsTypeApp.prototype.render = function () {
-        var _this = this;
-        switch (this.state.panel) {
-            case Panel.TABLE:
-                return (React.createElement(MsTypeTablePanel_tsx_1.default, { msTypes: this.state.msTypes, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: this.loadMsTypes }));
-            case Panel.EDIT:
-                return (React.createElement(MsTypeEditPanel_tsx_1.default, { msType: this.state.msType, onBack: function () { return _this.setState(function (s) {
-                        s.panel = Panel.TABLE;
-                        return s;
-                    }); }, onSubmit: this.saveMsType }));
-            case Panel.LOADER:
-                return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
-            default:
-                return null;
-        }
-    };
-    MsTypeApp.prototype.confirmDelete = function (msType) {
-        var _this = this;
-        var del = confirm('Delete ' + msType.msTypeName +
-            '? This will delete all manuscripts of this type!');
-        if (del) {
-            this.setState(function (s) {
-                s.panel = Panel.LOADER;
-                s.loadMessage = 'Deleting ' + msType.msType + '...';
-            });
-            ProxyFactory_ts_1.default.getManuscriptProxy().deleteMsType(msType.msType, function (s, e) {
-                if (e) {
-                    alert(e);
-                }
-                else if (s) {
-                    _this.setState(function (s) {
-                        var i = s.msTypes.findIndex(function (m) {
-                            return m.msType === msType.msType;
-                        });
-                        s.msTypes[i].destroy();
-                        s.msTypes.splice(i, 1);
-                        s.panel = Panel.TABLE;
-                        _this.props.replaceMsTypes(s.msTypes);
-                        return s;
-                    });
-                }
-            });
-        }
-    };
-    MsTypeApp.prototype.loadMsTypes = function () {
-        var _this = this;
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadMessage = 'Loading Manuscript Types...';
-            return s;
-        });
-        ProxyFactory_ts_1.default.getManuscriptProxy().getMsTypes(function (msTypes, e) {
-            if (e) {
-                alert(e);
-            }
-            else {
-                _this.setState(function (s) {
-                    mst.MsType.destroyArray(s.msTypes);
-                    s.msTypes = msTypes;
-                    s.msType = null;
-                    s.panel = Panel.TABLE;
-                    _this.props.replaceMsTypes(s.msTypes);
-                    return s;
-                });
-            }
-        });
-    };
-    MsTypeApp.prototype.openEdit = function (msType) {
-        this.setState(function (s) {
-            s.panel = Panel.EDIT;
-            s.msType = msType;
-            return s;
-        });
-    };
-    MsTypeApp.prototype.saveMsType = function (p, isNew) {
-        var _this = this;
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadMessage = 'Saving ' + p.msType + '...';
-        });
-        if (isNew) {
-            ProxyFactory_ts_1.default.getManuscriptProxy().createMsType(p, function (msType, e) {
-                if (e) {
-                    alert(e);
-                }
-                else {
-                    _this.setState(function (s) {
-                        s.msTypes.push(msType);
-                        s.panel = Panel.TABLE;
-                        _this.props.replaceMsTypes(s.msTypes);
-                        return s;
-                    });
-                }
-            });
-        }
-        else {
-            ProxyFactory_ts_1.default.getManuscriptProxy().updateMsType(p, function (msType, e) {
-                if (e) {
-                    alert(e);
-                }
-                else {
-                    _this.setState(function (s) {
-                        var i = s.msTypes.findIndex(function (m) {
-                            return m.msType === p.msType;
-                        });
-                        s.msTypes[i].destroy();
-                        s.msTypes[i] = msType;
-                        s.panel = Panel.TABLE;
-                        _this.props.replaceMsTypes(s.msTypes);
-                        return s;
-                    });
-                }
-            });
-        }
-    };
-    return MsTypeApp;
-}(React.Component));
-exports.default = MsTypeApp;
-
-
-/***/ }),
-
 /***/ "./src/components/SpaghettiApp.tsx":
 /*!*****************************************!*\
   !*** ./src/components/SpaghettiApp.tsx ***!
@@ -36991,6 +36821,54 @@ var SpaghettiApp = (function (_super) {
     return SpaghettiApp;
 }(React.Component));
 exports.default = SpaghettiApp;
+
+
+/***/ }),
+
+/***/ "./src/components/StateUtilities.ts":
+/*!******************************************!*\
+  !*** ./src/components/StateUtilities.ts ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var StateUtilities = (function () {
+    function StateUtilities() {
+    }
+    StateUtilities.setPanel = function (panel, callback, state) {
+        if (state) {
+            state.panel = panel;
+        }
+        else {
+            this.setState(function (s) {
+                s.panel = panel;
+                if (callback)
+                    return callback(s);
+                return s;
+            });
+        }
+    };
+    StateUtilities.setLoader = function (loadPanel, loadMessage, callback, state) {
+        if (state) {
+            state.panel = loadPanel;
+            state.loadMessage = loadMessage;
+        }
+        else {
+            this.setState(function (s) {
+                s.panel = loadPanel;
+                s.loadMessage = loadMessage;
+                if (callback)
+                    return callback(s);
+                return s;
+            });
+        }
+    };
+    return StateUtilities;
+}());
+exports.default = StateUtilities;
 
 
 /***/ }),
@@ -38682,9 +38560,10 @@ var ManuscriptEntityPanel_tsx_1 = __webpack_require__(/*! @src/components/manusc
 var ManuscriptEditPanel_tsx_1 = __webpack_require__(/*! @src/components/manuscript/ManuscriptEditPanel.tsx */ "./src/components/manuscript/ManuscriptEditPanel.tsx");
 var MsTypeApp_tsx_1 = __webpack_require__(/*! @src/components/msType/MsTypeApp.tsx */ "./src/components/msType/MsTypeApp.tsx");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
+var StateUtilities_ts_1 = __webpack_require__(/*! @src/components/StateUtilities.ts */ "./src/components/StateUtilities.ts");
+var country_ts_1 = __webpack_require__(/*! @src/models/country.ts */ "./src/models/country.ts");
 var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var ms = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
-var msType_ts_1 = __webpack_require__(/*! @src/models/msType.ts */ "./src/models/msType.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
 (function (Panel) {
@@ -38713,42 +38592,50 @@ var ManuscriptApp = (function (_super) {
             tempCountry: false,
             tempLibrary: false
         };
-        _this.setPanel = _this.setPanel.bind(_this);
-        _this.confirmDelete = _this.confirmDelete.bind(_this);
-        _this.onFilterLoad = _this.onFilterLoad.bind(_this);
-        _this.onInitSelect = _this.onInitSelect.bind(_this);
+        _this.onFilterSubmit = _this.onFilterSubmit.bind(_this);
+        _this.onInitSubmit = _this.onInitSubmit.bind(_this);
         _this.onEntityBack = _this.onEntityBack.bind(_this);
         _this.openEditPanel = _this.openEditPanel.bind(_this);
         _this.openEntityPanel = _this.openEntityPanel.bind(_this);
         _this.loadLibraries = _this.loadLibraries.bind(_this);
         _this.loadManuscripts = _this.loadManuscripts.bind(_this);
         _this.loadMsTypes = _this.loadMsTypes.bind(_this);
-        _this.reloadManuscripts = _this.reloadManuscripts.bind(_this);
         _this.saveManuscript = _this.saveManuscript.bind(_this);
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
+        _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         return _this;
     }
     ManuscriptApp.prototype.componentDidMount = function () {
         var _this = this;
-        this.loadMsTypes(function (state, msTypes) {
-            state.msType = null;
-            msType_ts_1.MsType.destroyArray(state.msTypes);
+        this.setLoader('Loading Manuscript Types...');
+        this.loadMsTypes(function (msTypes) {
             if (_this.props.panel === Panel.TABLE) {
-                state.panel = Panel.LOADER;
-                state.loadMessage = 'Loading Manuscripts...';
-                _this.loadManuscripts(_this.props.library.libSiglum, false, function (s, manuscripts) {
-                    ms.Manuscript.destroyArray(s.manuscripts);
-                    s.country = _this.props.country;
-                    s.library = _this.props.library;
-                    s.manuscripts = manuscripts;
-                    s.panel = Panel.TABLE;
-                    return s;
+                _this.setLoader('Loading Manuscripts...');
+                _this.loadManuscripts(_this.props.library.libSiglum, function (manuscripts) {
+                    _this.setState(function (s) {
+                        country_ts_1.Country.destroyArray(s.msTypes);
+                        country_ts_1.Country.destroyArray(s.manuscripts);
+                        s.msType = null;
+                        s.manuscript = null;
+                        s.msTypes = msTypes;
+                        s.manuscripts = manuscripts;
+                        s.country = _this.props.country;
+                        s.library = _this.props.library;
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
                 });
             }
             else {
-                state.panel = Panel.INIT;
+                _this.setState(function (s) {
+                    country_ts_1.Country.destroyArray(s.msTypes);
+                    s.msType = null;
+                    s.msTypes = msTypes;
+                    _this.setPanel(Panel.INIT, null, s);
+                    return s;
+                });
             }
-            state.msTypes = msTypes;
-            return state;
         });
     };
     ManuscriptApp.prototype.render = function () {
@@ -38758,11 +38645,22 @@ var ManuscriptApp = (function (_super) {
                 return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
             case Panel.INIT:
             default:
-                return (React.createElement(ManuscriptInitPanel_tsx_1.default, { onBack: this.props.onBack, onSelect: this.onInitSelect }));
+                return (React.createElement(ManuscriptInitPanel_tsx_1.default, { onBack: this.props.onBack, onSelect: this.onInitSubmit }));
             case Panel.FILTER:
-                return (React.createElement(ManuscriptFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.setPanel(Panel.INIT); }, onSelect: this.onFilterLoad }));
+                return (React.createElement(ManuscriptFilterPanel_tsx_1.default, { countries: this.props.countries, onBack: function () { return _this.setPanel(Panel.INIT); }, onSelect: this.onFilterSubmit }));
             case Panel.TABLE:
-                return (React.createElement(ManuscriptTablePanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscripts: this.state.manuscripts, onRefresh: this.reloadManuscripts, onEdit: this.openEditPanel, onDelete: this.confirmDelete, onView: this.openEntityPanel, onBack: this.props.panel === Panel.TABLE
+                return (React.createElement(ManuscriptTablePanel_tsx_1.default, { country: this.state.country, library: this.state.library, manuscripts: this.state.manuscripts, onRefresh: function () {
+                        var libSiglum = (_this.state.library ? _this.state.library.libSiglum : null);
+                        _this.loadManuscripts(libSiglum, function (manuscripts) {
+                            _this.setState(function (s) {
+                                country_ts_1.Country.destroyArray(s.manuscripts);
+                                s.manuscript = null;
+                                s.manuscripts = manuscripts;
+                                _this.setPanel(Panel.TABLE, null, s);
+                                return s;
+                            });
+                        });
+                    }, onEdit: this.openEditPanel, onDelete: this.confirmDelete, onView: this.openEntityPanel, onBack: this.props.panel === Panel.TABLE
                         ? this.props.onBack
                         : function () { return _this.setPanel(Panel.INIT); } }));
             case Panel.ENTITY:
@@ -38770,25 +38668,28 @@ var ManuscriptApp = (function (_super) {
             case Panel.EDIT:
                 return (React.createElement(ManuscriptEditPanel_tsx_1.default, { countries: this.props.countries, msTypes: this.state.msTypes, manuscript: this.state.manuscript, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveManuscript }));
             case Panel.MST:
-                return (React.createElement(MsTypeApp_tsx_1.default, { msTypes: this.state.msTypes, onBack: function () { return _this.setPanel(Panel.INIT); }, replaceMsTypes: function (m) { return _this.setState(function (s) {
-                        s.msTypes = m;
-                        return s;
-                    }); } }));
+                return (React.createElement(MsTypeApp_tsx_1.default, { msTypes: this.state.msTypes, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadMsTypes: function () {
+                        _this.loadMsTypes(function (msTypes) {
+                            _this.setState(function (s) {
+                                country_ts_1.Country.destroyArray(s.msTypes);
+                                s.msType = null;
+                                s.msTypes = msTypes;
+                                _this.setPanel(Panel.MST, null, s);
+                                return s;
+                            });
+                        });
+                    } }));
         }
-    };
-    ManuscriptApp.prototype.setPanel = function (p) {
-        this.setState(function (s) {
-            s.panel = p;
-            return s;
-        });
     };
     ManuscriptApp.prototype.confirmDelete = function (manuscript) {
         var _this = this;
         var del = confirm('Delete ' + manuscript.libSiglum + ' ' + manuscript.msSiglum + '?');
         if (del) {
+            this.setLoader('Deleting Manuscript ' + manuscript.libSiglum + ' ' + manuscript.msSiglum + '...');
             ProxyFactory_ts_1.default.getManuscriptProxy().deleteManuscript(manuscript.libSiglum, manuscript.msSiglum, function (s, e) {
                 if (e) {
-                    alert(e);
+                    alert('Error deleting Manuscript: ' + e);
+                    _this.setPanel(Panel.TABLE);
                 }
                 else if (s) {
                     _this.setState(function (s) {
@@ -38802,56 +38703,47 @@ var ManuscriptApp = (function (_super) {
                     });
                 }
                 else {
-                    alert('Could not delete ' + manuscript.libSiglum + ' ' + manuscript.msSiglum);
+                    alert('Could not delete ' + manuscript.libSiglum + ' ' + manuscript.msSiglum +
+                        '. No error was provided.');
+                    _this.setPanel(Panel.TABLE);
                 }
             });
         }
     };
-    ManuscriptApp.prototype.onFilterLoad = function (c, l, libraries) {
+    ManuscriptApp.prototype.onFilterSubmit = function (c, l, libraries) {
+        var _this = this;
         var countryID = c.countryID;
         var libSiglum = l ? l.libSiglum : null;
-        this.loadManuscripts(libSiglum, false, function (s, manuscripts) {
-            s.panel = Panel.TABLE;
-            ms.Manuscript.destroyArray(s.manuscripts);
-            library_ts_1.Library.destroyArray(s.libraries);
-            s.country = c;
-            s.library = l;
-            s.libraries = libraries;
-            s.manuscripts = manuscripts;
-            return s;
+        this.setLoader('Loading manuscripts for ' + l.library + ', ' + c.country);
+        this.loadManuscripts(libSiglum, function (manuscripts) {
+            _this.setPanel(Panel.TABLE, function (s) {
+                ms.Manuscript.destroyArray(s.manuscripts);
+                library_ts_1.Library.destroyArray(s.libraries);
+                s.country = c;
+                s.library = l;
+                s.libraries = libraries;
+                s.manuscripts = manuscripts;
+                return s;
+            });
         });
     };
-    ManuscriptApp.prototype.onInitSelect = function (p) {
-        switch (p) {
-            case Panel.FILTER:
-                this.setState(function (s) {
-                    s.panel = p;
-                    return s;
-                });
-                break;
-            case Panel.TABLE:
-                this.setState(function (s) {
-                    s.panel = Panel.LOADER;
-                    s.loadMessage = "Loading Manuscripts...";
-                });
-                this.loadManuscripts(null, false, function (s, manuscripts) {
-                    s.panel = p;
+    ManuscriptApp.prototype.onInitSubmit = function (p) {
+        var _this = this;
+        if (p === Panel.TABLE) {
+            this.setLoader("Loading Manuscripts...");
+            this.loadManuscripts(null, function (manuscripts) {
+                _this.setPanel(p, function (s) {
                     library_ts_1.Library.destroyArray(s.libraries);
                     ms.Manuscript.destroyArray(s.manuscripts);
                     s.country = null;
-                    s.libraries = null;
+                    s.library = null;
                     s.manuscripts = manuscripts;
                     return s;
                 });
-                break;
-            case Panel.MST:
-                this.setState(function (s) {
-                    s.panel = p;
-                    return s;
-                });
-                break;
-            default:
-                break;
+            });
+        }
+        else {
+            this.setPanel(p);
         }
     };
     ManuscriptApp.prototype.onEntityBack = function () {
@@ -38951,61 +38843,34 @@ var ManuscriptApp = (function (_super) {
             }
         });
     };
-    ManuscriptApp.prototype.loadManuscripts = function (libSiglum, useState, stateSetter) {
+    ManuscriptApp.prototype.loadManuscripts = function (libSiglum, callback) {
         var _this = this;
-        if (useState) {
-            libSiglum = this.state.library ? this.state.library.libSiglum : null;
-        }
+        var loadMessage = 'Loading Manuscripts';
+        loadMessage += (libSiglum
+            ? ' for library ' + libSiglum
+            : '...');
+        this.setLoader(loadMessage);
         ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(libSiglum, function (manuscripts, e) {
             if (e) {
-                alert(e);
+                alert('Error loading manuscripts: ' + e);
+                _this.setPanel(Panel.INIT);
             }
             else {
-                _this.setState(function (s) {
-                    if (stateSetter) {
-                        return stateSetter(s, manuscripts);
-                    }
-                    else {
-                        ms.Manuscript.destroyArray(s.manuscripts);
-                        s.manuscripts = manuscripts;
-                        return s;
-                    }
-                });
+                callback(manuscripts);
             }
         });
     };
-    ManuscriptApp.prototype.loadMsTypes = function (stateSetter) {
+    ManuscriptApp.prototype.loadMsTypes = function (callback) {
         var _this = this;
+        this.setLoader('Loading Manuscript Types...');
         ProxyFactory_ts_1.default.getManuscriptProxy().getMsTypes(function (msTypes, e) {
             if (e) {
-                alert(e);
+                alert('Error loading Manuscript Types: ' + e);
+                _this.props.onBack();
             }
             else {
-                _this.setState(function (s) {
-                    if (stateSetter) {
-                        return stateSetter(s, msTypes);
-                    }
-                    else {
-                        s.msType = null;
-                        msType_ts_1.MsType.destroyArray(s.msTypes);
-                        s.msTypes = msTypes;
-                        return s;
-                    }
-                });
+                callback(msTypes);
             }
-        });
-    };
-    ManuscriptApp.prototype.reloadManuscripts = function () {
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadMessage = 'Loading Manuscripts...';
-            return s;
-        });
-        this.loadManuscripts(null, true, function (state, manuscripts) {
-            ms.Manuscript.destroyArray(state.manuscripts);
-            state.panel = Panel.TABLE;
-            state.manuscripts = manuscripts;
-            return state;
         });
     };
     ManuscriptApp.prototype.saveManuscript = function (props, isNew) {
@@ -39874,7 +39739,7 @@ var React = __webpack_require__(/*! react */ "react");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
 var MsTypeTablePanel_tsx_1 = __webpack_require__(/*! @src/components/msType/MsTypeTablePanel.tsx */ "./src/components/msType/MsTypeTablePanel.tsx");
 var MsTypeEditPanel_tsx_1 = __webpack_require__(/*! @src/components/msType/MsTypeEditPanel.tsx */ "./src/components/msType/MsTypeEditPanel.tsx");
-var mst = __webpack_require__(/*! @src/models/msType.ts */ "./src/models/msType.ts");
+var StateUtilities_ts_1 = __webpack_require__(/*! @src/components/StateUtilities.ts */ "./src/components/StateUtilities.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
 (function (Panel) {
@@ -39888,125 +39753,132 @@ var MsTypeApp = (function (_super) {
         var _this = _super.call(this, p) || this;
         _this.state = {
             msTypes: p.msTypes,
-            msType: null,
             panel: Panel.TABLE,
-            loadMessage: ''
+            editPanelProps: {}
         };
-        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.renderEditPanel = _this.renderEditPanel.bind(_this);
         _this.openEdit = _this.openEdit.bind(_this);
-        _this.loadMsTypes = _this.loadMsTypes.bind(_this);
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
         _this.saveMsType = _this.saveMsType.bind(_this);
+        _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
+        _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         return _this;
     }
     MsTypeApp.prototype.render = function () {
-        var _this = this;
         switch (this.state.panel) {
             case Panel.TABLE:
-                return (React.createElement(MsTypeTablePanel_tsx_1.default, { msTypes: this.state.msTypes, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: this.loadMsTypes }));
+                return (React.createElement(MsTypeTablePanel_tsx_1.default, { msTypes: this.state.msTypes, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: this.props.reloadMsTypes }));
             case Panel.EDIT:
-                return (React.createElement(MsTypeEditPanel_tsx_1.default, { msType: this.state.msType, onBack: function () { return _this.setState(function (s) {
-                        s.panel = Panel.TABLE;
-                        return s;
-                    }); }, onSubmit: this.saveMsType }));
+                return this.renderEditPanel();
             case Panel.LOADER:
                 return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
             default:
                 return null;
         }
     };
+    MsTypeApp.prototype.renderEditPanel = function () {
+        var _this = this;
+        var edp = this.state.editPanelProps;
+        var isNew = edp.isNew;
+        var val = edp.val || null;
+        var mProps;
+        if (edp.mProps) {
+            mProps = edp.mProps;
+        }
+        else if (this.state.msType) {
+            mProps = this.state.msType.toProperties();
+        }
+        else {
+            mProps = null;
+        }
+        return (React.createElement(MsTypeEditPanel_tsx_1.default, { isNew: isNew, mProps: mProps, val: val, onBack: function () { return _this.setPanel(Panel.TABLE, function (s) {
+                s.editPanelProps = {};
+                s.msType = null;
+                return s;
+            }); }, onSubmit: this.saveMsType }));
+    };
     MsTypeApp.prototype.confirmDelete = function (msType) {
         var _this = this;
         var del = confirm('Delete ' + msType.msTypeName +
             '? This will delete all manuscripts of this type!');
         if (del) {
-            this.setState(function (s) {
-                s.panel = Panel.LOADER;
-                s.loadMessage = 'Deleting ' + msType.msType + '...';
-            });
+            this.setLoader('Deleting ' + msType.msType + '...');
             ProxyFactory_ts_1.default.getManuscriptProxy().deleteMsType(msType.msType, function (s, e) {
                 if (e) {
-                    alert(e);
+                    alert('Error deleting Manuscript Type: ' + e);
+                    _this.setPanel(Panel.TABLE);
                 }
                 else if (s) {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         var i = s.msTypes.findIndex(function (m) {
                             return m.msType === msType.msType;
                         });
                         s.msTypes[i].destroy();
                         s.msTypes.splice(i, 1);
-                        s.panel = Panel.TABLE;
-                        _this.props.replaceMsTypes(s.msTypes);
+                        s.msType = null;
                         return s;
                     });
+                }
+                else {
+                    _this.setPanel(Panel.TABLE);
+                    alert('Could not delete Manuscript Type ' + msType.msType);
                 }
             });
         }
     };
-    MsTypeApp.prototype.loadMsTypes = function () {
-        var _this = this;
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadMessage = 'Loading Manuscript Types...';
-            return s;
-        });
-        ProxyFactory_ts_1.default.getManuscriptProxy().getMsTypes(function (msTypes, e) {
-            if (e) {
-                alert(e);
-            }
-            else {
-                _this.setState(function (s) {
-                    mst.MsType.destroyArray(s.msTypes);
-                    s.msTypes = msTypes;
-                    s.msType = null;
-                    s.panel = Panel.TABLE;
-                    _this.props.replaceMsTypes(s.msTypes);
-                    return s;
-                });
-            }
-        });
-    };
     MsTypeApp.prototype.openEdit = function (msType) {
-        this.setState(function (s) {
-            s.panel = Panel.EDIT;
-            s.msType = msType;
-            return s;
+        this.setPanel(Panel.EDIT, function (state) {
+            state.msType = msType;
+            return state;
         });
     };
-    MsTypeApp.prototype.saveMsType = function (p, isNew) {
+    MsTypeApp.prototype.saveMsType = function (mProps, isNew) {
         var _this = this;
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadMessage = 'Saving ' + p.msType + '...';
-        });
+        this.setLoader('Saving ' + mProps.msType + '...');
+        var onError = function (e) {
+            alert('Error saving Manuscript Type: ' + e);
+            var lcErr = e.toLowerCase();
+            var val = {
+                msType: lcErr.indexOf(mProps.msType.toLowerCase()) === -1 ? null : 'error',
+                msTypeName: null
+            };
+            _this.setState(function (s) {
+                s.editPanelProps.isNew = true;
+                s.editPanelProps.mProps = mProps;
+                s.editPanelProps.val = val;
+                _this.setPanel(Panel.EDIT, null, s);
+                return s;
+            });
+        };
         if (isNew) {
-            ProxyFactory_ts_1.default.getManuscriptProxy().createMsType(p, function (msType, e) {
+            ProxyFactory_ts_1.default.getManuscriptProxy().createMsType(mProps, function (msType, e) {
                 if (e) {
-                    alert(e);
+                    onError(e);
                 }
                 else {
                     _this.setState(function (s) {
+                        s.editPanelProps = {};
                         s.msTypes.push(msType);
                         s.panel = Panel.TABLE;
-                        _this.props.replaceMsTypes(s.msTypes);
                         return s;
                     });
                 }
             });
         }
         else {
-            ProxyFactory_ts_1.default.getManuscriptProxy().updateMsType(p, function (msType, e) {
+            ProxyFactory_ts_1.default.getManuscriptProxy().updateMsType(mProps, function (msType, e) {
                 if (e) {
-                    alert(e);
+                    onError(e);
                 }
                 else {
                     _this.setState(function (s) {
+                        s.editPanelProps = {};
                         var i = s.msTypes.findIndex(function (m) {
-                            return m.msType === p.msType;
+                            return mProps.msType === m.msType;
                         });
                         s.msTypes[i].destroy();
                         s.msTypes[i] = msType;
                         s.panel = Panel.TABLE;
-                        _this.props.replaceMsTypes(s.msTypes);
                         return s;
                     });
                 }
@@ -40048,21 +39920,20 @@ var MsTypeEditPanel = (function (_super) {
     __extends(MsTypeEditPanel, _super);
     function MsTypeEditPanel(p) {
         var _this = _super.call(this, p) || this;
-        var isNew = !Boolean(p.msType);
-        var mProps;
-        if (isNew) {
-            mProps = {
-                msType: '',
-                msTypeName: ''
-            };
+        var isNew;
+        if (typeof _this.props.isNew === 'boolean') {
+            isNew = _this.props.isNew;
         }
         else {
-            mProps = p.msType.toProperties();
+            isNew = !Boolean(p.mProps);
         }
         _this.state = {
             isNew: isNew,
-            mProps: mProps,
-            val: {
+            mProps: p.mProps || {
+                msType: '',
+                msTypeName: ''
+            },
+            val: p.val || {
                 msType: null,
                 msTypeName: null
             }
@@ -40099,7 +39970,7 @@ var MsTypeEditPanel = (function (_super) {
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Manuscript Type:"));
-            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.msType.msType));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.mProps.msType));
         }
         return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "msType", validationState: this.state.val.msType },
             label,
@@ -40115,7 +39986,6 @@ var MsTypeEditPanel = (function (_super) {
         });
     };
     MsTypeEditPanel.prototype.onSubmit = function (e) {
-        var _this = this;
         e.preventDefault();
         var val = {
             msTypeName: this.state.mProps.msTypeName ? null : 'error'
@@ -40133,9 +40003,9 @@ var MsTypeEditPanel = (function (_super) {
         }
         this.setState(function (s) {
             s.val = val;
-            _this.props.onSubmit(s.mProps, _this.state.isNew);
             return s;
         });
+        this.props.onSubmit(this.state.mProps, this.state.isNew);
     };
     return MsTypeEditPanel;
 }(React.Component));
@@ -40989,7 +40859,7 @@ var CursusApp_tsx_1 = __webpack_require__(/*! @src/components/cursus/CursusApp.t
 var SourceCompletenessApp_tsx_1 = __webpack_require__(/*! @src/components/sourceCompleteness/SourceCompletenessApp.tsx */ "./src/components/sourceCompleteness/SourceCompletenessApp.tsx");
 var ProvenanceApp_tsx_1 = __webpack_require__(/*! @src/components/provenance/ProvenanceApp.tsx */ "./src/components/provenance/ProvenanceApp.tsx");
 var NotationApp_tsx_1 = __webpack_require__(/*! @src/components/notation/NotationApp.tsx */ "./src/components/notation/NotationApp.tsx");
-var MsTypeApp_tsx_1 = __webpack_require__(/*! @src/components/MsType/MsTypeApp.tsx */ "./src/components/MsType/MsTypeApp.tsx");
+var MsTypeApp_tsx_1 = __webpack_require__(/*! @src/components/msType/MsTypeApp.tsx */ "./src/components/msType/MsTypeApp.tsx");
 var country_ts_1 = __webpack_require__(/*! @src/models/country.ts */ "./src/models/country.ts");
 var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
@@ -41266,7 +41136,7 @@ var SectionApp = (function (_super) {
     };
     SectionApp.prototype.renderMsTypeApp = function () {
         var _this = this;
-        return (React.createElement(MsTypeApp_tsx_1.default, { msTypes: this.state.supports.msTypes, onBack: function () { return _this.setPanel(Panel.INIT); }, replaceMsTypes: function () { return _this.loadMsTypes(function (msTypes) {
+        return (React.createElement(MsTypeApp_tsx_1.default, { msTypes: this.state.supports.msTypes, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadMsTypes: function () { return _this.loadMsTypes(function (msTypes) {
                 _this.setState(function (s) {
                     cursus_ts_1.Cursus.destroyArray(s.supports.msTypes);
                     s.supports.msTypes = msTypes;
@@ -41457,7 +41327,7 @@ var SectionApp = (function (_super) {
     };
     SectionApp.prototype.onFilterSubmit = function (c, l, m, ls, ms) {
         var _this = this;
-        this.setLoader('Loading Manuscripts for ' + l.libSiglum + ' ' + m.msSiglum + '...');
+        this.setLoader('Loading Sections for Manuscript ' + l.libSiglum + ' ' + m.msSiglum + '...');
         this.loadSections(l.libSiglum, m.msSiglum, function (ss) {
             _this.setState(function (s) {
                 library_ts_1.Library.destroyArray(s.primaries.libraries);
@@ -43075,7 +42945,7 @@ var Spaghetti = (function () {
         }, 400);
         ProxyFactory_ts_1.default.getLibraryProxy().getCountries(function (c, e) {
             if (e) {
-                alert(e);
+                alert('Error loading countries: ' + e);
             }
             else {
                 _this.countries = c;

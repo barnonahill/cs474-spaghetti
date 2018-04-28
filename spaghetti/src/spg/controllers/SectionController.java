@@ -547,7 +547,7 @@ public class SectionController extends SpgController {
 		if (key.indexOf("num") == 0 || key.indexOf("linesPer") == 0) {
 			return value;
 		} else {
-			return "'" + value + "'";
+			return "'" + super.escapeString(value) + "'";
 		}
 	}
 }

@@ -42,7 +42,7 @@ class Spaghetti {
 
 		proxyFactory.getLibraryProxy().getCountries((c:Array<Country>, e?:string) => {
 			if (e) {
-				alert(e);
+				alert('Error loading countries: ' + e);
 			}
 			else {
 				this.countries = c;
