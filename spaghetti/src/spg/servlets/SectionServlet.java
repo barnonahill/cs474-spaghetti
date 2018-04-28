@@ -38,15 +38,30 @@ public class SectionServlet extends SpgHttpServlet {
 	private static final String GET_SECTIONS = "getsections";
 	private static final String DELETE_SECTION = "deletesections";
 
-	private static final String GET_CURSUSES = "GetCursuses";
-	private static final String GET_SRC_COMPS = "GetSourceCompletenesses";
-	private static final String GET_PROVENANCES = "GetProvenances";
-	private static final String GET_NOTATIONS = "GetNotations";
-
+	private static final String GET_CENTURIES = "GetCenturies";
 	private static final String CREATE_CENTURY = "CreateCentury";
 	private static final String UPDATE_CENTURY = "UpdateCentury";
 	private static final String DELETE_CENTURY = "DeleteCentury";
-	private static final String GET_CENTURIES = "GetCenturies";
+
+	private static final String GET_CURSUSES = "GetCursuses";
+	private static final String CREATE_CURSUS = "CreateCursus";
+	private static final String UPDATE_CURSUS = "UpdateCursus";
+	private static final String DELETE_CURSUS = "DeleteCursus";
+
+	private static final String GET_SRC_COMPS = "GetSourceCompletenesses";
+	private static final String CREATE_SRC_COMP = "CreateSourceCompleteness";
+	private static final String UPDATE_SRC_COMP = "UpdateSourceCompleteness";
+	private static final String DELETE_SRC_COMP = "DeleteSourceCompleteness";
+	
+	private static final String GET_PROVENANCES = "GetProvenances";
+	private static final String CREATE_PROVENANCE = "CreateProvenance";
+	private static final String UPDATE_PROVENANCE = "UpdateProvenance";
+	private static final String DELETE_PROVENANCE = "DeleteProvenance";
+	
+	private static final String GET_NOTATIONS = "GetNotations";
+	private static final String CREATE_NOTATION = "CreateNotation";
+	private static final String UPDATE_NOTATION = "UpdateNotation";
+	private static final String DELETE_NOTATION = "DeleteNotation";
 
 	public SectionServlet() {
 		super();
@@ -161,7 +176,7 @@ public class SectionServlet extends SpgHttpServlet {
 			}
 
 			else if (action.equalsIgnoreCase(DELETE_CENTURY)) {
-				String centuryID = super.getParameter(params, "centuryID");
+				String centuryID = super.getRequiredParameter(params, "centuryID");
 				msg = this.deleteCentury(centuryID);
 			}
 
@@ -169,91 +184,95 @@ public class SectionServlet extends SpgHttpServlet {
 				msg = this.getCursuses();
 			}
 
-			// else if (action.equalsIgnoreCase(UPDATE_CURSUS))
-			// {
-			// String cursusID = super.getParameter(params, "cursusID");
-			// msg = this.updateCursus(cursusID);
-			// }
-			//
-			// else if (action.equalsIgnoreCase(CREATE_CURSUS))
-			// {
-			// String cursusID = super.getParameter(params, "cursusID");
-			// msg = this.createCursus(cursusID);
-			// }
-			//
-			// else if (action.equalsIgnoreCase(DELETE_CURSUS))
-			// {
-			// String cursusID = super.getParameter(params, "cursusID");
-			// msg = this.deleteCurus(cursusID);
-			// }
+			else if (action.equalsIgnoreCase(UPDATE_CURSUS)) {
+				String cursusID = super.getRequiredParameter(params, "cursusID");
+				String cursusName = super.getParameter(params, "cursusName");
+
+				msg = this.updateCursus(cursusID, cursusName);
+			}
+
+			else if (action.equalsIgnoreCase(CREATE_CURSUS)) {
+				String cursusID = super.getRequiredParameter(params, "cursusID");
+				String cursusName = super.getParameter(params, "cursus");
+
+				msg = this.createCursus(cursusID, cursusName);
+			}
+
+			else if (action.equalsIgnoreCase(DELETE_CURSUS)) {
+				String cursusID = super.getRequiredParameter(params, "cursusID");
+				msg = this.deleteCursus(cursusID);
+			}
 
 			else if (action.equalsIgnoreCase(GET_SRC_COMPS)) {
 				msg = this.getSourceCompletenesses();
 			}
 
-			// else if (action.equalsIgnoreCase(UPDATE_SRC_COMPS))
-			// {
-			// String sourceCompletenessID = super.getParameter(params,
-			// "sourceCompletenessID");
-			// msg = this.updateSourceCompleteness(sourceCompletenessID);
-			// }
-			//
-			// else if (action.equalsIgnoreCase(CREATE_SRC_COMPS))
-			// {
-			// String sourceCompletenessID = super.getParameter(params,
-			// "sourceCompletenessID");
-			// msg = this.createSourceCompleteness(sourceCompletenessID);
-			// }
-			// else if (action.equalsIgnoreCase(DELETE_SRC_COMPS))
-			// {
-			// String sourceCompletenessID = super.getParameter(params,
-			// "sourceCompletenessID");
-			// msg = this.deleteSourceCompleteness(sourceCompletenessID);
-			// }
+			else if (action.equalsIgnoreCase(UPDATE_SRC_COMP)) {
+				String sourceCompletenessID = super.getRequiredParameter(params, "sourceCompletenessID");
+				String sourceCompletenessName = super.getParameter(params, "sourceCompletenessName");
+
+				msg = this.updateSourceCompleteness(sourceCompletenessID, sourceCompletenessName);
+			}
+
+			else if (action.equalsIgnoreCase(CREATE_SRC_COMP)) {
+				String sourceCompletenessID = super.getRequiredParameter(params, "sourceCompletenessID");
+				String sourceCompletenessName = super.getParameter(params, "sourceCompletenessName");
+
+				msg = this.createSourceCompleteness(sourceCompletenessID, sourceCompletenessName);
+			}
+
+			else if (action.equalsIgnoreCase(DELETE_SRC_COMP)) {
+				String sourceCompletenessID = super.getRequiredParameter(params, "sourceCompletenessID");
+				msg = this.deleteSourceCompleteness(sourceCompletenessID);
+			}
 
 			else if (action.equalsIgnoreCase(GET_PROVENANCES)) {
 				msg = this.getProvenances();
 			}
 
-			// else if (action.equalsIgnoreCase(UPDATE_PROVENANCE))
-			// {
-			// String provenanceID = super.getParameter(params, "provenanceID");
-			// msg = this.updateProvenance(provenanceID);
-			// }
-			//
-			// else if (action.equalsIgnoreCase(CREATE_PROVENANCE))
-			// {
-			// String provenanceID = super.getParameter(params, "provenanceID");
-			// msg = this.createProvenance(provenanceID);
-			// }
-			//
-			// else if (action.equalsIgnoreCase(DELETE_PROVENANCE))
-			// {
-			// String provenanceID = super.getParameter(params, "provenanceID");
-			// msg = this.deleteProvenance(provenanceID);
-			// }
+			 else if (action.equalsIgnoreCase(UPDATE_PROVENANCE))
+			 {
+			 String provenanceID = super.getRequiredParameter(params, "provenanceID");
+			 String provenanceName = super.getParameter(params, "provenanceName");
+			 msg = this.updateProvenance(provenanceID, provenanceName);
+			 }
+			
+			 else if (action.equalsIgnoreCase(CREATE_PROVENANCE))
+			 {
+			 String provenanceID = super.getRequiredParameter(params, "provenanceID");
+			 String provenanceName = super.getParameter(params, "provenanceName");
+			 msg = this.createProvenance(provenanceID, provenanceName);
+			 }
+			
+			 else if (action.equalsIgnoreCase(DELETE_PROVENANCE))
+			 {
+			 String provenanceID = super.getRequiredParameter(params, "provenanceID");
+			 msg = this.deleteProvenance(provenanceID);
+			 }
 
 			else if (action.equalsIgnoreCase(GET_NOTATIONS)) {
 				msg = this.getNotations();
 			}
 
-			// else if (action.equalsIgnoreCase(UPDATE_NOTATION))
-			// {
-			// String notationID = super.getParameter(params, "notationID");
-			// msg = this.updateNotation(notationID);
-			// }
-			//
-			// else if (action.equalsIgnoreCase(CREATE_NOTATION))
-			// {
-			// String notationID = super.getParameter(params, "notationID");
-			// msg = this.createNotation(notationID);
-			// }
-			//
-			// else if (action.equalsIgnoreCase(DELETE_NOTATION))
-			// {
-			// String notationID = super.getParameter(params, "notationID");
-			// msg = this.deleteNotation(notationID);
-			// }
+			 else if (action.equalsIgnoreCase(UPDATE_NOTATION))
+			 {
+			 String notationID = super.getRequiredParameter(params, "notationID");
+			 String notationName = super.getParameter(params, "notationName");
+			 msg = this.updateNotation(notationID, notationName);
+			 }
+			
+			 else if (action.equalsIgnoreCase(CREATE_NOTATION))
+			 {
+			 String notationID = super.getRequiredParameter(params, "notationID");
+			 String notationName = super.getParameter(params, "notationName");
+			 msg = this.createNotation(notationID, notationName);
+			 }
+			
+			 else if (action.equalsIgnoreCase(DELETE_NOTATION))
+			 {
+			 String notationID = super.getRequiredParameter(params, "notationID");
+			 msg = this.deleteNotation(notationID);
+			 }
 
 			else {
 				throw new Exception("Invalid action parameter.");
@@ -404,6 +423,15 @@ public class SectionServlet extends SpgHttpServlet {
 		return j.toString();
 	}
 
+	private String createCentury(String centuryID, String centuryName) throws Exception {
+		try {
+			Century c = sectionController.createCentury(centuryID, centuryName);
+			return c.toJSON().toString();
+		} catch (SQLIntegrityConstraintViolationException e) {
+			throw new Exception("An entry with the same primary key already exists.");
+		}
+	}
+
 	/**
 	 * updateCentury -
 	 * 
@@ -415,18 +443,7 @@ public class SectionServlet extends SpgHttpServlet {
 		try {
 			Century c = sectionController.updateCentury(centuryID, centuryName);
 			return c.toJSON().toString();
-		} 
-		catch (SQLIntegrityConstraintViolationException e) {
-			throw new Exception("An entry with the same primary key already exists.");
-		}
-	}
-
-	private String createCentury(String centuryID, String centuryName) throws Exception {
-		try {
-			Century c = sectionController.createCentury(centuryID, centuryName);
-			return c.toJSON().toString();
-		} 
-		catch (SQLIntegrityConstraintViolationException e) {
+		} catch (SQLIntegrityConstraintViolationException e) {
 			throw new Exception("An entry with the same primary key already exists.");
 		}
 	}
@@ -434,15 +451,14 @@ public class SectionServlet extends SpgHttpServlet {
 	private String deleteCentury(String centuryID) throws Exception {
 		JSONObject j = new JSONObject();
 		boolean success = false;
-		
+
 		try {
 			sectionController.deleteCentury(centuryID);
 			success = true;
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			success = false;
 		}
-		
+
 		j.put("success", success);
 		return j.toString();
 	}
@@ -461,18 +477,18 @@ public class SectionServlet extends SpgHttpServlet {
 		return j.toString();
 	}
 
-	private String createCursus(String cursusID) throws Exception {
+	private String createCursus(String cursusID, String cursusName) throws Exception {
 		try {
-			Cursus c = sectionController.createCursus(cursusID);
+			Cursus c = sectionController.createCursus(cursusID, cursusName);
 			return c.toJSON().toString();
 		} catch (SQLIntegrityConstraintViolationException e) {
 			throw new Exception("An entry with the same primary key already exists.");
 		}
 	}
 
-	private String updateCursus(String cursusID) throws Exception {
+	private String updateCursus(String cursusID, String cursusName) throws Exception {
 		try {
-			Cursus c = sectionController.updateCursus(cursusID);
+			Cursus c = sectionController.updateCursus(cursusID, cursusName);
 			return c.toJSON().toString();
 		} catch (SQLIntegrityConstraintViolationException e) {
 			throw new Exception("An entry with the same primary key already exists.");
@@ -507,18 +523,22 @@ public class SectionServlet extends SpgHttpServlet {
 		return j.toString();
 	}
 
-	private String updateSourceCompleteness(String sourceCompletenessID) throws Exception {
+	private String updateSourceCompleteness(String sourceCompletenessID, String sourceCompletenessName)
+			throws Exception {
 		try {
-			SourceCompleteness sc = sectionController.updateSourceCompleteness(sourceCompletenessID);
+			SourceCompleteness sc = sectionController.updateSourceCompleteness(sourceCompletenessID,
+					sourceCompletenessName);
 			return sc.toJSON().toString();
 		} catch (SQLIntegrityConstraintViolationException e) {
 			throw new Exception("An entry with the same primary key already exists.");
 		}
 	}
 
-	private String createSourceCompleteness(String sourceCompletenessID) throws Exception {
+	private String createSourceCompleteness(String sourceCompletenessID, String sourceCompletenessName)
+			throws Exception {
 		try {
-			SourceCompleteness sc = sectionController.createSourceCompleteness(sourceCompletenessID);
+			SourceCompleteness sc = sectionController.createSourceCompleteness(sourceCompletenessID,
+					sourceCompletenessName);
 			return sc.toJSON().toString();
 		} catch (SQLIntegrityConstraintViolationException e) {
 			throw new Exception("An entry with the same primary key already exists.");
@@ -531,12 +551,12 @@ public class SectionServlet extends SpgHttpServlet {
 		try {
 			sectionController.deleteSourceCompleteness(sourceCompletenessID);
 			success = true;
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			success = false;
-		} finally {
-			j.put("success", success);
-			return j.toString();
 		}
+
+		j.put("success", success);
+		return j.toString();
 	}
 
 	private String getProvenances() throws Exception {
@@ -553,19 +573,18 @@ public class SectionServlet extends SpgHttpServlet {
 		return j.toString();
 	}
 
-	private String updateProvenance(String provenanceID) throws Exception {
+	private String updateProvenance(String pID, String pName) throws Exception {
 		try {
-			Provenance p = sectionController.updateProvenance(provenanceID);
+			Provenance p = sectionController.updateProvenance(pID, pName);
 			return p.toJSON().toString();
-		}
-		catch (SQLIntegrityConstraintViolationException e) {
+		} catch (SQLIntegrityConstraintViolationException e) {
 			throw new Exception("An entry with the same primary key already exists.");
 		}
 	}
 
-	private String createProvenance(String provenanceID) throws Exception {
+	private String createProvenance(String pID, String pName) throws Exception {
 		try {
-			Provenance p = sectionController.createProvenance(provenanceID);
+			Provenance p = sectionController.createProvenance(pID, pName);
 			return p.toJSON().toString();
 		} catch (SQLIntegrityConstraintViolationException e) {
 			throw new Exception("An entry with the same primary key already exists.");
@@ -579,12 +598,12 @@ public class SectionServlet extends SpgHttpServlet {
 		try {
 			sectionController.deleteProvenance(provenanceID);
 			success = true;
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			success = false;
-		} finally {
-			j.put("success", success);
-			return j.toString();
 		}
+		
+		j.put("success", success);
+		return j.toString();
 	}
 
 	private String getNotations() throws Exception {
@@ -601,18 +620,18 @@ public class SectionServlet extends SpgHttpServlet {
 		return j.toString();
 	}
 
-	private String updateNotation(String notationID) throws Exception {
+	private String updateNotation(String nID, String nName) throws Exception {
 		try {
-			Notation n = sectionController.updateNotation(notationID);
+			Notation n = sectionController.updateNotation(nID, nName);
 			return n.toJSON().toString();
 		} catch (SQLIntegrityConstraintViolationException e) {
 			throw new Exception("An entry with the same primary key already exists.");
 		}
 	}
 
-	private String createNotation(String notationID) throws Exception {
+	private String createNotation(String nID, String nName) throws Exception {
 		try {
-			Notation n = sectionController.createNotation(notationID);
+			Notation n = sectionController.createNotation(nID, nName);
 			return n.toJSON().toString();
 		} catch (SQLIntegrityConstraintViolationException e) {
 			throw new Exception("An entry with the same primary key already exists.");
@@ -625,11 +644,11 @@ public class SectionServlet extends SpgHttpServlet {
 		try {
 			sectionController.deleteNotation(notationID);
 			success = true;
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			success = false;
-		} finally {
-			j.put("success", success);
-			return j.toString();
 		}
+		
+		j.put("success", success);
+		return j.toString();
 	}
 }

@@ -9,6 +9,9 @@ import EditPanel from '@src/components/section/SectionEditPanel.tsx';
 import EntityPanel from '@src/components/section/SectionEntityPanel.tsx';
 
 import CenturyApp from '@src/components/century/CenturyApp.tsx';
+import CursusApp from '@src/components/cursus/CursusApp.tsx';
+import SourceCompletenessApp from '@src/components/sourceCompleteness/SourceCompletenessApp.tsx';
+import ProvenanceApp from '@src/components/provenance/ProvenanceApp.tsx';
 
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
@@ -109,7 +112,11 @@ export default class SectionApp extends React.Component<P,S> {
 		this.renderEntity = this.renderEntity.bind(this);
 		this.renderTable = this.renderTable.bind(this);
 		this.renderLoader = this.renderLoader.bind(this);
+
 		this.renderCenturyApp = this.renderCenturyApp.bind(this);
+		this.renderCursusApp = this.renderCursusApp.bind(this);
+		this.renderSourceCompletenessApp = this.renderSourceCompletenessApp.bind(this);
+		this.renderProvenanceApp = this.renderProvenanceApp.bind(this);
 
 		// Support load bindings
 		this.loadCenturies = this.loadCenturies.bind(this);
@@ -147,7 +154,6 @@ export default class SectionApp extends React.Component<P,S> {
 		this.confirmDelete = this.confirmDelete.bind(this);
 
 		// Entity manipulation binding
-		// TODO - should be section
 		this.saveSection = this.saveSection.bind(this);
 	}
 
@@ -265,6 +271,18 @@ export default class SectionApp extends React.Component<P,S> {
 
 			case Panel.CENTURY:
 				return this.renderCenturyApp();
+
+			case Panel.CURSUS:
+				return this.renderCursusApp();
+
+			case Panel.SRC_COMP:
+				return this.renderSourceCompletenessApp();
+
+			case Panel.PROVENANCE:
+				return this.renderProvenanceApp();
+
+			case Panel.NOTATION:
+				return null;
 		}
 	}
 
@@ -305,23 +323,6 @@ export default class SectionApp extends React.Component<P,S> {
 	 * Gets the entity view of a Section.
 	 */
 	renderEntity() {
-		// interface P {
-		// 	entities: {
-		// 		country: Country
-		// 		library: Library
-		// 		manuscript: Manuscript
-		// 		section: Section
-		//
-		// 		century?: Century
-		// 		cursus?: Cursus
-		// 		provenance?: Provenance
-		// 		notation?: Notation
-		// 		sectionType?: MsType
-		// 		sourceComp: SourceCompleteness
-		// 	}
-		//
-		// 	onBack: () => void
-		// }
 		return (<EntityPanel
 		 	onBack={() => this.setPanel(Panel.TABLE)}
 			entities = {{
@@ -385,12 +386,57 @@ export default class SectionApp extends React.Component<P,S> {
 	renderCenturyApp() {
 		return (<CenturyApp
 			centuries={this.state.supports.centuries}
-			onBack={this.props.onBack}
-			reloadCenturies={(subCallback) => this.loadCenturies(centuries => {
+			onBack={() => this.setPanel(Panel.INIT)}
+			reloadCenturies={() => this.loadCenturies(centuries => {
 				this.setState((s:S) => {
 					Century.destroyArray(s.supports.centuries);
 					s.supports.centuries = centuries;
-					subCallback(centuries);
+					this.setPanel(Panel.CENTURY, null, s);
+					return s;
+				});
+			})}
+		/>);
+	}
+
+	renderCursusApp() {
+		return (<CursusApp
+			cursuses={this.state.supports.cursuses}
+			onBack={() => this.setPanel(Panel.INIT)}
+			reloadCursuses={() => this.loadCursuses(cursuses => {
+				this.setState((s:S) => {
+					Cursus.destroyArray(s.supports.cursuses);
+					s.supports.cursuses = cursuses;
+					this.setPanel(Panel.CURSUS, null, s);
+					return s;
+				});
+			})}
+		/>);
+	}
+
+	renderSourceCompletenessApp() {
+		return (<SourceCompletenessApp
+			sourceCompletenesses={this.state.supports.srcComps}
+			onBack={() => this.setPanel(Panel.INIT)}
+			reloadSourceCompletenesses={() => this.loadSrcComps(srcComps => {
+				this.setState((s:S) => {
+					Cursus.destroyArray(s.supports.srcComps);
+					s.supports.srcComps = srcComps;
+					this.setPanel(Panel.SRC_COMP, null, s);
+					return s;
+				});
+			})}
+		/>);
+	}
+
+	renderProvenanceApp() {
+		return (<ProvenanceApp
+			provenances={this.state.supports.provenances}
+			onBack={() => this.setPanel(Panel.INIT)}
+			reloadProvenances={() => this.loadProvenances(provs => {
+				this.setState((s:S) => {
+					Cursus.destroyArray(s.supports.provs);
+					s.supports.provs = provs;
+					this.setPanel(Panel.PROVENANCE, null, s);
 					return s;
 				});
 			})}

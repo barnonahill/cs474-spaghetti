@@ -256,7 +256,7 @@ public abstract class SpgController {
 					updates.append("NULL");
 				}
 				else {
-					updates.append(checkVarType(val));					
+					updates.append(checkVarType(name, val));					
 				}
 			}
 		}
@@ -290,7 +290,7 @@ public abstract class SpgController {
 					updates.append(name + " = NULL");
 				}
 				else {
-					updates.append(name + " = " + checkVarType(val));
+					updates.append(name + " = " + checkVarType(name, val));
 				}
 			}
 		}
@@ -333,7 +333,7 @@ public abstract class SpgController {
 	 * @param var - a string.
 	 * @return filterValue or 'filterValue' where filterValue is a String.
 	 */
-	private String checkVarType(String key, String value) {
+	protected String checkVarType(String key, String value) {
 		String newValue = value;
 		
     	if (newValue.equalsIgnoreCase("true") || newValue.equalsIgnoreCase("false")) {

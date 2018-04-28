@@ -10,6 +10,7 @@ import SpgModel from '@src/models/SpgModel.ts';
 export interface Properties {
 	cursusID: string;
 	cursusName: string;
+	[x: string]: any
 }
 
 /**

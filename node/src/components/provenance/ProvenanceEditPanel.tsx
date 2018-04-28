@@ -12,48 +12,48 @@ import {
 import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
 
-import * as ct from '@src/models/century.ts';
+import * as pv from '@src/models/provenance.ts';
 
 interface P {
-	century: ct.Century
+	provenance: pv.Provenance
 	onBack: () => void
-	onSubmit: (ctProps:ct.Properties, isNew:boolean) => void
+	onSubmit: (pvProps:pv.Properties, isNew:boolean) => void
 }
 interface S {
 	isNew: boolean
-	ctProps: ct.Properties
+	pvProps: pv.Properties
 
 	// validationState
 	val: any
 }
 
-export default class CenturyEditPanel extends React.Component<P,S> {
+export default class ProvenanceEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
-		var isNew = !Boolean(p.century);
-		var ctProps: ct.Properties;
+		var isNew = !Boolean(p.provenance);
+		var pvProps: pv.Properties;
 
 		if (isNew) {
-			ctProps = {
-				centuryID: '',
-				centuryName: ''
+			pvProps = {
+				provenanceID: '',
+				provenanceName: ''
 			}
 		}
 
 		else {
-			ctProps = p.century.toProperties();
-			ctProps.centuryName = ctProps.centuryName || '';
+			pvProps = p.provenance.toProperties();
+			pvProps.provenanceName = pvProps.provenanceName || '';
 		}
 
 		this.state = {
 			isNew: isNew,
-			ctProps: ctProps,
+			pvProps: pvProps,
 			val: null
 		};
 
 		// render helper
-		this.getCenturyIDFormGroup = this.getCenturyIDFormGroup.bind(this);
+		this.getProvenanceIDFormGroup = this.getProvenanceIDFormGroup.bind(this);
 
 		// event handlers
 		this.onChange = this.onChange.bind(this);
@@ -63,8 +63,8 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 	render() {
 		var x: JSX.Element[] = [];
 		x.push(<Header key="header" min>{this.state.isNew
-			? 'Create a Century'
-			: 'Edit Century: ' + this.props.century.centuryName}</Header>);
+			? 'Create a Provenance'
+			: 'Edit Provenance: ' + this.props.provenance.provenanceName}</Header>);
 
 		x.push(<PanelMenu key="panelMenu">
 			<Button
@@ -77,19 +77,19 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 			horizontal
 			onSubmit={this.onSubmit}
 		>
-			{this.getCenturyIDFormGroup()}
+			{this.getProvenanceIDFormGroup()}
 
 			<FormGroup
-				controlId="centuryName"
+				controlId="provenanceName"
 			>
 				<Col
 					sm={3}
 					componentClass={ControlLabel}
-				>Century Name:</Col>
+				>Provenance Name:</Col>
 				<Col sm={4}>
 					<FormControl
 						type="text"
-						value={this.state.ctProps.centuryName}
+						value={this.state.pvProps.provenanceName}
 						onChange={this.onChange}
 					/>
 				</Col>
@@ -108,7 +108,7 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 		return x;
 	}
 
-	getCenturyIDFormGroup() {
+	getProvenanceIDFormGroup() {
 		var label, value: JSX.Element;
 
 		if (this.state.isNew) {
@@ -116,12 +116,12 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 				sm={3}
 				componentClass={ControlLabel}
 				className="required"
-			>Century ID:</Col>);
+			>Provenance ID:</Col>);
 
 			value = (<Col sm={4}>
 				<FormControl
 					type="text"
-					value={this.state.ctProps.centuryID}
+					value={this.state.pvProps.provenanceID}
 					onChange={this.onChange}
 				/>
 			</Col>);
@@ -131,15 +131,15 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 			label = (<Col
 				sm={3}
 				componentClass={ControlLabel}
-			>Century ID:</Col>);
+			>Provenance ID:</Col>);
 
 			value = (<Col sm={4} className="pt7 pl27">
-				{this.props.century.centuryID}
+				{this.props.provenance.provenanceID}
 			</Col>);
 		}
 
 		return (<FormGroup
-			controlId="centuryID"
+			controlId="provenanceID"
 			validationState={this.state.val}
 		>
 			{label}
@@ -153,22 +153,23 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 		const v = target.value;
 
 		this.setState((s:S) => {
-			s.ctProps[k] = v;
+			s.pvProps[k] = v;
 			return s;
 		});
 	}
 
 	onSubmit(e:React.FormEvent<Form>) {
 		e.preventDefault();
-		var val = this.state.ctProps.centuryID ? null : 'error'
+
+		var val = this.state.pvProps.provenanceID ? null : 'error';
 
 		this.setState((s:S) => {
-			s.val = val;
+			s.val = val as S['val'];
 			return s;
 		});
 
 		if (val === null) {
-			this.props.onSubmit(this.state.ctProps, this.state.isNew);
+			this.props.onSubmit(this.state.pvProps, this.state.isNew);
 		}
 	}
 }

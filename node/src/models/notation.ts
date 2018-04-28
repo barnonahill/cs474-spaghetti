@@ -10,6 +10,7 @@ import SpgModel from '@src/models/SpgModel.ts';
 export interface Properties {
 	notationID: string;
 	notationName: string;
+	[x:string]: any
 }
 
 /**

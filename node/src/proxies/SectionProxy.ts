@@ -103,74 +103,6 @@ export default class SectionProxy extends SpgProxy {
 		});
 	}
 
-	getCursuses(callback: (cursuses:crs.Cursus[], e?:string) => void) {
-		var params = {action:'GetCursuses'};
-
-		super.doPost(params,(res:any) => {
-			var d = res.data;
-			if (d.e) {
-				SpgProxy.callbackError(callback, d.e);
-			}
-			else if (d.constructor === Array) {
-				callback(d.map((p:crs.Properties) => new crs.Cursus(p), null));
-			}
-			else {
-				SpgProxy.callbackError(callback, null);
-			}
-		});
-	}
-
-	getSourceCompletenesses(callback: (srcComps:sc.SourceCompleteness[], e?:string) => void) {
-		var params = {action:'GetSourceCompletenesses'};
-
-		super.doPost(params,(res:any) => {
-			var d = res.data;
-			if (d.e) {
-				SpgProxy.callbackError(callback, d.e);
-			}
-			else if (d.constructor === Array) {
-				callback(d.map((p:sc.Properties) => new sc.SourceCompleteness(p), null));
-			}
-			else {
-				SpgProxy.callbackError(callback, null);
-			}
-		});
-	}
-
-	getProvenances(callback: (provs:prv.Provenance[], e?:string) => void) {
-		var params = {action:'GetProvenances'};
-
-		super.doPost(params,(res:any) => {
-			var d = res.data;
-			if (d.e) {
-				SpgProxy.callbackError(callback, d.e);
-			}
-			else if (d.constructor === Array) {
-				callback(d.map((p:prv.Properties) => new prv.Provenance(p), null));
-			}
-			else {
-				SpgProxy.callbackError(callback, null);
-			}
-		});
-	}
-
-	getNotations(callback: (notes:nt.Notation[], e?:string) => void) {
-		var params = {action:'GetNotations'};
-
-		super.doPost(params,(res:any) => {
-			var d = res.data;
-			if (d.e) {
-				SpgProxy.callbackError(callback, d.e);
-			}
-			else if (d.constructor === Array) {
-				callback(d.map((p:nt.Properties) => new nt.Notation(p), null));
-			}
-			else {
-				SpgProxy.callbackError(callback, null);
-			}
-		});
-	}
-
 	createCentury(p:cty.Properties, callback: (c: cty.Century, e?:string) => void) {
 		var params:any = {
 			action: 'CreateCentury'
@@ -207,6 +139,265 @@ export default class SectionProxy extends SpgProxy {
 		var params:any = {
 			action: 'DeleteCentury',
 			centuryID: centuryID
+		};
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+			callback(Boolean(d.success), null);
+		});
+	}
+
+	getCursuses(callback: (cursuses:crs.Cursus[], e?:string) => void) {
+		var params = {action:'GetCursuses'};
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.e) {
+				SpgProxy.callbackError(callback, d.e);
+			}
+			else if (d.constructor === Array) {
+				callback(d.map((p:crs.Properties) => new crs.Cursus(p), null));
+			}
+			else {
+				SpgProxy.callbackError(callback, null);
+			}
+		});
+	}
+
+	createCursus(p:crs.Properties, callback: (c: crs.Cursus, e?:string) => void) {
+		var params:any = {
+			action: 'CreateCursus'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+
+			callback(new crs.Cursus(d as crs.Properties), null);
+		});
+	}
+
+	updateCursus(p:crs.Properties, callback: (c: crs.Cursus, e?:string) => void) {
+		var params:any = {
+			action: 'UpdateCursus'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+
+			callback(new crs.Cursus(d as crs.Properties), null);
+		});
+	}
+
+	deleteCursus(cursusID: string, callback: (s:boolean, e?:string) => void) {
+		var params:any = {
+			action: 'DeleteCursus',
+			cursusID: cursusID
+		};
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+			callback(Boolean(d.success), null);
+		});
+	}
+
+	getSourceCompletenesses(callback: (srcComps:sc.SourceCompleteness[], e?:string) => void) {
+		var params = {action:'GetSourceCompletenesses'};
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.e) {
+				SpgProxy.callbackError(callback, d.e);
+			}
+			else if (d.constructor === Array) {
+				callback(d.map((p:sc.Properties) => new sc.SourceCompleteness(p), null));
+			}
+			else {
+				SpgProxy.callbackError(callback, null);
+			}
+		});
+	}
+
+	createSourceCompleteness(p:sc.Properties,
+		callback: (sc: sc.SourceCompleteness, e?:string) => void)
+	{
+		var params:any = {
+			action: 'CreateSourceCompleteness'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+
+			callback(new sc.SourceCompleteness(d as sc.Properties), null);
+		});
+	}
+
+	updateSourceCompleteness(p:sc.Properties,
+		callback: (sc: sc.SourceCompleteness, e?:string) => void) {
+		var params:any = {
+			action: 'UpdateSourceCompleteness'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+
+			callback(new sc.SourceCompleteness(d as sc.Properties), null);
+		});
+	}
+
+	deleteSourceCompleteness(scID: string, callback: (s:boolean, e?:string) => void) {
+		var params:any = {
+			action: 'DeleteSourceCompleteness',
+			sourceCompletenessID: scID
+		};
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+			callback(Boolean(d.success), null);
+		});
+	}
+
+	getProvenances(callback: (provs:prv.Provenance[], e?:string) => void) {
+		var params = {action:'GetProvenances'};
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.e) {
+				SpgProxy.callbackError(callback, d.e);
+			}
+			else if (d.constructor === Array) {
+				callback(d.map((p:prv.Properties) => new prv.Provenance(p), null));
+			}
+			else {
+				SpgProxy.callbackError(callback, null);
+			}
+		});
+	}
+
+	createProvenance(p:prv.Properties, callback: (prv: prv.Provenance, e?:string) => void) {
+		var params:any = {
+			action: 'CreateProvenance'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+
+			callback(new prv.Provenance(d as prv.Properties), null);
+		});
+	}
+
+	updateProvenance(p:prv.Properties, callback: (prv: prv.Provenance, e?:string) => void) {
+		var params:any = {
+			action: 'UpdateProvenance'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+
+			callback(new prv.Provenance(d as prv.Properties), null);
+		});
+	}
+
+	deleteProvenance(pID: string, callback: (s:boolean, e?:string) => void) {
+		var params:any = {
+			action: 'DeleteProvenance',
+			provenanceID: pID
+		};
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+			callback(Boolean(d.success), null);
+		});
+	}
+
+	getNotations(callback: (notes:nt.Notation[], e?:string) => void) {
+		var params = {action:'GetNotations'};
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.e) {
+				SpgProxy.callbackError(callback, d.e);
+			}
+			else if (d.constructor === Array) {
+				callback(d.map((p:nt.Properties) => new nt.Notation(p), null));
+			}
+			else {
+				SpgProxy.callbackError(callback, null);
+			}
+		});
+	}
+
+	createNotation(p:nt.Properties, callback: (prv: nt.Notation, e?:string) => void) {
+		var params:any = {
+			action: 'CreateNotation'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+
+			callback(new nt.Notation(d as nt.Properties), null);
+		});
+	}
+
+	updateNotation(p:nt.Properties, callback: (prv: nt.Notation, e?:string) => void) {
+		var params:any = {
+			action: 'UpdateNotation'
+		};
+		Object.assign(params, p);
+
+		super.doPost(params,(res:any) => {
+			var d = res.data;
+			if (d.err) {
+				return SpgProxy.callbackError(callback, d.err);
+			}
+
+			callback(new nt.Notation(d as nt.Properties), null);
+		});
+	}
+
+	deleteNotation(nID: string, callback: (s:boolean, e?:string) => void) {
+		var params:any = {
+			action: 'DeleteNotation',
+			notationID: nID
 		};
 
 		super.doPost(params,(res:any) => {

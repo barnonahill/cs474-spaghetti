@@ -2,10 +2,10 @@ import * as React from 'react';
 
 import PageLoader from '@src/components/common/PageLoader.tsx';
 
-import TablePanel from '@src/components/century/CenturyTablePanel.tsx';
-import EditPanel from '@src/components/century/CenturyEditPanel.tsx';
+import TablePanel from '@src/components/provenance/ProvenanceTablePanel.tsx';
+import EditPanel from '@src/components/provenance/ProvenanceEditPanel.tsx';
 
-import * as ct from '@src/models/century.ts';
+import * as pv from '@src/models/provenance.ts';
 import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
 enum Panel {
@@ -15,18 +15,18 @@ enum Panel {
 }
 
 interface P {
-	centuries: ct.Century[]
+	provenances: pv.Provenance[]
 	onBack: () => void
-	reloadCenturies: () => void
+	reloadProvenances: () => void
 }
 interface S {
-	century?: ct.Century
-	centuries: ct.Century[]
+	provenance?: pv.Provenance
+	provenances: pv.Provenance[]
 	panel: Panel
 	loadMessage?: string
 }
 
-export default class CenturyApp extends React.Component<P,S> {
+export default class ProvenanceApp extends React.Component<P,S> {
 	public state: S;
 	public props: P;
 
@@ -35,14 +35,14 @@ export default class CenturyApp extends React.Component<P,S> {
 
 		this.state = {
 			panel: Panel.TABLE,
-			centuries: this.props.centuries
+			provenances: this.props.provenances
 		};
 
 		// Opener
 		this.openEdit = this.openEdit.bind(this);
 
 		// Data manipulation operations
-		this.saveCentury = this.saveCentury.bind(this);
+		this.saveProvenance = this.saveProvenance.bind(this);
 		this.confirmDelete = this.confirmDelete.bind(this);
 
 		// State helpers
@@ -54,21 +54,21 @@ export default class CenturyApp extends React.Component<P,S> {
 		switch (this.state.panel)  {
 			case Panel.TABLE:
 				return (<TablePanel
-					centuries={this.props.centuries}
+					provenances={this.props.provenances}
 					onBack={this.props.onBack}
 					onEdit={this.openEdit}
 					onDelete={this.confirmDelete}
 					onRefresh={() => {
-						this.setLoader('Loading Centuries...');
-						this.props.reloadCenturies();
+						this.setLoader('Loading Provenances...');
+						this.props.reloadProvenances();
 					}}
 				/>);
 
 			case Panel.EDIT:
 				return (<EditPanel
-					century={this.state.century}
+					provenance={this.state.provenance}
 					onBack={() => this.setPanel(Panel.TABLE)}
-					onSubmit={this.saveCentury}
+					onSubmit={this.saveProvenance}
 				/>);
 
 			case Panel.LOADER:
@@ -80,23 +80,23 @@ export default class CenturyApp extends React.Component<P,S> {
 	}
 
 	/**
-	 * Attempts to delete century using the sectionProxy.
-	 * @param century to delete
+	 * Attempts to delete provenance using the sectionProxy.
+	 * @param provenance to delete
 	 */
-	confirmDelete(century: ct.Century) {
-		var del = confirm('Delete century ' + century.centuryID + '?');
+	confirmDelete(provenance: pv.Provenance) {
+		var del = confirm('Delete provenance ' + provenance.provenanceID + '?');
 		if (del) {
-			this.setLoader('Deleting ' + century.centuryID + '...');
+			this.setLoader('Deleting ' + provenance.provenanceID + '...');
 
-			proxyFactory.getSectionProxy().deleteCentury(century.centuryID, (success, e?) => {
+			proxyFactory.getSectionProxy().deleteProvenance(provenance.provenanceID, (success, e?) => {
 				if (e) {
 					alert(e);
 				}
 				else if (success) {
 					this.setState((s:S) => {
-						var i = s.centuries.findIndex(c => century.centuryID === c.centuryID);
-						s.centuries[i].destroy();
-						s.centuries.splice(i, 1);
+						var i = s.provenances.findIndex(c => provenance.provenanceID === c.provenanceID);
+						s.provenances[i].destroy();
+						s.provenances.splice(i, 1);
 
 						this.setPanel(Panel.TABLE, null, s);
 						return s;
@@ -104,41 +104,41 @@ export default class CenturyApp extends React.Component<P,S> {
 				}
 				else {
 					this.setPanel(Panel.TABLE);
-					alert('Failed to delete century ' + century.centuryName + '.');
+					alert('Failed to delete provenance ' + provenance.provenanceName + '.');
 				}
 			});
 		}
 	}
 
 	/**
-	 * Opens the edit panel for a Century.
-	 * @param century to edit
+	 * Opens the edit panel for a Provenance.
+	 * @param provenance to edit
 	 */
-	openEdit(century: ct.Century) {
+	openEdit(provenance: pv.Provenance) {
 		this.setState((s:S) => {
-			s.century = century;
+			s.provenance = provenance;
 			this.setPanel(Panel.EDIT, null, s);
 			return s;
 		});
 	}
 
 	/**
-	 * Utilizes the sectionProxy to create or update a Century.
-	 * @param ctProps properties of the Century.
+	 * Utilizes the sectionProxy to create or update a Provenance.
+	 * @param pvProps properties of the Provenance.
 	 * @param isNew
 	 */
-	saveCentury(ctProps:ct.Properties, isNew:boolean) {
-		this.setLoader('Saving Century ' + ctProps.centuryID + '...');
+	saveProvenance(pvProps:pv.Properties, isNew:boolean) {
+		this.setLoader('Saving Provenance ' + pvProps.provenanceID + '...');
 
 		if (isNew) {
-			proxyFactory.getSectionProxy().createCentury(ctProps, (century, e?) => {
+			proxyFactory.getSectionProxy().createProvenance(pvProps, (provenance, e?) => {
 				if (e) {
-					alert('Error creating new Century: ' + e);
+					alert('Error creating new Provenance: ' + e);
 				}
 
 				else {
 					this.setState((s:S) => {
-						s.centuries.push(century);
+						s.provenances.push(provenance);
 						this.setPanel(Panel.TABLE, null, s);
 						return s;
 					});
@@ -147,16 +147,16 @@ export default class CenturyApp extends React.Component<P,S> {
 		}
 
 		else {
-			proxyFactory.getSectionProxy().updateCentury(ctProps, (century, e?) => {
+			proxyFactory.getSectionProxy().updateProvenance(pvProps, (provenance, e?) => {
 				if (e) {
-					alert('Error updating Century: ' + e);
+					alert('Error updating Provenance: ' + e);
 				}
 
 				else {
 					this.setState((s:S) => {
-						var i = s.centuries.findIndex(c => century.centuryID === c.centuryID);
-						s.centuries[i].destroy();
-						s.centuries[i] = century;
+						var i = s.provenances.findIndex(c => provenance.provenanceID === c.provenanceID);
+						s.provenances[i].destroy();
+						s.provenances[i] = provenance;
 
 						this.setPanel(Panel.TABLE, null, s);
 						return s;

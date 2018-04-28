@@ -36865,7 +36865,6 @@ var CenturyApp = (function (_super) {
             centuries: _this.props.centuries
         };
         _this.openEdit = _this.openEdit.bind(_this);
-        _this.reloadCenturies = _this.reloadCenturies.bind(_this);
         _this.saveCentury = _this.saveCentury.bind(_this);
         _this.confirmDelete = _this.confirmDelete.bind(_this);
         _this.setPanel = _this.setPanel.bind(_this);
@@ -36876,7 +36875,10 @@ var CenturyApp = (function (_super) {
         var _this = this;
         switch (this.state.panel) {
             case Panel.TABLE:
-                return (React.createElement(CenturyTablePanel_tsx_1.default, { centuries: this.props.centuries, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: this.reloadCenturies }));
+                return (React.createElement(CenturyTablePanel_tsx_1.default, { centuries: this.props.centuries, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: function () {
+                        _this.setLoader('Loading Centuries...');
+                        _this.props.reloadCenturies();
+                    } }));
             case Panel.EDIT:
                 return (React.createElement(CenturyEditPanel_tsx_1.default, { century: this.state.century, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveCentury }));
             case Panel.LOADER:
@@ -36887,9 +36889,9 @@ var CenturyApp = (function (_super) {
     };
     CenturyApp.prototype.confirmDelete = function (century) {
         var _this = this;
-        var del = confirm('Delete century ' + century.centuryName + '?');
+        var del = confirm('Delete century ' + century.centuryID + '?');
         if (del) {
-            this.setLoader('Deleting ' + century.centuryName + '...');
+            this.setLoader('Deleting ' + century.centuryID + '...');
             ProxyFactory_ts_1.default.getSectionProxy().deleteCentury(century.centuryID, function (success, e) {
                 if (e) {
                     alert(e);
@@ -36910,18 +36912,6 @@ var CenturyApp = (function (_super) {
             });
         }
     };
-    CenturyApp.prototype.reloadCenturies = function () {
-        var _this = this;
-        this.setLoader('Loading Centuries...');
-        this.props.reloadCenturies(function (centuries) {
-            _this.setState(function (s) {
-                s.century = null;
-                s.centuries = centuries;
-                _this.setPanel(Panel.TABLE, null, s);
-                return s;
-            });
-        });
-    };
     CenturyApp.prototype.openEdit = function (century) {
         var _this = this;
         this.setState(function (s) {
@@ -36932,7 +36922,7 @@ var CenturyApp = (function (_super) {
     };
     CenturyApp.prototype.saveCentury = function (ctProps, isNew) {
         var _this = this;
-        this.setLoader('Saving ' + ctProps.centuryID + '...');
+        this.setLoader('Saving Century ' + ctProps.centuryID + '...');
         if (isNew) {
             ProxyFactory_ts_1.default.getSectionProxy().createCentury(ctProps, function (century, e) {
                 if (e) {
@@ -37039,14 +37029,12 @@ var CenturyEditPanel = (function (_super) {
         }
         else {
             ctProps = p.century.toProperties();
+            ctProps.centuryName = ctProps.centuryName || '';
         }
         _this.state = {
             isNew: isNew,
             ctProps: ctProps,
-            val: {
-                centuryID: null,
-                centuryName: null
-            }
+            val: null
         };
         _this.getCenturyIDFormGroup = _this.getCenturyIDFormGroup.bind(_this);
         _this.onChange = _this.onChange.bind(_this);
@@ -37062,8 +37050,8 @@ var CenturyEditPanel = (function (_super) {
             React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
         x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
             this.getCenturyIDFormGroup(),
-            React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryName", validationState: this.state.val.centuryName },
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Century Name:"),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryName" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Century Name:"),
                 React.createElement(react_bootstrap_1.Col, { sm: 4 },
                     React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.ctProps.centuryName, onChange: this.onChange }))),
             React.createElement(react_bootstrap_1.FormGroup, null,
@@ -37079,10 +37067,10 @@ var CenturyEditPanel = (function (_super) {
                 React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.ctProps.centuryID, onChange: this.onChange })));
         }
         else {
-            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Manuscript Type:"));
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Century ID:"));
             value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.century.centuryID));
         }
-        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryID", validationState: this.state.val.centuryID },
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryID", validationState: this.state.val },
             label,
             value));
     };
@@ -37097,25 +37085,14 @@ var CenturyEditPanel = (function (_super) {
     };
     CenturyEditPanel.prototype.onSubmit = function (e) {
         e.preventDefault();
-        var val = {
-            centuryID: this.state.ctProps.centuryID ? null : 'error'
-        };
-        if (this.state.isNew) {
-            val.centuryName = this.state.ctProps.centuryName ? null : 'error';
-        }
-        for (var k in val) {
-            if (val[k] === 'error') {
-                return this.setState(function (s) {
-                    s.val = val;
-                    return s;
-                });
-            }
-        }
+        var val = this.state.ctProps.centuryID ? null : 'error';
         this.setState(function (s) {
             s.val = val;
             return s;
         });
-        this.props.onSubmit(this.state.ctProps, this.state.isNew);
+        if (val === null) {
+            this.props.onSubmit(this.state.ctProps, this.state.isNew);
+        }
     };
     return CenturyEditPanel;
 }(React.Component));
@@ -37149,46 +37126,73 @@ var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modul
 var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
 var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SearchBar_tsx_1 = __webpack_require__(/*! @src/components/common/SearchBar.tsx */ "./src/components/common/SearchBar.tsx");
 var index_tsx_1 = __webpack_require__(/*! @src/index.tsx */ "./src/index.tsx");
-var MsTypeTablePanel = (function (_super) {
-    __extends(MsTypeTablePanel, _super);
-    function MsTypeTablePanel(p) {
+var CenturyTablePanel = (function (_super) {
+    __extends(CenturyTablePanel, _super);
+    function CenturyTablePanel(p) {
         var _this = _super.call(this, p) || this;
         _this.state = {
-            rowGetter: function (i) { return _this.props.centuries[i.index]; },
+            centuries: _this.props.centuries,
+            rowGetter: function (i) { return _this.state.centuries[i.index]; },
         };
         _this.renderDelete = _this.renderDelete.bind(_this);
         _this.renderEdit = _this.renderEdit.bind(_this);
+        _this.filter = _this.filter.bind(_this);
         return _this;
     }
-    MsTypeTablePanel.prototype.render = function () {
+    CenturyTablePanel.prototype.render = function () {
         var _this = this;
         return [
-            React.createElement(Header_tsx_1.default, { min: true, key: "header" }, "Manuscript Types"),
+            React.createElement(Header_tsx_1.default, { min: true, key: "header" }, "Centuries"),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "success", className: "ml15", onClick: function () { return _this.props.onEdit(null); } }, "New"),
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))),
-            (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.props.centuries.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_bootstrap_1.Row, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "success", onClick: function () { return _this.props.onEdit(null); }, className: "ml15" }, "New")),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by centuryID and centuryName...", onSubmit: this.filter })),
+                    React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.centuries.length, rowGetter: this.state.rowGetter },
                 React.createElement(react_virtualized_1.Column, { width: 200, label: "Century ID", dataKey: "centuryID" }),
                 React.createElement(react_virtualized_1.Column, { width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 330, label: "Century Name", dataKey: "centuryName" }),
                 React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderEdit }),
                 React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderDelete })))
         ];
     };
-    MsTypeTablePanel.prototype.renderDelete = function (p) {
+    CenturyTablePanel.prototype.renderDelete = function (p) {
         var _this = this;
         var ct = p.rowData;
         return (React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onDelete(ct); } }, "Delete"));
     };
-    MsTypeTablePanel.prototype.renderEdit = function (p) {
+    CenturyTablePanel.prototype.renderEdit = function (p) {
         var _this = this;
         var ct = p.rowData;
         return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onEdit(ct); } }, "Edit"));
     };
-    return MsTypeTablePanel;
+    CenturyTablePanel.prototype.filter = function (v) {
+        var _this = this;
+        this.setState(function (s) {
+            if (v) {
+                s.centuries = _this.props.centuries.filter(function (c) {
+                    var f = false;
+                    f = c.centuryID.toLowerCase().indexOf(v) !== -1;
+                    if (!f && c.centuryName) {
+                        f = c.centuryName.toLowerCase().indexOf(v) !== -1;
+                    }
+                    return f;
+                });
+            }
+            else {
+                s.centuries = _this.props.centuries;
+            }
+            return s;
+        });
+    };
+    return CenturyTablePanel;
 }(React.Component));
-exports.default = MsTypeTablePanel;
+exports.default = CenturyTablePanel;
 
 
 /***/ }),
@@ -37378,6 +37382,378 @@ var SearchBar = (function (_super) {
     return SearchBar;
 }(React.Component));
 exports.default = SearchBar;
+
+
+/***/ }),
+
+/***/ "./src/components/cursus/CursusApp.tsx":
+/*!*********************************************!*\
+  !*** ./src/components/cursus/CursusApp.tsx ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
+var CursusTablePanel_tsx_1 = __webpack_require__(/*! @src/components/cursus/CursusTablePanel.tsx */ "./src/components/cursus/CursusTablePanel.tsx");
+var CursusEditPanel_tsx_1 = __webpack_require__(/*! @src/components/cursus/CursusEditPanel.tsx */ "./src/components/cursus/CursusEditPanel.tsx");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var Panel;
+(function (Panel) {
+    Panel[Panel["TABLE"] = 0] = "TABLE";
+    Panel[Panel["EDIT"] = 1] = "EDIT";
+    Panel[Panel["LOADER"] = 2] = "LOADER";
+})(Panel || (Panel = {}));
+var CursusApp = (function (_super) {
+    __extends(CursusApp, _super);
+    function CursusApp(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            panel: Panel.TABLE,
+            cursuses: _this.props.cursuses
+        };
+        _this.openEdit = _this.openEdit.bind(_this);
+        _this.saveCursus = _this.saveCursus.bind(_this);
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.setPanel = _this.setPanel.bind(_this);
+        _this.setLoader = _this.setLoader.bind(_this);
+        return _this;
+    }
+    CursusApp.prototype.render = function () {
+        var _this = this;
+        switch (this.state.panel) {
+            case Panel.TABLE:
+                return (React.createElement(CursusTablePanel_tsx_1.default, { cursuses: this.props.cursuses, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: function () {
+                        _this.setLoader('Loading Cursuses...');
+                        _this.props.reloadCursuses();
+                    } }));
+            case Panel.EDIT:
+                return (React.createElement(CursusEditPanel_tsx_1.default, { cursus: this.state.cursus, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveCursus }));
+            case Panel.LOADER:
+                return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
+            default:
+                return null;
+        }
+    };
+    CursusApp.prototype.confirmDelete = function (cursus) {
+        var _this = this;
+        var del = confirm('Delete cursus ' + cursus.cursusID + '?');
+        if (del) {
+            this.setLoader('Deleting ' + cursus.cursusID + '...');
+            ProxyFactory_ts_1.default.getSectionProxy().deleteCursus(cursus.cursusID, function (success, e) {
+                if (e) {
+                    alert(e);
+                }
+                else if (success) {
+                    _this.setState(function (s) {
+                        var i = s.cursuses.findIndex(function (c) { return cursus.cursusID === c.cursusID; });
+                        s.cursuses[i].destroy();
+                        s.cursuses.splice(i, 1);
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+                else {
+                    _this.setPanel(Panel.TABLE);
+                    alert('Failed to delete cursus ' + cursus.cursusName + '.');
+                }
+            });
+        }
+    };
+    CursusApp.prototype.openEdit = function (cursus) {
+        var _this = this;
+        this.setState(function (s) {
+            s.cursus = cursus;
+            _this.setPanel(Panel.EDIT, null, s);
+            return s;
+        });
+    };
+    CursusApp.prototype.saveCursus = function (csProps, isNew) {
+        var _this = this;
+        this.setLoader('Saving Cursus ' + csProps.cursusID + '...');
+        if (isNew) {
+            ProxyFactory_ts_1.default.getSectionProxy().createCursus(csProps, function (cursus, e) {
+                if (e) {
+                    alert('Error creating new Cursus: ' + e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        s.cursuses.push(cursus);
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+            });
+        }
+        else {
+            ProxyFactory_ts_1.default.getSectionProxy().updateCursus(csProps, function (cursus, e) {
+                if (e) {
+                    alert('Error updating Cursus: ' + e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        var i = s.cursuses.findIndex(function (c) { return cursus.cursusID === c.cursusID; });
+                        s.cursuses[i].destroy();
+                        s.cursuses[i] = cursus;
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+            });
+        }
+    };
+    CursusApp.prototype.setPanel = function (p, callback, s) {
+        if (s) {
+            s.panel = p;
+        }
+        else {
+            this.setState(function (s) {
+                s.panel = p;
+                if (callback)
+                    return callback(s);
+                else
+                    return s;
+            });
+        }
+    };
+    CursusApp.prototype.setLoader = function (msg, callback, s) {
+        var _this = this;
+        if (s) {
+            this.setPanel(Panel.LOADER);
+            s.loadMessage = msg;
+        }
+        else {
+            this.setState(function (s) {
+                _this.setPanel(Panel.LOADER, null, s);
+                s.loadMessage = msg;
+                if (callback)
+                    return callback(s);
+                return s;
+            });
+        }
+    };
+    return CursusApp;
+}(React.Component));
+exports.default = CursusApp;
+
+
+/***/ }),
+
+/***/ "./src/components/cursus/CursusEditPanel.tsx":
+/*!***************************************************!*\
+  !*** ./src/components/cursus/CursusEditPanel.tsx ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var CursusEditPanel = (function (_super) {
+    __extends(CursusEditPanel, _super);
+    function CursusEditPanel(p) {
+        var _this = _super.call(this, p) || this;
+        var isNew = !Boolean(p.cursus);
+        var csProps;
+        if (isNew) {
+            csProps = {
+                cursusID: '',
+                cursusName: ''
+            };
+        }
+        else {
+            csProps = p.cursus.toProperties();
+            csProps.cursusName = csProps.cursusName || '';
+        }
+        _this.state = {
+            isNew: isNew,
+            csProps: csProps,
+            val: null
+        };
+        _this.getCursusIDFormGroup = _this.getCursusIDFormGroup.bind(_this);
+        _this.onChange = _this.onChange.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
+        return _this;
+    }
+    CursusEditPanel.prototype.render = function () {
+        var x = [];
+        x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
+            ? 'Create a Cursus'
+            : 'Edit Cursus: ' + this.props.cursus.cursusName));
+        x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+            React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
+        x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
+            this.getCursusIDFormGroup(),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "cursusName" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Cursus Name:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.csProps.cursusName, onChange: this.onChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))));
+        return x;
+    };
+    CursusEditPanel.prototype.getCursusIDFormGroup = function () {
+        var label, value;
+        if (this.state.isNew) {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Cursus ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.csProps.cursusID, onChange: this.onChange })));
+        }
+        else {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Cursus ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.cursus.cursusID));
+        }
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "cursusID", validationState: this.state.val },
+            label,
+            value));
+    };
+    CursusEditPanel.prototype.onChange = function (e) {
+        var target = e.target;
+        var k = target.id;
+        var v = target.value;
+        this.setState(function (s) {
+            s.csProps[k] = v;
+            return s;
+        });
+    };
+    CursusEditPanel.prototype.onSubmit = function (e) {
+        e.preventDefault();
+        var val = this.state.csProps.cursusID ? null : 'error';
+        this.setState(function (s) {
+            s.val = val;
+            return s;
+        });
+        if (val === null) {
+            this.props.onSubmit(this.state.csProps, this.state.isNew);
+        }
+    };
+    return CursusEditPanel;
+}(React.Component));
+exports.default = CursusEditPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/cursus/CursusTablePanel.tsx":
+/*!****************************************************!*\
+  !*** ./src/components/cursus/CursusTablePanel.tsx ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SearchBar_tsx_1 = __webpack_require__(/*! @src/components/common/SearchBar.tsx */ "./src/components/common/SearchBar.tsx");
+var index_tsx_1 = __webpack_require__(/*! @src/index.tsx */ "./src/index.tsx");
+var CursusTablePanel = (function (_super) {
+    __extends(CursusTablePanel, _super);
+    function CursusTablePanel(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            cursuses: _this.props.cursuses,
+            rowGetter: function (i) { return _this.state.cursuses[i.index]; },
+        };
+        _this.renderDelete = _this.renderDelete.bind(_this);
+        _this.renderEdit = _this.renderEdit.bind(_this);
+        _this.filter = _this.filter.bind(_this);
+        return _this;
+    }
+    CursusTablePanel.prototype.render = function () {
+        var _this = this;
+        return [
+            React.createElement(Header_tsx_1.default, { min: true, key: "header" }, "Cursuses"),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Row, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "success", onClick: function () { return _this.props.onEdit(null); }, className: "ml15" }, "New")),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by countryID and countryName...", onSubmit: this.filter })),
+                    React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.cursuses.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_virtualized_1.Column, { width: 200, label: "Cursus ID", dataKey: "cursusID" }),
+                React.createElement(react_virtualized_1.Column, { width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 330, label: "Cursus Name", dataKey: "cursusName" }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderEdit }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderDelete })))
+        ];
+    };
+    CursusTablePanel.prototype.renderDelete = function (p) {
+        var _this = this;
+        var ct = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onDelete(ct); } }, "Delete"));
+    };
+    CursusTablePanel.prototype.renderEdit = function (p) {
+        var _this = this;
+        var ct = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onEdit(ct); } }, "Edit"));
+    };
+    CursusTablePanel.prototype.filter = function (v) {
+        var _this = this;
+        this.setState(function (s) {
+            if (v) {
+                s.cursuses = _this.props.cursuses.filter(function (c) {
+                    var f = false;
+                    f = c.cursusID.toLowerCase().indexOf(v) !== -1;
+                    if (!f && c.cursusName) {
+                        f = c.cursusName.toLowerCase().indexOf(v) !== -1;
+                    }
+                    return f;
+                });
+            }
+            else {
+                s.cursuses = _this.props.cursuses;
+            }
+            return s;
+        });
+    };
+    return CursusTablePanel;
+}(React.Component));
+exports.default = CursusTablePanel;
 
 
 /***/ }),
@@ -39667,6 +40043,378 @@ exports.default = MsTypeTablePanel;
 
 /***/ }),
 
+/***/ "./src/components/provenance/ProvenanceApp.tsx":
+/*!*****************************************************!*\
+  !*** ./src/components/provenance/ProvenanceApp.tsx ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
+var ProvenanceTablePanel_tsx_1 = __webpack_require__(/*! @src/components/provenance/ProvenanceTablePanel.tsx */ "./src/components/provenance/ProvenanceTablePanel.tsx");
+var ProvenanceEditPanel_tsx_1 = __webpack_require__(/*! @src/components/provenance/ProvenanceEditPanel.tsx */ "./src/components/provenance/ProvenanceEditPanel.tsx");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var Panel;
+(function (Panel) {
+    Panel[Panel["TABLE"] = 0] = "TABLE";
+    Panel[Panel["EDIT"] = 1] = "EDIT";
+    Panel[Panel["LOADER"] = 2] = "LOADER";
+})(Panel || (Panel = {}));
+var ProvenanceApp = (function (_super) {
+    __extends(ProvenanceApp, _super);
+    function ProvenanceApp(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            panel: Panel.TABLE,
+            provenances: _this.props.provenances
+        };
+        _this.openEdit = _this.openEdit.bind(_this);
+        _this.saveProvenance = _this.saveProvenance.bind(_this);
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.setPanel = _this.setPanel.bind(_this);
+        _this.setLoader = _this.setLoader.bind(_this);
+        return _this;
+    }
+    ProvenanceApp.prototype.render = function () {
+        var _this = this;
+        switch (this.state.panel) {
+            case Panel.TABLE:
+                return (React.createElement(ProvenanceTablePanel_tsx_1.default, { provenances: this.props.provenances, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: function () {
+                        _this.setLoader('Loading Provenances...');
+                        _this.props.reloadProvenances();
+                    } }));
+            case Panel.EDIT:
+                return (React.createElement(ProvenanceEditPanel_tsx_1.default, { provenance: this.state.provenance, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveProvenance }));
+            case Panel.LOADER:
+                return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
+            default:
+                return null;
+        }
+    };
+    ProvenanceApp.prototype.confirmDelete = function (provenance) {
+        var _this = this;
+        var del = confirm('Delete provenance ' + provenance.provenanceID + '?');
+        if (del) {
+            this.setLoader('Deleting ' + provenance.provenanceID + '...');
+            ProxyFactory_ts_1.default.getSectionProxy().deleteProvenance(provenance.provenanceID, function (success, e) {
+                if (e) {
+                    alert(e);
+                }
+                else if (success) {
+                    _this.setState(function (s) {
+                        var i = s.provenances.findIndex(function (c) { return provenance.provenanceID === c.provenanceID; });
+                        s.provenances[i].destroy();
+                        s.provenances.splice(i, 1);
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+                else {
+                    _this.setPanel(Panel.TABLE);
+                    alert('Failed to delete provenance ' + provenance.provenanceName + '.');
+                }
+            });
+        }
+    };
+    ProvenanceApp.prototype.openEdit = function (provenance) {
+        var _this = this;
+        this.setState(function (s) {
+            s.provenance = provenance;
+            _this.setPanel(Panel.EDIT, null, s);
+            return s;
+        });
+    };
+    ProvenanceApp.prototype.saveProvenance = function (pvProps, isNew) {
+        var _this = this;
+        this.setLoader('Saving Provenance ' + pvProps.provenanceID + '...');
+        if (isNew) {
+            ProxyFactory_ts_1.default.getSectionProxy().createProvenance(pvProps, function (provenance, e) {
+                if (e) {
+                    alert('Error creating new Provenance: ' + e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        s.provenances.push(provenance);
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+            });
+        }
+        else {
+            ProxyFactory_ts_1.default.getSectionProxy().updateProvenance(pvProps, function (provenance, e) {
+                if (e) {
+                    alert('Error updating Provenance: ' + e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        var i = s.provenances.findIndex(function (c) { return provenance.provenanceID === c.provenanceID; });
+                        s.provenances[i].destroy();
+                        s.provenances[i] = provenance;
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+            });
+        }
+    };
+    ProvenanceApp.prototype.setPanel = function (p, callback, s) {
+        if (s) {
+            s.panel = p;
+        }
+        else {
+            this.setState(function (s) {
+                s.panel = p;
+                if (callback)
+                    return callback(s);
+                else
+                    return s;
+            });
+        }
+    };
+    ProvenanceApp.prototype.setLoader = function (msg, callback, s) {
+        var _this = this;
+        if (s) {
+            this.setPanel(Panel.LOADER);
+            s.loadMessage = msg;
+        }
+        else {
+            this.setState(function (s) {
+                _this.setPanel(Panel.LOADER, null, s);
+                s.loadMessage = msg;
+                if (callback)
+                    return callback(s);
+                return s;
+            });
+        }
+    };
+    return ProvenanceApp;
+}(React.Component));
+exports.default = ProvenanceApp;
+
+
+/***/ }),
+
+/***/ "./src/components/provenance/ProvenanceEditPanel.tsx":
+/*!***********************************************************!*\
+  !*** ./src/components/provenance/ProvenanceEditPanel.tsx ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var ProvenanceEditPanel = (function (_super) {
+    __extends(ProvenanceEditPanel, _super);
+    function ProvenanceEditPanel(p) {
+        var _this = _super.call(this, p) || this;
+        var isNew = !Boolean(p.provenance);
+        var pvProps;
+        if (isNew) {
+            pvProps = {
+                provenanceID: '',
+                provenanceName: ''
+            };
+        }
+        else {
+            pvProps = p.provenance.toProperties();
+            pvProps.provenanceName = pvProps.provenanceName || '';
+        }
+        _this.state = {
+            isNew: isNew,
+            pvProps: pvProps,
+            val: null
+        };
+        _this.getProvenanceIDFormGroup = _this.getProvenanceIDFormGroup.bind(_this);
+        _this.onChange = _this.onChange.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
+        return _this;
+    }
+    ProvenanceEditPanel.prototype.render = function () {
+        var x = [];
+        x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
+            ? 'Create a Provenance'
+            : 'Edit Provenance: ' + this.props.provenance.provenanceName));
+        x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+            React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
+        x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
+            this.getProvenanceIDFormGroup(),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "provenanceName" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Provenance Name:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.pvProps.provenanceName, onChange: this.onChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))));
+        return x;
+    };
+    ProvenanceEditPanel.prototype.getProvenanceIDFormGroup = function () {
+        var label, value;
+        if (this.state.isNew) {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Provenance ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.pvProps.provenanceID, onChange: this.onChange })));
+        }
+        else {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Provenance ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.provenance.provenanceID));
+        }
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "provenanceID", validationState: this.state.val },
+            label,
+            value));
+    };
+    ProvenanceEditPanel.prototype.onChange = function (e) {
+        var target = e.target;
+        var k = target.id;
+        var v = target.value;
+        this.setState(function (s) {
+            s.pvProps[k] = v;
+            return s;
+        });
+    };
+    ProvenanceEditPanel.prototype.onSubmit = function (e) {
+        e.preventDefault();
+        var val = this.state.pvProps.provenanceID ? null : 'error';
+        this.setState(function (s) {
+            s.val = val;
+            return s;
+        });
+        if (val === null) {
+            this.props.onSubmit(this.state.pvProps, this.state.isNew);
+        }
+    };
+    return ProvenanceEditPanel;
+}(React.Component));
+exports.default = ProvenanceEditPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/provenance/ProvenanceTablePanel.tsx":
+/*!************************************************************!*\
+  !*** ./src/components/provenance/ProvenanceTablePanel.tsx ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SearchBar_tsx_1 = __webpack_require__(/*! @src/components/common/SearchBar.tsx */ "./src/components/common/SearchBar.tsx");
+var index_tsx_1 = __webpack_require__(/*! @src/index.tsx */ "./src/index.tsx");
+var ProvenanceTablePanel = (function (_super) {
+    __extends(ProvenanceTablePanel, _super);
+    function ProvenanceTablePanel(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            provenances: _this.props.provenances,
+            rowGetter: function (i) { return _this.state.provenances[i.index]; },
+        };
+        _this.renderDelete = _this.renderDelete.bind(_this);
+        _this.renderEdit = _this.renderEdit.bind(_this);
+        _this.filter = _this.filter.bind(_this);
+        return _this;
+    }
+    ProvenanceTablePanel.prototype.render = function () {
+        var _this = this;
+        return [
+            React.createElement(Header_tsx_1.default, { min: true, key: "header" }, "Provenances"),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Row, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "success", onClick: function () { return _this.props.onEdit(null); }, className: "ml15" }, "New")),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by countryID and countryName...", onSubmit: this.filter })),
+                    React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.provenances.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_virtualized_1.Column, { width: 200, label: "Provenance ID", dataKey: "provenanceID" }),
+                React.createElement(react_virtualized_1.Column, { width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 330, label: "Provenance Name", dataKey: "provenanceName" }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderEdit }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderDelete })))
+        ];
+    };
+    ProvenanceTablePanel.prototype.renderDelete = function (p) {
+        var _this = this;
+        var ct = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onDelete(ct); } }, "Delete"));
+    };
+    ProvenanceTablePanel.prototype.renderEdit = function (p) {
+        var _this = this;
+        var ct = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onEdit(ct); } }, "Edit"));
+    };
+    ProvenanceTablePanel.prototype.filter = function (v) {
+        var _this = this;
+        this.setState(function (s) {
+            if (v) {
+                s.provenances = _this.props.provenances.filter(function (c) {
+                    var f = false;
+                    f = c.provenanceID.toLowerCase().indexOf(v) !== -1;
+                    if (!f && c.provenanceName) {
+                        f = c.provenanceName.toLowerCase().indexOf(v) !== -1;
+                    }
+                    return f;
+                });
+            }
+            else {
+                s.provenances = _this.props.provenances;
+            }
+            return s;
+        });
+    };
+    return ProvenanceTablePanel;
+}(React.Component));
+exports.default = ProvenanceTablePanel;
+
+
+/***/ }),
+
 /***/ "./src/components/section/SectionApp.tsx":
 /*!***********************************************!*\
   !*** ./src/components/section/SectionApp.tsx ***!
@@ -39695,6 +40443,9 @@ var SectionTablePanel_tsx_1 = __webpack_require__(/*! @src/components/section/Se
 var SectionEditPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionEditPanel.tsx */ "./src/components/section/SectionEditPanel.tsx");
 var SectionEntityPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionEntityPanel.tsx */ "./src/components/section/SectionEntityPanel.tsx");
 var CenturyApp_tsx_1 = __webpack_require__(/*! @src/components/century/CenturyApp.tsx */ "./src/components/century/CenturyApp.tsx");
+var CursusApp_tsx_1 = __webpack_require__(/*! @src/components/cursus/CursusApp.tsx */ "./src/components/cursus/CursusApp.tsx");
+var SourceCompletenessApp_tsx_1 = __webpack_require__(/*! @src/components/sourceCompleteness/SourceCompletenessApp.tsx */ "./src/components/sourceCompleteness/SourceCompletenessApp.tsx");
+var ProvenanceApp_tsx_1 = __webpack_require__(/*! @src/components/provenance/ProvenanceApp.tsx */ "./src/components/provenance/ProvenanceApp.tsx");
 var country_ts_1 = __webpack_require__(/*! @src/models/country.ts */ "./src/models/country.ts");
 var library_ts_1 = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
@@ -39737,6 +40488,9 @@ var SectionApp = (function (_super) {
         _this.renderTable = _this.renderTable.bind(_this);
         _this.renderLoader = _this.renderLoader.bind(_this);
         _this.renderCenturyApp = _this.renderCenturyApp.bind(_this);
+        _this.renderCursusApp = _this.renderCursusApp.bind(_this);
+        _this.renderSourceCompletenessApp = _this.renderSourceCompletenessApp.bind(_this);
+        _this.renderProvenanceApp = _this.renderProvenanceApp.bind(_this);
         _this.loadCenturies = _this.loadCenturies.bind(_this);
         _this.loadCursuses = _this.loadCursuses.bind(_this);
         _this.loadSrcComps = _this.loadSrcComps.bind(_this);
@@ -39854,6 +40608,14 @@ var SectionApp = (function (_super) {
                 return this.renderLoader();
             case Panel.CENTURY:
                 return this.renderCenturyApp();
+            case Panel.CURSUS:
+                return this.renderCursusApp();
+            case Panel.SRC_COMP:
+                return this.renderSourceCompletenessApp();
+            case Panel.PROVENANCE:
+                return this.renderProvenanceApp();
+            case Panel.NOTATION:
+                return null;
         }
     };
     SectionApp.prototype.renderInit = function () {
@@ -39900,11 +40662,44 @@ var SectionApp = (function (_super) {
     };
     SectionApp.prototype.renderCenturyApp = function () {
         var _this = this;
-        return (React.createElement(CenturyApp_tsx_1.default, { centuries: this.state.supports.centuries, onBack: this.props.onBack, reloadCenturies: function (subCallback) { return _this.loadCenturies(function (centuries) {
+        return (React.createElement(CenturyApp_tsx_1.default, { centuries: this.state.supports.centuries, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadCenturies: function () { return _this.loadCenturies(function (centuries) {
                 _this.setState(function (s) {
                     century_ts_1.Century.destroyArray(s.supports.centuries);
                     s.supports.centuries = centuries;
-                    subCallback(centuries);
+                    _this.setPanel(Panel.CENTURY, null, s);
+                    return s;
+                });
+            }); } }));
+    };
+    SectionApp.prototype.renderCursusApp = function () {
+        var _this = this;
+        return (React.createElement(CursusApp_tsx_1.default, { cursuses: this.state.supports.cursuses, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadCursuses: function () { return _this.loadCursuses(function (cursuses) {
+                _this.setState(function (s) {
+                    cursus_ts_1.Cursus.destroyArray(s.supports.cursuses);
+                    s.supports.cursuses = cursuses;
+                    _this.setPanel(Panel.CURSUS, null, s);
+                    return s;
+                });
+            }); } }));
+    };
+    SectionApp.prototype.renderSourceCompletenessApp = function () {
+        var _this = this;
+        return (React.createElement(SourceCompletenessApp_tsx_1.default, { sourceCompletenesses: this.state.supports.srcComps, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadSourceCompletenesses: function () { return _this.loadSrcComps(function (srcComps) {
+                _this.setState(function (s) {
+                    cursus_ts_1.Cursus.destroyArray(s.supports.srcComps);
+                    s.supports.srcComps = srcComps;
+                    _this.setPanel(Panel.SRC_COMP, null, s);
+                    return s;
+                });
+            }); } }));
+    };
+    SectionApp.prototype.renderProvenanceApp = function () {
+        var _this = this;
+        return (React.createElement(ProvenanceApp_tsx_1.default, { provenances: this.state.supports.provenances, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadProvenances: function () { return _this.loadProvenances(function (provs) {
+                _this.setState(function (s) {
+                    cursus_ts_1.Cursus.destroyArray(s.supports.provs);
+                    s.supports.provs = provs;
+                    _this.setPanel(Panel.PROVENANCE, null, s);
                     return s;
                 });
             }); } }));
@@ -41121,51 +41916,9 @@ exports.default = SectionFilterPanel;
   !*** ./src/components/section/SectionInitPanel.tsx ***!
   \*****************************************************/
 /*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __webpack_require__(/*! react */ "react");
-var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
-var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
-var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
-var SectionApp_tsx_1 = __webpack_require__(/*! @src/components/section/SectionApp.tsx */ "./src/components/section/SectionApp.tsx");
-var SectionInitPanel = (function (_super) {
-    __extends(SectionInitPanel, _super);
-    function SectionInitPanel(p) {
-        return _super.call(this, p) || this;
-    }
-    SectionInitPanel.prototype.render = function () {
-        var _this = this;
-        return [
-            React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Sections"),
-            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
-            (React.createElement(react_bootstrap_1.Row, { key: "actions", className: "mb60" },
-                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 1 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.FILTER); } }, "Filter Sections")),
-                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4, smOffset: 2 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.TABLE); } }, "Load all Sections")))),
-            (React.createElement(react_bootstrap_1.Row, { key: "entities", className: "mb30" },
-                React.createElement(react_bootstrap_1.Col, { xs: 12, sm: 4 },
-                    React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "large", className: "w100p", onClick: function () { return _this.props.onSubmit(SectionApp_tsx_1.Panel.CENTURY); } }, "Centuries"))))
-        ];
-    };
-    return SectionInitPanel;
-}(React.Component));
-exports.default = SectionInitPanel;
-
+throw new Error("Module build failed: Error: Typescript emitted no output for C:\\Users\\ptida\\Documents\\eclipse-workspace\\jee-oxygen\\cs474-workspace\\cs474-spaghetti\\node\\src\\components\\section\\SectionInitPanel.tsx.\n    at successLoader (C:\\Users\\ptida\\Documents\\eclipse-workspace\\jee-oxygen\\cs474-workspace\\cs474-spaghetti\\node\\node_modules\\ts-loader\\dist\\index.js:39:15)\n    at Object.loader (C:\\Users\\ptida\\Documents\\eclipse-workspace\\jee-oxygen\\cs474-workspace\\cs474-spaghetti\\node\\node_modules\\ts-loader\\dist\\index.js:21:12)");
 
 /***/ }),
 
@@ -41282,6 +42035,378 @@ var SectionTablePanel = (function (_super) {
     return SectionTablePanel;
 }(React.Component));
 exports.default = SectionTablePanel;
+
+
+/***/ }),
+
+/***/ "./src/components/sourceCompleteness/SourceCompletenessApp.tsx":
+/*!*********************************************************************!*\
+  !*** ./src/components/sourceCompleteness/SourceCompletenessApp.tsx ***!
+  \*********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
+var SourceCompletenessTablePanel_tsx_1 = __webpack_require__(/*! @src/components/sourceCompleteness/SourceCompletenessTablePanel.tsx */ "./src/components/sourceCompleteness/SourceCompletenessTablePanel.tsx");
+var SourceCompletenessEditPanel_tsx_1 = __webpack_require__(/*! @src/components/sourceCompleteness/SourceCompletenessEditPanel.tsx */ "./src/components/sourceCompleteness/SourceCompletenessEditPanel.tsx");
+var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
+var Panel;
+(function (Panel) {
+    Panel[Panel["TABLE"] = 0] = "TABLE";
+    Panel[Panel["EDIT"] = 1] = "EDIT";
+    Panel[Panel["LOADER"] = 2] = "LOADER";
+})(Panel || (Panel = {}));
+var SourceCompletenessApp = (function (_super) {
+    __extends(SourceCompletenessApp, _super);
+    function SourceCompletenessApp(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            panel: Panel.TABLE,
+            sourceCompletenesses: _this.props.sourceCompletenesses
+        };
+        _this.openEdit = _this.openEdit.bind(_this);
+        _this.saveSourceCompleteness = _this.saveSourceCompleteness.bind(_this);
+        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.setPanel = _this.setPanel.bind(_this);
+        _this.setLoader = _this.setLoader.bind(_this);
+        return _this;
+    }
+    SourceCompletenessApp.prototype.render = function () {
+        var _this = this;
+        switch (this.state.panel) {
+            case Panel.TABLE:
+                return (React.createElement(SourceCompletenessTablePanel_tsx_1.default, { sourceCompletenesses: this.props.sourceCompletenesses, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: function () {
+                        _this.setLoader('Loading SourceCompletenesses...');
+                        _this.props.reloadSourceCompletenesses();
+                    } }));
+            case Panel.EDIT:
+                return (React.createElement(SourceCompletenessEditPanel_tsx_1.default, { sourceCompleteness: this.state.sourceCompleteness, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveSourceCompleteness }));
+            case Panel.LOADER:
+                return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
+            default:
+                return null;
+        }
+    };
+    SourceCompletenessApp.prototype.confirmDelete = function (sourceCompleteness) {
+        var _this = this;
+        var del = confirm('Delete sourceCompleteness ' + sourceCompleteness.sourceCompletenessID + '?');
+        if (del) {
+            this.setLoader('Deleting ' + sourceCompleteness.sourceCompletenessID + '...');
+            ProxyFactory_ts_1.default.getSectionProxy().deleteSourceCompleteness(sourceCompleteness.sourceCompletenessID, function (success, e) {
+                if (e) {
+                    alert(e);
+                }
+                else if (success) {
+                    _this.setState(function (s) {
+                        var i = s.sourceCompletenesses.findIndex(function (c) { return sourceCompleteness.sourceCompletenessID === c.sourceCompletenessID; });
+                        s.sourceCompletenesses[i].destroy();
+                        s.sourceCompletenesses.splice(i, 1);
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+                else {
+                    _this.setPanel(Panel.TABLE);
+                    alert('Failed to delete sourceCompleteness ' + sourceCompleteness.sourceCompletenessName + '.');
+                }
+            });
+        }
+    };
+    SourceCompletenessApp.prototype.openEdit = function (sourceCompleteness) {
+        var _this = this;
+        this.setState(function (s) {
+            s.sourceCompleteness = sourceCompleteness;
+            _this.setPanel(Panel.EDIT, null, s);
+            return s;
+        });
+    };
+    SourceCompletenessApp.prototype.saveSourceCompleteness = function (ctProps, isNew) {
+        var _this = this;
+        this.setLoader('Saving SourceCompleteness ' + ctProps.sourceCompletenessID + '...');
+        if (isNew) {
+            ProxyFactory_ts_1.default.getSectionProxy().createSourceCompleteness(ctProps, function (sourceCompleteness, e) {
+                if (e) {
+                    alert('Error creating new SourceCompleteness: ' + e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        s.sourceCompletenesses.push(sourceCompleteness);
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+            });
+        }
+        else {
+            ProxyFactory_ts_1.default.getSectionProxy().updateSourceCompleteness(ctProps, function (sourceCompleteness, e) {
+                if (e) {
+                    alert('Error updating SourceCompleteness: ' + e);
+                }
+                else {
+                    _this.setState(function (s) {
+                        var i = s.sourceCompletenesses.findIndex(function (c) { return sourceCompleteness.sourceCompletenessID === c.sourceCompletenessID; });
+                        s.sourceCompletenesses[i].destroy();
+                        s.sourceCompletenesses[i] = sourceCompleteness;
+                        _this.setPanel(Panel.TABLE, null, s);
+                        return s;
+                    });
+                }
+            });
+        }
+    };
+    SourceCompletenessApp.prototype.setPanel = function (p, callback, s) {
+        if (s) {
+            s.panel = p;
+        }
+        else {
+            this.setState(function (s) {
+                s.panel = p;
+                if (callback)
+                    return callback(s);
+                else
+                    return s;
+            });
+        }
+    };
+    SourceCompletenessApp.prototype.setLoader = function (msg, callback, s) {
+        var _this = this;
+        if (s) {
+            this.setPanel(Panel.LOADER);
+            s.loadMessage = msg;
+        }
+        else {
+            this.setState(function (s) {
+                _this.setPanel(Panel.LOADER, null, s);
+                s.loadMessage = msg;
+                if (callback)
+                    return callback(s);
+                return s;
+            });
+        }
+    };
+    return SourceCompletenessApp;
+}(React.Component));
+exports.default = SourceCompletenessApp;
+
+
+/***/ }),
+
+/***/ "./src/components/sourceCompleteness/SourceCompletenessEditPanel.tsx":
+/*!***************************************************************************!*\
+  !*** ./src/components/sourceCompleteness/SourceCompletenessEditPanel.tsx ***!
+  \***************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SourceCompletenessEditPanel = (function (_super) {
+    __extends(SourceCompletenessEditPanel, _super);
+    function SourceCompletenessEditPanel(p) {
+        var _this = _super.call(this, p) || this;
+        var isNew = !Boolean(p.sourceCompleteness);
+        var scProps;
+        if (isNew) {
+            scProps = {
+                sourceCompletenessID: '',
+                sourceCompletenessName: ''
+            };
+        }
+        else {
+            scProps = p.sourceCompleteness.toProperties();
+            scProps.sourceCompletenessName = scProps.sourceCompletenessName || '';
+        }
+        _this.state = {
+            isNew: isNew,
+            scProps: scProps,
+            val: null
+        };
+        _this.getSourceCompletenessIDFormGroup = _this.getSourceCompletenessIDFormGroup.bind(_this);
+        _this.onChange = _this.onChange.bind(_this);
+        _this.onSubmit = _this.onSubmit.bind(_this);
+        return _this;
+    }
+    SourceCompletenessEditPanel.prototype.render = function () {
+        var x = [];
+        x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
+            ? 'Create a Source Completeness'
+            : 'Edit Source Completeness: ' + this.props.sourceCompleteness.sourceCompletenessName));
+        x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+            React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
+        x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
+            this.getSourceCompletenessIDFormGroup(),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "sourceCompletenessName" },
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "SourceCompleteness Name:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.scProps.sourceCompletenessName, onChange: this.onChange }))),
+            React.createElement(react_bootstrap_1.FormGroup, null,
+                React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
+                    React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))));
+        return x;
+    };
+    SourceCompletenessEditPanel.prototype.getSourceCompletenessIDFormGroup = function () {
+        var label, value;
+        if (this.state.isNew) {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "SourceCompleteness ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.scProps.sourceCompletenessID, onChange: this.onChange })));
+        }
+        else {
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "SourceCompleteness ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.sourceCompleteness.sourceCompletenessID));
+        }
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "sourceCompletenessID", validationState: this.state.val },
+            label,
+            value));
+    };
+    SourceCompletenessEditPanel.prototype.onChange = function (e) {
+        var target = e.target;
+        var k = target.id;
+        var v = target.value;
+        this.setState(function (s) {
+            s.scProps[k] = v;
+            return s;
+        });
+    };
+    SourceCompletenessEditPanel.prototype.onSubmit = function (e) {
+        e.preventDefault();
+        var val = this.state.scProps.sourceCompletenessID ? null : 'error';
+        this.setState(function (s) {
+            s.val = val;
+            return s;
+        });
+        if (val === null) {
+            this.props.onSubmit(this.state.scProps, this.state.isNew);
+        }
+    };
+    return SourceCompletenessEditPanel;
+}(React.Component));
+exports.default = SourceCompletenessEditPanel;
+
+
+/***/ }),
+
+/***/ "./src/components/sourceCompleteness/SourceCompletenessTablePanel.tsx":
+/*!****************************************************************************!*\
+  !*** ./src/components/sourceCompleteness/SourceCompletenessTablePanel.tsx ***!
+  \****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var React = __webpack_require__(/*! react */ "react");
+var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
+var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SearchBar_tsx_1 = __webpack_require__(/*! @src/components/common/SearchBar.tsx */ "./src/components/common/SearchBar.tsx");
+var index_tsx_1 = __webpack_require__(/*! @src/index.tsx */ "./src/index.tsx");
+var SourceCompletenessTablePanel = (function (_super) {
+    __extends(SourceCompletenessTablePanel, _super);
+    function SourceCompletenessTablePanel(p) {
+        var _this = _super.call(this, p) || this;
+        _this.state = {
+            sourceCompletenesses: _this.props.sourceCompletenesses,
+            rowGetter: function (i) { return _this.state.sourceCompletenesses[i.index]; },
+        };
+        _this.renderDelete = _this.renderDelete.bind(_this);
+        _this.renderEdit = _this.renderEdit.bind(_this);
+        _this.filter = _this.filter.bind(_this);
+        return _this;
+    }
+    SourceCompletenessTablePanel.prototype.render = function () {
+        var _this = this;
+        return [
+            React.createElement(Header_tsx_1.default, { min: true, key: "header" }, "Source Completenesses"),
+            (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
+                React.createElement(react_bootstrap_1.Row, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "success", onClick: function () { return _this.props.onEdit(null); }, className: "ml15" }, "New")),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by sourceCompletenessID and sourceCompletenessName...", onSubmit: this.filter })),
+                    React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.sourceCompletenesses.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_virtualized_1.Column, { width: 200, label: "Source Completeness ID", dataKey: "sourceCompletenessID" }),
+                React.createElement(react_virtualized_1.Column, { width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 330, label: "Source Completeness Name", dataKey: "sourceCompletenessName" }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderEdit }),
+                React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderDelete })))
+        ];
+    };
+    SourceCompletenessTablePanel.prototype.renderDelete = function (p) {
+        var _this = this;
+        var ct = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onDelete(ct); } }, "Delete"));
+    };
+    SourceCompletenessTablePanel.prototype.renderEdit = function (p) {
+        var _this = this;
+        var ct = p.rowData;
+        return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onEdit(ct); } }, "Edit"));
+    };
+    SourceCompletenessTablePanel.prototype.filter = function (v) {
+        var _this = this;
+        this.setState(function (s) {
+            if (v) {
+                s.sourceCompletenesses = _this.props.sourceCompletenesses.filter(function (c) {
+                    var f = false;
+                    f = c.sourceCompletenessID.toLowerCase().indexOf(v) !== -1;
+                    if (!f && c.sourceCompletenessName) {
+                        f = c.sourceCompletenessName.toLowerCase().indexOf(v) !== -1;
+                    }
+                    return f;
+                });
+            }
+            else {
+                s.sourceCompletenesses = _this.props.sourceCompletenesses;
+            }
+            return s;
+        });
+    };
+    return SourceCompletenessTablePanel;
+}(React.Component));
+exports.default = SourceCompletenessTablePanel;
 
 
 /***/ }),
@@ -42412,66 +43537,6 @@ var SectionProxy = (function (_super) {
             }
         });
     };
-    SectionProxy.prototype.getCursuses = function (callback) {
-        var params = { action: 'GetCursuses' };
-        _super.prototype.doPost.call(this, params, function (res) {
-            var d = res.data;
-            if (d.e) {
-                SpgProxy_ts_1.default.callbackError(callback, d.e);
-            }
-            else if (d.constructor === Array) {
-                callback(d.map(function (p) { return new crs.Cursus(p); }, null));
-            }
-            else {
-                SpgProxy_ts_1.default.callbackError(callback, null);
-            }
-        });
-    };
-    SectionProxy.prototype.getSourceCompletenesses = function (callback) {
-        var params = { action: 'GetSourceCompletenesses' };
-        _super.prototype.doPost.call(this, params, function (res) {
-            var d = res.data;
-            if (d.e) {
-                SpgProxy_ts_1.default.callbackError(callback, d.e);
-            }
-            else if (d.constructor === Array) {
-                callback(d.map(function (p) { return new sc.SourceCompleteness(p); }, null));
-            }
-            else {
-                SpgProxy_ts_1.default.callbackError(callback, null);
-            }
-        });
-    };
-    SectionProxy.prototype.getProvenances = function (callback) {
-        var params = { action: 'GetProvenances' };
-        _super.prototype.doPost.call(this, params, function (res) {
-            var d = res.data;
-            if (d.e) {
-                SpgProxy_ts_1.default.callbackError(callback, d.e);
-            }
-            else if (d.constructor === Array) {
-                callback(d.map(function (p) { return new prv.Provenance(p); }, null));
-            }
-            else {
-                SpgProxy_ts_1.default.callbackError(callback, null);
-            }
-        });
-    };
-    SectionProxy.prototype.getNotations = function (callback) {
-        var params = { action: 'GetNotations' };
-        _super.prototype.doPost.call(this, params, function (res) {
-            var d = res.data;
-            if (d.e) {
-                SpgProxy_ts_1.default.callbackError(callback, d.e);
-            }
-            else if (d.constructor === Array) {
-                callback(d.map(function (p) { return new nt.Notation(p); }, null));
-            }
-            else {
-                SpgProxy_ts_1.default.callbackError(callback, null);
-            }
-        });
-    };
     SectionProxy.prototype.createCentury = function (p, callback) {
         var params = {
             action: 'CreateCentury'
@@ -42502,6 +43567,222 @@ var SectionProxy = (function (_super) {
         var params = {
             action: 'DeleteCentury',
             centuryID: centuryID
+        };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(Boolean(d.success), null);
+        });
+    };
+    SectionProxy.prototype.getCursuses = function (callback) {
+        var params = { action: 'GetCursuses' };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            else if (d.constructor === Array) {
+                callback(d.map(function (p) { return new crs.Cursus(p); }, null));
+            }
+            else {
+                SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    SectionProxy.prototype.createCursus = function (p, callback) {
+        var params = {
+            action: 'CreateCursus'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(new crs.Cursus(d), null);
+        });
+    };
+    SectionProxy.prototype.updateCursus = function (p, callback) {
+        var params = {
+            action: 'UpdateCursus'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(new crs.Cursus(d), null);
+        });
+    };
+    SectionProxy.prototype.deleteCursus = function (cursusID, callback) {
+        var params = {
+            action: 'DeleteCursus',
+            cursusID: cursusID
+        };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(Boolean(d.success), null);
+        });
+    };
+    SectionProxy.prototype.getSourceCompletenesses = function (callback) {
+        var params = { action: 'GetSourceCompletenesses' };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            else if (d.constructor === Array) {
+                callback(d.map(function (p) { return new sc.SourceCompleteness(p); }, null));
+            }
+            else {
+                SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    SectionProxy.prototype.createSourceCompleteness = function (p, callback) {
+        var params = {
+            action: 'CreateSourceCompleteness'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(new sc.SourceCompleteness(d), null);
+        });
+    };
+    SectionProxy.prototype.updateSourceCompleteness = function (p, callback) {
+        var params = {
+            action: 'UpdateSourceCompleteness'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(new sc.SourceCompleteness(d), null);
+        });
+    };
+    SectionProxy.prototype.deleteSourceCompleteness = function (scID, callback) {
+        var params = {
+            action: 'DeleteSourceCompleteness',
+            sourceCompletenessID: scID
+        };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(Boolean(d.success), null);
+        });
+    };
+    SectionProxy.prototype.getProvenances = function (callback) {
+        var params = { action: 'GetProvenances' };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            else if (d.constructor === Array) {
+                callback(d.map(function (p) { return new prv.Provenance(p); }, null));
+            }
+            else {
+                SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    SectionProxy.prototype.createProvenance = function (p, callback) {
+        var params = {
+            action: 'CreateProvenance'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(new prv.Provenance(d), null);
+        });
+    };
+    SectionProxy.prototype.updateProvenance = function (p, callback) {
+        var params = {
+            action: 'UpdateProvenance'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(new prv.Provenance(d), null);
+        });
+    };
+    SectionProxy.prototype.deleteProvenance = function (pID, callback) {
+        var params = {
+            action: 'DeleteProvenance',
+            provenanceID: pID
+        };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(Boolean(d.success), null);
+        });
+    };
+    SectionProxy.prototype.getNotations = function (callback) {
+        var params = { action: 'GetNotations' };
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.e) {
+                SpgProxy_ts_1.default.callbackError(callback, d.e);
+            }
+            else if (d.constructor === Array) {
+                callback(d.map(function (p) { return new nt.Notation(p); }, null));
+            }
+            else {
+                SpgProxy_ts_1.default.callbackError(callback, null);
+            }
+        });
+    };
+    SectionProxy.prototype.createNotation = function (p, callback) {
+        var params = {
+            action: 'CreateNotation'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(new nt.Notation(d), null);
+        });
+    };
+    SectionProxy.prototype.updateNotation = function (p, callback) {
+        var params = {
+            action: 'UpdateNotation'
+        };
+        Object.assign(params, p);
+        _super.prototype.doPost.call(this, params, function (res) {
+            var d = res.data;
+            if (d.err) {
+                return SpgProxy_ts_1.default.callbackError(callback, d.err);
+            }
+            callback(new nt.Notation(d), null);
+        });
+    };
+    SectionProxy.prototype.deleteNotation = function (nID, callback) {
+        var params = {
+            action: 'DeleteNotation',
+            notationID: nID
         };
         _super.prototype.doPost.call(this, params, function (res) {
             var d = res.data;

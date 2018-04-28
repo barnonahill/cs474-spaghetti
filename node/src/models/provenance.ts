@@ -10,6 +10,7 @@ import SpgModel from '@src/models/SpgModel.ts';
 export interface Properties {
 	provenanceID: string;
 	provenanceName: string;
+	[x:string]: any
 }
 
 /**

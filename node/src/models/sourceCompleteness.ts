@@ -10,6 +10,7 @@ import SpgModel from '@src/models/SpgModel.ts';
 export interface Properties {
 	sourceCompletenessID: string;
 	sourceCompletenessName: string;
+	[x:string]: any
 }
 
 /**

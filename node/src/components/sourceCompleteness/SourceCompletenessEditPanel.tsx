@@ -12,48 +12,48 @@ import {
 import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
 
-import * as ct from '@src/models/century.ts';
+import * as sc from '@src/models/sourceCompleteness.ts';
 
 interface P {
-	century: ct.Century
+	sourceCompleteness: sc.SourceCompleteness
 	onBack: () => void
-	onSubmit: (ctProps:ct.Properties, isNew:boolean) => void
+	onSubmit: (scProps:sc.Properties, isNew:boolean) => void
 }
 interface S {
 	isNew: boolean
-	ctProps: ct.Properties
+	scProps: sc.Properties
 
 	// validationState
 	val: any
 }
 
-export default class CenturyEditPanel extends React.Component<P,S> {
+export default class SourceCompletenessEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
-		var isNew = !Boolean(p.century);
-		var ctProps: ct.Properties;
+		var isNew = !Boolean(p.sourceCompleteness);
+		var scProps: sc.Properties;
 
 		if (isNew) {
-			ctProps = {
-				centuryID: '',
-				centuryName: ''
+			scProps = {
+				sourceCompletenessID: '',
+				sourceCompletenessName: ''
 			}
 		}
 
 		else {
-			ctProps = p.century.toProperties();
-			ctProps.centuryName = ctProps.centuryName || '';
+			scProps = p.sourceCompleteness.toProperties();
+			scProps.sourceCompletenessName = scProps.sourceCompletenessName || '';
 		}
 
 		this.state = {
 			isNew: isNew,
-			ctProps: ctProps,
+			scProps: scProps,
 			val: null
 		};
 
 		// render helper
-		this.getCenturyIDFormGroup = this.getCenturyIDFormGroup.bind(this);
+		this.getSourceCompletenessIDFormGroup = this.getSourceCompletenessIDFormGroup.bind(this);
 
 		// event handlers
 		this.onChange = this.onChange.bind(this);
@@ -63,8 +63,8 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 	render() {
 		var x: JSX.Element[] = [];
 		x.push(<Header key="header" min>{this.state.isNew
-			? 'Create a Century'
-			: 'Edit Century: ' + this.props.century.centuryName}</Header>);
+			? 'Create a Source Completeness'
+			: 'Edit Source Completeness: ' + this.props.sourceCompleteness.sourceCompletenessName}</Header>);
 
 		x.push(<PanelMenu key="panelMenu">
 			<Button
@@ -77,19 +77,19 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 			horizontal
 			onSubmit={this.onSubmit}
 		>
-			{this.getCenturyIDFormGroup()}
+			{this.getSourceCompletenessIDFormGroup()}
 
 			<FormGroup
-				controlId="centuryName"
+				controlId="sourceCompletenessName"
 			>
 				<Col
 					sm={3}
 					componentClass={ControlLabel}
-				>Century Name:</Col>
+				>SourceCompleteness Name:</Col>
 				<Col sm={4}>
 					<FormControl
 						type="text"
-						value={this.state.ctProps.centuryName}
+						value={this.state.scProps.sourceCompletenessName}
 						onChange={this.onChange}
 					/>
 				</Col>
@@ -108,7 +108,7 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 		return x;
 	}
 
-	getCenturyIDFormGroup() {
+	getSourceCompletenessIDFormGroup() {
 		var label, value: JSX.Element;
 
 		if (this.state.isNew) {
@@ -116,12 +116,12 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 				sm={3}
 				componentClass={ControlLabel}
 				className="required"
-			>Century ID:</Col>);
+			>SourceCompleteness ID:</Col>);
 
 			value = (<Col sm={4}>
 				<FormControl
 					type="text"
-					value={this.state.ctProps.centuryID}
+					value={this.state.scProps.sourceCompletenessID}
 					onChange={this.onChange}
 				/>
 			</Col>);
@@ -131,15 +131,15 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 			label = (<Col
 				sm={3}
 				componentClass={ControlLabel}
-			>Century ID:</Col>);
+			>SourceCompleteness ID:</Col>);
 
 			value = (<Col sm={4} className="pt7 pl27">
-				{this.props.century.centuryID}
+				{this.props.sourceCompleteness.sourceCompletenessID}
 			</Col>);
 		}
 
 		return (<FormGroup
-			controlId="centuryID"
+			controlId="sourceCompletenessID"
 			validationState={this.state.val}
 		>
 			{label}
@@ -153,14 +153,14 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 		const v = target.value;
 
 		this.setState((s:S) => {
-			s.ctProps[k] = v;
+			s.scProps[k] = v;
 			return s;
 		});
 	}
 
 	onSubmit(e:React.FormEvent<Form>) {
 		e.preventDefault();
-		var val = this.state.ctProps.centuryID ? null : 'error'
+		var val = this.state.scProps.sourceCompletenessID ? null : 'error'
 
 		this.setState((s:S) => {
 			s.val = val;
@@ -168,7 +168,7 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 		});
 
 		if (val === null) {
-			this.props.onSubmit(this.state.ctProps, this.state.isNew);
+			this.props.onSubmit(this.state.scProps, this.state.isNew);
 		}
 	}
 }

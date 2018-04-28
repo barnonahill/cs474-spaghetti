@@ -15,28 +15,28 @@ import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
 import SearchBar from '@src/components/common/SearchBar.tsx';
 
-import { Century } from '@src/models/century.ts';
+import { SourceCompleteness } from '@src/models/sourceCompleteness.ts';
 import { TABLE_CONSTANTS } from '@src/index.tsx';
 
 interface P {
-	centuries: Century[]
-	onEdit: (c:Century) => void
-	onDelete: (c:Century) => void
+	sourceCompletenesses: SourceCompleteness[]
+	onEdit: (c:SourceCompleteness) => void
+	onDelete: (c:SourceCompleteness) => void
 	onRefresh: () => void
 	onBack: () => void
 }
 interface S {
-	centuries: Century[]
-	rowGetter: (i:Index) => Century
+	sourceCompletenesses: SourceCompleteness[]
+	rowGetter: (i:Index) => SourceCompleteness
 }
 
-export default class CenturyTablePanel extends React.Component<P,S> {
+export default class SourceCompletenessTablePanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
 		this.state = {
-			centuries: this.props.centuries,
-			rowGetter: (i:Index) => this.state.centuries[i.index],
+			sourceCompletenesses: this.props.sourceCompletenesses,
+			rowGetter: (i:Index) => this.state.sourceCompletenesses[i.index],
 		};
 
 		this.renderDelete = this.renderDelete.bind(this);
@@ -46,7 +46,7 @@ export default class CenturyTablePanel extends React.Component<P,S> {
 
 	render() {
 		return [
-			<Header min key="header">Centuries</Header>,
+			<Header min key="header">Source Completenesses</Header>,
 			(<PanelMenu key="panelMenu">
 				<Row>
 					<Col sm={4}>
@@ -62,7 +62,7 @@ export default class CenturyTablePanel extends React.Component<P,S> {
 					</Col>
 					<Col sm={4}>
 						<SearchBar
-							placeholder="Filter by centuryID and centuryName..."
+							placeholder="Filter by sourceCompletenessID and sourceCompletenessName..."
 							onSubmit={this.filter}
 						/>
 					</Col>
@@ -83,20 +83,20 @@ export default class CenturyTablePanel extends React.Component<P,S> {
 				width={TABLE_CONSTANTS.WIDTH}
 				headerHeight={TABLE_CONSTANTS.HEADER_HEIGHT}
 				rowHeight={TABLE_CONSTANTS.ROW_HEIGHT}
-				rowCount={this.state.centuries.length}
+				rowCount={this.state.sourceCompletenesses.length}
 				rowGetter={this.state.rowGetter}
 			>
 
 				<Column
 					width={200}
-					label="Century ID"
-					dataKey="centuryID"
+					label="Source Completeness ID"
+					dataKey="sourceCompletenessID"
 				/>
 
 				<Column
 					width={TABLE_CONSTANTS.WIDTH - 330}
-					label="Century Name"
-					dataKey="centuryName"
+					label="Source Completeness Name"
+					dataKey="sourceCompletenessName"
 				/>
 
 				<Column
@@ -117,7 +117,7 @@ export default class CenturyTablePanel extends React.Component<P,S> {
 	}
 
 	renderDelete(p: TableCellProps) {
-		const ct:Century = p.rowData;
+		const ct:SourceCompleteness = p.rowData;
 		return (<Button
 			bsStyle="danger"
 			bsSize="small"
@@ -127,7 +127,7 @@ export default class CenturyTablePanel extends React.Component<P,S> {
 	}
 
 	renderEdit(p: TableCellProps) {
-		const ct:Century = p.rowData;
+		const ct:SourceCompleteness = p.rowData;
 		return (<Button
 			bsStyle="success"
 			bsSize="small"
@@ -139,18 +139,18 @@ export default class CenturyTablePanel extends React.Component<P,S> {
 	filter(v: string) {
 		this.setState((s:S) => {
 			if (v) {
-				s.centuries = this.props.centuries.filter(c => {
+				s.sourceCompletenesses = this.props.sourceCompletenesses.filter(c => {
 					var f = false;
-					f = c.centuryID.toLowerCase().indexOf(v) !== -1;
+					f = c.sourceCompletenessID.toLowerCase().indexOf(v) !== -1;
 
-					if (!f && c.centuryName) {
-							f = c.centuryName.toLowerCase().indexOf(v) !== -1;
+					if (!f && c.sourceCompletenessName) {
+							f = c.sourceCompletenessName.toLowerCase().indexOf(v) !== -1;
 					}
 					return f;
 				});
 			}
 			else {
-				s.centuries = this.props.centuries;
+				s.sourceCompletenesses = this.props.sourceCompletenesses;
 			}
 			return s;
 		});
