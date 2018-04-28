@@ -34,7 +34,7 @@ public class SectionController extends SpgController {
 	 * @throws Exception
 	 */
 	public Section createSection(String libSiglum, String msSiglum, String sectionID, String sectionType,
-			String liturgicalOccassion, String notationID, String numGatherings, String numColumns,
+			String liturgicalOccasion, String notationID, String numGatherings, String numColumns,
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID, String provenanceID,
 			String provenanceDetail, String commissioner, String inscription, String colophon,
 			String sourceCompletenessID) throws Exception {
@@ -52,7 +52,7 @@ public class SectionController extends SpgController {
 		namesToValues.put("msSiglum", msSiglum);
 		namesToValues.put("sectionID", sectionID);
 		namesToValues.put("sectionType", sectionType);
-		namesToValues.put("liturgicalOccassion", liturgicalOccassion);
+		namesToValues.put("liturgicalOccasion", liturgicalOccasion);
 		namesToValues.put("notationID", notationID);
 		namesToValues.put("numGatherings", numGatherings);
 		namesToValues.put("numColumns", numColumns);
@@ -71,7 +71,7 @@ public class SectionController extends SpgController {
 		query = super.buildInsertQuery(SECTION, namesToValues);
 		super.executeSQL(query);
 
-		section = new Section(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, notationID,
+		section = new Section(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, notationID,
 				numGatherings, numColumns, linesPerColumn, scribe, date, centuryID, cursusID, provenanceID,
 				provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 
@@ -86,7 +86,7 @@ public class SectionController extends SpgController {
 	 *             -
 	 */
 	public Section updateSection(String libSiglum, String msSiglum, String sectionID, String sectionType,
-			String liturgicalOccassion, String notationID, String numGatherings, String numColumns,
+			String liturgicalOccasion, String notationID, String numGatherings, String numColumns,
 			String linesPerColumn, String scribe, String date, String centuryID, String cursusID, String provenanceID,
 			String provenanceDetail, String commissioner, String inscription, String colophon,
 			String sourceCompletenessID) throws Exception {
@@ -98,7 +98,7 @@ public class SectionController extends SpgController {
 		HashMap<String, String> pkNamesToValues = new HashMap<String, String>();
 
 		namesToValues.put("sectionType", sectionType);
-		namesToValues.put("liturgicalOccassion", liturgicalOccassion);
+		namesToValues.put("liturgicalOccasion", liturgicalOccasion);
 		namesToValues.put("notationID", notationID);
 		namesToValues.put("numGatherings", numGatherings);
 		namesToValues.put("numColumns", numColumns);
@@ -121,7 +121,7 @@ public class SectionController extends SpgController {
 		query = super.buildUpdateQuery(SECTION, pkNamesToValues, namesToValues);
 		super.executeSQL(query);
 
-		section = new Section(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccassion, notationID,
+		section = new Section(libSiglum, msSiglum, sectionID, sectionType, liturgicalOccasion, notationID,
 				numGatherings, numColumns, linesPerColumn, scribe, date, centuryID, cursusID, provenanceID,
 				provenanceDetail, commissioner, inscription, colophon, sourceCompletenessID);
 
