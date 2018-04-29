@@ -36991,7 +36991,7 @@ var CenturyApp = (function (_super) {
         var _this = this;
         this.setLoader('Saving Century ' + ctProps.centuryID + '...');
         var onError = function (e) {
-            alert('Error creating new Century: ' + e);
+            alert('Error saving Century: ' + e);
             _this.setPanel(Panel.EDIT, function (s) {
                 s.editOpts = {
                     isNew: isNew,
@@ -37010,6 +37010,7 @@ var CenturyApp = (function (_super) {
                 else {
                     _this.setPanel(Panel.TABLE, function (s) {
                         s.centuries.push(century);
+                        s.editOpts = {};
                         return s;
                     });
                 }
@@ -37025,6 +37026,7 @@ var CenturyApp = (function (_super) {
                         var i = s.centuries.findIndex(function (c) { return century.centuryID === c.centuryID; });
                         s.centuries[i].destroy();
                         s.centuries[i] = century;
+                        s.editOpts = {};
                         return s;
                     });
                 }
@@ -37470,8 +37472,10 @@ var CursusApp = (function (_super) {
         var _this = _super.call(this, p) || this;
         _this.state = {
             panel: Panel.TABLE,
-            cursuses: _this.props.cursuses
+            cursuses: _this.props.cursuses,
+            editOpts: {}
         };
+        _this.renderEditPanel = _this.renderEditPanel.bind(_this);
         _this.openEdit = _this.openEdit.bind(_this);
         _this.saveCursus = _this.saveCursus.bind(_this);
         _this.confirmDelete = _this.confirmDelete.bind(_this);
@@ -37488,12 +37492,27 @@ var CursusApp = (function (_super) {
                         _this.props.reloadCursuses();
                     } }));
             case Panel.EDIT:
-                return (React.createElement(CursusEditPanel_tsx_1.default, { cursus: this.state.cursus, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveCursus }));
+                return this.renderEditPanel();
             case Panel.LOADER:
                 return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
             default:
                 return null;
         }
+    };
+    CursusApp.prototype.renderEditPanel = function () {
+        var _this = this;
+        var edo = this.state.editOpts;
+        var csProps;
+        if (edo.csProps) {
+            csProps = edo.csProps;
+        }
+        else if (this.state.cursus) {
+            csProps = this.state.cursus.toProperties();
+        }
+        else {
+            csProps = null;
+        }
+        return (React.createElement(CursusEditPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveCursus, csProps: csProps, isNew: edo.isNew, val: edo.val }));
     };
     CursusApp.prototype.confirmDelete = function (cursus) {
         var _this = this;
@@ -37502,7 +37521,8 @@ var CursusApp = (function (_super) {
             this.setLoader('Deleting ' + cursus.cursusID + '...');
             ProxyFactory_ts_1.default.getSectionProxy().deleteCursus(cursus.cursusID, function (success, e) {
                 if (e) {
-                    alert(e);
+                    alert('Error deleting Cursus: ' + e);
+                    _this.setPanel(Panel.TABLE);
                 }
                 else if (success) {
                     _this.setState(function (s) {
@@ -37521,25 +37541,35 @@ var CursusApp = (function (_super) {
         }
     };
     CursusApp.prototype.openEdit = function (cursus) {
-        var _this = this;
-        this.setState(function (s) {
+        this.setPanel(Panel.EDIT, function (s) {
             s.cursus = cursus;
-            _this.setPanel(Panel.EDIT, null, s);
             return s;
         });
     };
     CursusApp.prototype.saveCursus = function (csProps, isNew) {
         var _this = this;
         this.setLoader('Saving Cursus ' + csProps.cursusID + '...');
+        var onError = function (e) {
+            alert('Error saving Cursus: ' + e);
+            _this.setPanel(Panel.EDIT, function (s) {
+                _this.state.editOpts = {
+                    csProps: csProps,
+                    isNew: isNew,
+                    val: (e.toLowerCase().indexOf(csProps.cursusID.toLowerCase()) == -1
+                        ? null : 'error')
+                };
+                return s;
+            });
+        };
         if (isNew) {
             ProxyFactory_ts_1.default.getSectionProxy().createCursus(csProps, function (cursus, e) {
                 if (e) {
-                    alert('Error creating new Cursus: ' + e);
+                    onError(e);
                 }
                 else {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         s.cursuses.push(cursus);
-                        _this.setPanel(Panel.TABLE, null, s);
+                        s.editOpts = {};
                         return s;
                     });
                 }
@@ -37548,14 +37578,14 @@ var CursusApp = (function (_super) {
         else {
             ProxyFactory_ts_1.default.getSectionProxy().updateCursus(csProps, function (cursus, e) {
                 if (e) {
-                    alert('Error updating Cursus: ' + e);
+                    onError(e);
                 }
                 else {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         var i = s.cursuses.findIndex(function (c) { return cursus.cursusID === c.cursusID; });
                         s.cursuses[i].destroy();
                         s.cursuses[i] = cursus;
-                        _this.setPanel(Panel.TABLE, null, s);
+                        s.editOpts = {};
                         return s;
                     });
                 }
@@ -37627,23 +37657,23 @@ var CursusEditPanel = (function (_super) {
     __extends(CursusEditPanel, _super);
     function CursusEditPanel(p) {
         var _this = _super.call(this, p) || this;
-        var isNew = !Boolean(p.cursus);
-        var csProps;
-        if (isNew) {
-            csProps = {
-                cursusID: '',
-                cursusName: ''
-            };
+        var isNew;
+        if (typeof p.isNew === 'boolean') {
+            isNew = p.isNew;
         }
         else {
-            csProps = p.cursus.toProperties();
-            csProps.cursusName = csProps.cursusName || '';
+            isNew = !Boolean(p.csProps);
         }
+        var csProps = p.csProps || {
+            cursusID: '',
+            cursusName: ''
+        };
         _this.state = {
             isNew: isNew,
             csProps: csProps,
-            val: null
+            val: p.val || null
         };
+        csProps.cursusName = csProps.cursusName || '';
         _this.getCursusIDFormGroup = _this.getCursusIDFormGroup.bind(_this);
         _this.onChange = _this.onChange.bind(_this);
         _this.onSubmit = _this.onSubmit.bind(_this);
@@ -37653,7 +37683,7 @@ var CursusEditPanel = (function (_super) {
         var x = [];
         x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
             ? 'Create a Cursus'
-            : 'Edit Cursus: ' + this.props.cursus.cursusName));
+            : 'Edit Cursus: ' + this.state.csProps.cursusName));
         x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
             React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
         x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
@@ -37676,7 +37706,7 @@ var CursusEditPanel = (function (_super) {
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Cursus ID:"));
-            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.cursus.cursusID));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.state.csProps.cursusID));
         }
         return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "cursusID", validationState: this.state.val },
             label,

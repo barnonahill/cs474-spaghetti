@@ -15,9 +15,12 @@ import PanelMenu from '@src/components/common/PanelMenu.tsx';
 import * as cs from '@src/models/cursus.ts';
 
 interface P {
-	cursus: cs.Cursus
 	onBack: () => void
 	onSubmit: (csProps:cs.Properties, isNew:boolean) => void
+	csProps?: cs.Properties
+
+	isNew?: boolean
+	val?: null | 'error'
 }
 interface S {
 	isNew: boolean
@@ -31,26 +34,24 @@ export default class CursusEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
-		var isNew = !Boolean(p.cursus);
-		var csProps: cs.Properties;
-
-		if (isNew) {
-			csProps = {
-				cursusID: '',
-				cursusName: ''
-			}
+		var isNew: boolean;
+		if (typeof p.isNew === 'boolean') {
+			isNew = p.isNew;
 		}
-
 		else {
-			csProps = p.cursus.toProperties();
-			csProps.cursusName = csProps.cursusName || '';
+			isNew = !Boolean(p.csProps)
 		}
+		var csProps = p.csProps || {
+			cursusID: '',
+			cursusName: ''
+		};
 
 		this.state = {
 			isNew: isNew,
 			csProps: csProps,
-			val: null
+			val: p.val || null
 		};
+		csProps.cursusName = csProps.cursusName || '';
 
 		// render helper
 		this.getCursusIDFormGroup = this.getCursusIDFormGroup.bind(this);
@@ -64,7 +65,7 @@ export default class CursusEditPanel extends React.Component<P,S> {
 		var x: JSX.Element[] = [];
 		x.push(<Header key="header" min>{this.state.isNew
 			? 'Create a Cursus'
-			: 'Edit Cursus: ' + this.props.cursus.cursusName}</Header>);
+			: 'Edit Cursus: ' + this.state.csProps.cursusName}</Header>);
 
 		x.push(<PanelMenu key="panelMenu">
 			<Button
@@ -134,7 +135,7 @@ export default class CursusEditPanel extends React.Component<P,S> {
 			>Cursus ID:</Col>);
 
 			value = (<Col sm={4} className="pt7 pl27">
-				{this.props.cursus.cursusID}
+				{this.state.csProps.cursusID}
 			</Col>);
 		}
 

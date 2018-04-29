@@ -167,7 +167,7 @@ export default class CenturyApp extends React.Component<P,S> {
 		this.setLoader('Saving Century ' + ctProps.centuryID + '...');
 
 		var onError = (e:string) => {
-			alert('Error creating new Century: ' + e);
+			alert('Error saving Century: ' + e);
 			this.setPanel(Panel.EDIT, s => {
 
 				s.editOpts = {
@@ -189,6 +189,7 @@ export default class CenturyApp extends React.Component<P,S> {
 				else {
 					this.setPanel(Panel.TABLE, s => {
 						s.centuries.push(century);
+						s.editOpts = {};
 						return s;
 					});
 				}
@@ -207,6 +208,7 @@ export default class CenturyApp extends React.Component<P,S> {
 						s.centuries[i].destroy();
 
 						s.centuries[i] = century;
+						s.editOpts = {};
 						return s;
 					});
 				}

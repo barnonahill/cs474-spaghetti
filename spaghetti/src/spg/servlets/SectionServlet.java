@@ -193,7 +193,7 @@ public class SectionServlet extends SpgHttpServlet {
 
 			else if (action.equalsIgnoreCase(CREATE_CURSUS)) {
 				String cursusID = super.getRequiredParameter(params, "cursusID");
-				String cursusName = super.getParameter(params, "cursus");
+				String cursusName = super.getParameter(params, "cursusName");
 
 				msg = this.createCursus(cursusID, cursusName);
 			}
@@ -464,21 +464,13 @@ public class SectionServlet extends SpgHttpServlet {
 	}
 
 	private String createCursus(String cursusID, String cursusName) throws Exception {
-		try {
-			Cursus c = sectionController.createCursus(cursusID, cursusName);
-			return c.toJSON().toString();
-		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new Exception("An entry with the same primary key already exists.");
-		}
+		Cursus c = sectionController.createCursus(cursusID, cursusName);
+		return c.toJSON().toString();
 	}
 
 	private String updateCursus(String cursusID, String cursusName) throws Exception {
-		try {
-			Cursus c = sectionController.updateCursus(cursusID, cursusName);
-			return c.toJSON().toString();
-		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new Exception("An entry with the same primary key already exists.");
-		}
+		Cursus c = sectionController.updateCursus(cursusID, cursusName);
+		return c.toJSON().toString();
 	}
 
 	private String deleteCursus(String cursusID) throws Exception {
@@ -489,10 +481,10 @@ public class SectionServlet extends SpgHttpServlet {
 			success = true;
 		} catch (SQLException e) {
 			success = false;
-		} finally {
-			j.put("success", success);
-			return j.toString();
 		}
+		
+		j.put("success", success);
+		return j.toString();
 	}
 
 	private String getSourceCompletenesses() throws Exception {
@@ -511,35 +503,23 @@ public class SectionServlet extends SpgHttpServlet {
 
 	private String updateSourceCompleteness(String sourceCompletenessID, String sourceCompletenessName)
 			throws Exception {
-		try {
-			SourceCompleteness sc = sectionController.updateSourceCompleteness(sourceCompletenessID,
-					sourceCompletenessName);
-			return sc.toJSON().toString();
-		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new Exception("An entry with the same primary key already exists.");
-		}
+		SourceCompleteness sc = sectionController.updateSourceCompleteness(sourceCompletenessID,
+				sourceCompletenessName);
+		return sc.toJSON().toString();
 	}
 
 	private String createSourceCompleteness(String sourceCompletenessID, String sourceCompletenessName)
 			throws Exception {
-		try {
-			SourceCompleteness sc = sectionController.createSourceCompleteness(sourceCompletenessID,
-					sourceCompletenessName);
-			return sc.toJSON().toString();
-		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new Exception("An entry with the same primary key already exists.");
-		}
+		SourceCompleteness sc = sectionController.createSourceCompleteness(sourceCompletenessID,
+				sourceCompletenessName);
+		return sc.toJSON().toString();
 	}
 
 	private String deleteSourceCompleteness(String sourceCompletenessID) throws Exception {
 		JSONObject j = new JSONObject();
 		boolean success = false;
-		try {
-			sectionController.deleteSourceCompleteness(sourceCompletenessID);
-			success = true;
-		} catch (Exception e) {
-			success = false;
-		}
+		sectionController.deleteSourceCompleteness(sourceCompletenessID);
+		success = true;
 
 		j.put("success", success);
 		return j.toString();
@@ -560,21 +540,13 @@ public class SectionServlet extends SpgHttpServlet {
 	}
 
 	private String updateProvenance(String pID, String pName) throws Exception {
-		try {
-			Provenance p = sectionController.updateProvenance(pID, pName);
-			return p.toJSON().toString();
-		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new Exception("An entry with the same primary key already exists.");
-		}
+		Provenance p = sectionController.updateProvenance(pID, pName);
+		return p.toJSON().toString();
 	}
 
 	private String createProvenance(String pID, String pName) throws Exception {
-		try {
-			Provenance p = sectionController.createProvenance(pID, pName);
-			return p.toJSON().toString();
-		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new Exception("An entry with the same primary key already exists.");
-		}
+		Provenance p = sectionController.createProvenance(pID, pName);
+		return p.toJSON().toString();
 	}
 
 	private String deleteProvenance(String provenanceID) throws Exception {
@@ -607,21 +579,13 @@ public class SectionServlet extends SpgHttpServlet {
 	}
 
 	private String updateNotation(String nID, String nName) throws Exception {
-		try {
-			Notation n = sectionController.updateNotation(nID, nName);
-			return n.toJSON().toString();
-		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new Exception("An entry with the same primary key already exists.");
-		}
+		Notation n = sectionController.updateNotation(nID, nName);
+		return n.toJSON().toString();
 	}
 
 	private String createNotation(String nID, String nName) throws Exception {
-		try {
-			Notation n = sectionController.createNotation(nID, nName);
-			return n.toJSON().toString();
-		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new Exception("An entry with the same primary key already exists.");
-		}
+		Notation n = sectionController.createNotation(nID, nName);
+		return n.toJSON().toString();
 	}
 
 	private String deleteNotation(String notationID) throws Exception {
