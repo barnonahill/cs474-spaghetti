@@ -27,7 +27,7 @@ interface S {
 	loadMessage?: string
 	msType?: mst.MsType
 
-	editPanelProps: {
+	editOpts: {
 		isNew?: boolean
 		mProps?: mst.Properties
 		val?: {
@@ -50,7 +50,7 @@ export default class MsTypeApp extends React.Component<P,S> {
 		this.state = {
 			msTypes: p.msTypes,
 			panel: Panel.TABLE,
-			editPanelProps: {}
+			editOpts: {}
 		};
 
 		// JSX Element getters
@@ -90,13 +90,13 @@ export default class MsTypeApp extends React.Component<P,S> {
 	}
 
 	renderEditPanel() {
-		const edp = this.state.editPanelProps;
-		var isNew = edp.isNew;
-		var val = edp.val || null;
+		const edo = this.state.editOpts;
+		var isNew = edo.isNew;
+		var val = edo.val || null;
 		var mProps: mst.Properties;
 
-		if (edp.mProps) {
-			mProps = edp.mProps;
+		if (edo.mProps) {
+			mProps = edo.mProps;
 		}
 		else if (this.state.msType) {
 			mProps = this.state.msType.toProperties();
@@ -110,7 +110,7 @@ export default class MsTypeApp extends React.Component<P,S> {
 			mProps={mProps}
 			val={val}
 			onBack={() => this.setPanel(Panel.TABLE, s => {
-				s.editPanelProps = {};
+				s.editOpts = {};
 				s.msType = null;
 				return s;
 			})}
@@ -161,15 +161,15 @@ export default class MsTypeApp extends React.Component<P,S> {
 		var onError = (e:string) => {
 			alert('Error saving Manuscript Type: ' + e);
 			const lcErr = e.toLowerCase();
-			var val: S['editPanelProps']['val'] = {
+			var val: S['editOpts']['val'] = {
 				msType: lcErr.indexOf(mProps.msType.toLowerCase()) === -1 ? null : 'error',
 				msTypeName: null
 			};
 
 			this.setState((s:S) => {
-				s.editPanelProps.isNew = true;
-				s.editPanelProps.mProps = mProps;
-				s.editPanelProps.val = val;
+				s.editOpts.isNew = isNew;
+				s.editOpts.mProps = mProps;
+				s.editOpts.val = val;
 				this.setPanel(Panel.EDIT, null, s);
 				return s;
 			});
@@ -182,7 +182,7 @@ export default class MsTypeApp extends React.Component<P,S> {
 				}
 				else {
 					this.setState((s:S) => {
-						s.editPanelProps = {};
+						s.editOpts = {};
 						s.msTypes.push(msType);
 						s.panel = Panel.TABLE;
 						return s;
@@ -197,7 +197,7 @@ export default class MsTypeApp extends React.Component<P,S> {
 				}
 				else {
 					this.setState((s:S) => {
-						s.editPanelProps = {};
+						s.editOpts = {};
 						var i = s.msTypes.findIndex((m:mst.MsType) => {
 							return mProps.msType === m.msType;
 						});

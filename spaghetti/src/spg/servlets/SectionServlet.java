@@ -52,12 +52,12 @@ public class SectionServlet extends SpgHttpServlet {
 	private static final String CREATE_SRC_COMP = "CreateSourceCompleteness";
 	private static final String UPDATE_SRC_COMP = "UpdateSourceCompleteness";
 	private static final String DELETE_SRC_COMP = "DeleteSourceCompleteness";
-	
+
 	private static final String GET_PROVENANCES = "GetProvenances";
 	private static final String CREATE_PROVENANCE = "CreateProvenance";
 	private static final String UPDATE_PROVENANCE = "UpdateProvenance";
 	private static final String DELETE_PROVENANCE = "DeleteProvenance";
-	
+
 	private static final String GET_NOTATIONS = "GetNotations";
 	private static final String CREATE_NOTATION = "CreateNotation";
 	private static final String UPDATE_NOTATION = "UpdateNotation";
@@ -230,49 +230,43 @@ public class SectionServlet extends SpgHttpServlet {
 				msg = this.getProvenances();
 			}
 
-			 else if (action.equalsIgnoreCase(UPDATE_PROVENANCE))
-			 {
-			 String provenanceID = super.getRequiredParameter(params, "provenanceID");
-			 String provenanceName = super.getParameter(params, "provenanceName");
-			 msg = this.updateProvenance(provenanceID, provenanceName);
-			 }
-			
-			 else if (action.equalsIgnoreCase(CREATE_PROVENANCE))
-			 {
-			 String provenanceID = super.getRequiredParameter(params, "provenanceID");
-			 String provenanceName = super.getParameter(params, "provenanceName");
-			 msg = this.createProvenance(provenanceID, provenanceName);
-			 }
-			
-			 else if (action.equalsIgnoreCase(DELETE_PROVENANCE))
-			 {
-			 String provenanceID = super.getRequiredParameter(params, "provenanceID");
-			 msg = this.deleteProvenance(provenanceID);
-			 }
+			else if (action.equalsIgnoreCase(UPDATE_PROVENANCE)) {
+				String provenanceID = super.getRequiredParameter(params, "provenanceID");
+				String provenanceName = super.getParameter(params, "provenanceName");
+				msg = this.updateProvenance(provenanceID, provenanceName);
+			}
+
+			else if (action.equalsIgnoreCase(CREATE_PROVENANCE)) {
+				String provenanceID = super.getRequiredParameter(params, "provenanceID");
+				String provenanceName = super.getParameter(params, "provenanceName");
+				msg = this.createProvenance(provenanceID, provenanceName);
+			}
+
+			else if (action.equalsIgnoreCase(DELETE_PROVENANCE)) {
+				String provenanceID = super.getRequiredParameter(params, "provenanceID");
+				msg = this.deleteProvenance(provenanceID);
+			}
 
 			else if (action.equalsIgnoreCase(GET_NOTATIONS)) {
 				msg = this.getNotations();
 			}
 
-			 else if (action.equalsIgnoreCase(UPDATE_NOTATION))
-			 {
-			 String notationID = super.getRequiredParameter(params, "notationID");
-			 String notationName = super.getParameter(params, "notationName");
-			 msg = this.updateNotation(notationID, notationName);
-			 }
-			
-			 else if (action.equalsIgnoreCase(CREATE_NOTATION))
-			 {
-			 String notationID = super.getRequiredParameter(params, "notationID");
-			 String notationName = super.getParameter(params, "notationName");
-			 msg = this.createNotation(notationID, notationName);
-			 }
-			
-			 else if (action.equalsIgnoreCase(DELETE_NOTATION))
-			 {
-			 String notationID = super.getRequiredParameter(params, "notationID");
-			 msg = this.deleteNotation(notationID);
-			 }
+			else if (action.equalsIgnoreCase(UPDATE_NOTATION)) {
+				String notationID = super.getRequiredParameter(params, "notationID");
+				String notationName = super.getParameter(params, "notationName");
+				msg = this.updateNotation(notationID, notationName);
+			}
+
+			else if (action.equalsIgnoreCase(CREATE_NOTATION)) {
+				String notationID = super.getRequiredParameter(params, "notationID");
+				String notationName = super.getParameter(params, "notationName");
+				msg = this.createNotation(notationID, notationName);
+			}
+
+			else if (action.equalsIgnoreCase(DELETE_NOTATION)) {
+				String notationID = super.getRequiredParameter(params, "notationID");
+				msg = this.deleteNotation(notationID);
+			}
 
 			else {
 				throw new Exception("Invalid action parameter.");
@@ -424,12 +418,8 @@ public class SectionServlet extends SpgHttpServlet {
 	}
 
 	private String createCentury(String centuryID, String centuryName) throws Exception {
-		try {
-			Century c = sectionController.createCentury(centuryID, centuryName);
-			return c.toJSON().toString();
-		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new Exception("An entry with the same primary key already exists.");
-		}
+		Century c = sectionController.createCentury(centuryID, centuryName);
+		return c.toJSON().toString();
 	}
 
 	/**
@@ -440,12 +430,8 @@ public class SectionServlet extends SpgHttpServlet {
 	 * @throws Exception
 	 */
 	private String updateCentury(String centuryID, String centuryName) throws Exception {
-		try {
-			Century c = sectionController.updateCentury(centuryID, centuryName);
-			return c.toJSON().toString();
-		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new Exception("An entry with the same primary key already exists.");
-		}
+		Century c = sectionController.updateCentury(centuryID, centuryName);
+		return c.toJSON().toString();
 	}
 
 	private String deleteCentury(String centuryID) throws Exception {
@@ -601,7 +587,7 @@ public class SectionServlet extends SpgHttpServlet {
 		} catch (Exception e) {
 			success = false;
 		}
-		
+
 		j.put("success", success);
 		return j.toString();
 	}
@@ -647,7 +633,7 @@ public class SectionServlet extends SpgHttpServlet {
 		} catch (Exception e) {
 			success = false;
 		}
-		
+
 		j.put("success", success);
 		return j.toString();
 	}

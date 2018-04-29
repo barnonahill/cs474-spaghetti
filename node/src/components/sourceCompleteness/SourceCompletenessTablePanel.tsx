@@ -62,7 +62,7 @@ export default class SourceCompletenessTablePanel extends React.Component<P,S> {
 					</Col>
 					<Col sm={4}>
 						<SearchBar
-							placeholder="Filter by sourceCompletenessID and sourceCompletenessName..."
+							placeholder="Filter by scID and scName..."
 							onSubmit={this.filter}
 						/>
 					</Col>
@@ -89,13 +89,13 @@ export default class SourceCompletenessTablePanel extends React.Component<P,S> {
 
 				<Column
 					width={200}
-					label="Source Completeness ID"
+					label="SC ID"
 					dataKey="sourceCompletenessID"
 				/>
 
 				<Column
 					width={TABLE_CONSTANTS.WIDTH - 330}
-					label="Source Completeness Name"
+					label="SC Name"
 					dataKey="sourceCompletenessName"
 				/>
 

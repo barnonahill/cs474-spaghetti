@@ -15,41 +15,43 @@ import PanelMenu from '@src/components/common/PanelMenu.tsx';
 import * as ct from '@src/models/century.ts';
 
 interface P {
-	century: ct.Century
 	onBack: () => void
 	onSubmit: (ctProps:ct.Properties, isNew:boolean) => void
+
+	isNew?: boolean
+	ctProps?: ct.Properties
+	val?: null | 'error'
 }
 interface S {
 	isNew: boolean
 	ctProps: ct.Properties
 
 	// validationState
-	val: any
+	val: null | 'error'
 }
 
 export default class CenturyEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
-		var isNew = !Boolean(p.century);
-		var ctProps: ct.Properties;
-
-		if (isNew) {
-			ctProps = {
-				centuryID: '',
-				centuryName: ''
-			}
+		var isNew: boolean;
+		if (typeof p.isNew === 'boolean') {
+			isNew = p.isNew;
 		}
-
 		else {
-			ctProps = p.century.toProperties();
-			ctProps.centuryName = ctProps.centuryName || '';
+			isNew = !Boolean(p.ctProps)
 		}
+
+		var ctProps = p.ctProps || {
+			centuryID: '',
+			centuryName: ''
+		};
+		ctProps.centuryName = ctProps.centuryName || '';
 
 		this.state = {
 			isNew: isNew,
 			ctProps: ctProps,
-			val: null
+			val: p.val || null
 		};
 
 		// render helper
@@ -64,7 +66,7 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 		var x: JSX.Element[] = [];
 		x.push(<Header key="header" min>{this.state.isNew
 			? 'Create a Century'
-			: 'Edit Century: ' + this.props.century.centuryName}</Header>);
+			: 'Edit Century: ' + this.props.ctProps.centuryName}</Header>);
 
 		x.push(<PanelMenu key="panelMenu">
 			<Button
@@ -134,7 +136,7 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 			>Century ID:</Col>);
 
 			value = (<Col sm={4} className="pt7 pl27">
-				{this.props.century.centuryID}
+				{this.props.ctProps.centuryID}
 			</Col>);
 		}
 
@@ -163,7 +165,7 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 		var val = this.state.ctProps.centuryID ? null : 'error'
 
 		this.setState((s:S) => {
-			s.val = val;
+			s.val = val as S['val'];
 			return s;
 		});
 

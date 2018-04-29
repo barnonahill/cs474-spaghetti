@@ -36897,6 +36897,7 @@ var React = __webpack_require__(/*! react */ "react");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
 var CenturyTablePanel_tsx_1 = __webpack_require__(/*! @src/components/century/CenturyTablePanel.tsx */ "./src/components/century/CenturyTablePanel.tsx");
 var CenturyEditPanel_tsx_1 = __webpack_require__(/*! @src/components/century/CenturyEditPanel.tsx */ "./src/components/century/CenturyEditPanel.tsx");
+var StateUtilities_ts_1 = __webpack_require__(/*! @src/components/StateUtilities.ts */ "./src/components/StateUtilities.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
 (function (Panel) {
@@ -36910,13 +36911,15 @@ var CenturyApp = (function (_super) {
         var _this = _super.call(this, p) || this;
         _this.state = {
             panel: Panel.TABLE,
-            centuries: _this.props.centuries
+            centuries: _this.props.centuries,
+            editOpts: {}
         };
+        _this.renderEditPanel = _this.renderEditPanel.bind(_this);
         _this.openEdit = _this.openEdit.bind(_this);
         _this.saveCentury = _this.saveCentury.bind(_this);
         _this.confirmDelete = _this.confirmDelete.bind(_this);
-        _this.setPanel = _this.setPanel.bind(_this);
-        _this.setLoader = _this.setLoader.bind(_this);
+        _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
+        _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         return _this;
     }
     CenturyApp.prototype.render = function () {
@@ -36928,12 +36931,30 @@ var CenturyApp = (function (_super) {
                         _this.props.reloadCenturies();
                     } }));
             case Panel.EDIT:
-                return (React.createElement(CenturyEditPanel_tsx_1.default, { century: this.state.century, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveCentury }));
+                return this.renderEditPanel();
             case Panel.LOADER:
                 return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
             default:
                 return null;
         }
+    };
+    CenturyApp.prototype.renderEditPanel = function () {
+        var _this = this;
+        var edo = this.state.editOpts;
+        var ctProps;
+        if (edo.ctProps) {
+            ctProps = edo.ctProps;
+        }
+        else if (this.state.century) {
+            ctProps = this.state.century.toProperties();
+        }
+        else {
+            ctProps = null;
+        }
+        return (React.createElement(CenturyEditPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE, function (s) {
+                s.editOpts = {};
+                return s;
+            }); }, onSubmit: this.saveCentury, ctProps: ctProps, isNew: edo.isNew, val: edo.val }));
     };
     CenturyApp.prototype.confirmDelete = function (century) {
         var _this = this;
@@ -36942,14 +36963,14 @@ var CenturyApp = (function (_super) {
             this.setLoader('Deleting ' + century.centuryID + '...');
             ProxyFactory_ts_1.default.getSectionProxy().deleteCentury(century.centuryID, function (success, e) {
                 if (e) {
-                    alert(e);
+                    alert('Error deleting Century: ' + e);
+                    _this.setPanel(Panel.TABLE);
                 }
                 else if (success) {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         var i = s.centuries.findIndex(function (c) { return century.centuryID === c.centuryID; });
                         s.centuries[i].destroy();
                         s.centuries.splice(i, 1);
-                        _this.setPanel(Panel.TABLE, null, s);
                         return s;
                     });
                 }
@@ -36961,25 +36982,34 @@ var CenturyApp = (function (_super) {
         }
     };
     CenturyApp.prototype.openEdit = function (century) {
-        var _this = this;
-        this.setState(function (s) {
+        this.setPanel(Panel.EDIT, function (s) {
             s.century = century;
-            _this.setPanel(Panel.EDIT, null, s);
             return s;
         });
     };
     CenturyApp.prototype.saveCentury = function (ctProps, isNew) {
         var _this = this;
         this.setLoader('Saving Century ' + ctProps.centuryID + '...');
+        var onError = function (e) {
+            alert('Error creating new Century: ' + e);
+            _this.setPanel(Panel.EDIT, function (s) {
+                s.editOpts = {
+                    isNew: isNew,
+                    ctProps: ctProps,
+                    val: (e.toLowerCase().indexOf(ctProps.centuryID.toLowerCase()) === -1
+                        ? null : 'error')
+                };
+                return s;
+            });
+        };
         if (isNew) {
             ProxyFactory_ts_1.default.getSectionProxy().createCentury(ctProps, function (century, e) {
                 if (e) {
-                    alert('Error creating new Century: ' + e);
+                    onError(e);
                 }
                 else {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         s.centuries.push(century);
-                        _this.setPanel(Panel.TABLE, null, s);
                         return s;
                     });
                 }
@@ -36988,47 +37018,16 @@ var CenturyApp = (function (_super) {
         else {
             ProxyFactory_ts_1.default.getSectionProxy().updateCentury(ctProps, function (century, e) {
                 if (e) {
-                    alert('Error updating Century: ' + e);
+                    onError(e);
                 }
                 else {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         var i = s.centuries.findIndex(function (c) { return century.centuryID === c.centuryID; });
                         s.centuries[i].destroy();
                         s.centuries[i] = century;
-                        _this.setPanel(Panel.TABLE, null, s);
                         return s;
                     });
                 }
-            });
-        }
-    };
-    CenturyApp.prototype.setPanel = function (p, callback, s) {
-        if (s) {
-            s.panel = p;
-        }
-        else {
-            this.setState(function (s) {
-                s.panel = p;
-                if (callback)
-                    return callback(s);
-                else
-                    return s;
-            });
-        }
-    };
-    CenturyApp.prototype.setLoader = function (msg, callback, s) {
-        var _this = this;
-        if (s) {
-            this.setPanel(Panel.LOADER);
-            s.loadMessage = msg;
-        }
-        else {
-            this.setState(function (s) {
-                _this.setPanel(Panel.LOADER, null, s);
-                s.loadMessage = msg;
-                if (callback)
-                    return callback(s);
-                return s;
             });
         }
     };
@@ -37067,22 +37066,22 @@ var CenturyEditPanel = (function (_super) {
     __extends(CenturyEditPanel, _super);
     function CenturyEditPanel(p) {
         var _this = _super.call(this, p) || this;
-        var isNew = !Boolean(p.century);
-        var ctProps;
-        if (isNew) {
-            ctProps = {
-                centuryID: '',
-                centuryName: ''
-            };
+        var isNew;
+        if (typeof p.isNew === 'boolean') {
+            isNew = p.isNew;
         }
         else {
-            ctProps = p.century.toProperties();
-            ctProps.centuryName = ctProps.centuryName || '';
+            isNew = !Boolean(p.ctProps);
         }
+        var ctProps = p.ctProps || {
+            centuryID: '',
+            centuryName: ''
+        };
+        ctProps.centuryName = ctProps.centuryName || '';
         _this.state = {
             isNew: isNew,
             ctProps: ctProps,
-            val: null
+            val: p.val || null
         };
         _this.getCenturyIDFormGroup = _this.getCenturyIDFormGroup.bind(_this);
         _this.onChange = _this.onChange.bind(_this);
@@ -37093,7 +37092,7 @@ var CenturyEditPanel = (function (_super) {
         var x = [];
         x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
             ? 'Create a Century'
-            : 'Edit Century: ' + this.props.century.centuryName));
+            : 'Edit Century: ' + this.props.ctProps.centuryName));
         x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
             React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
         x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
@@ -37116,7 +37115,7 @@ var CenturyEditPanel = (function (_super) {
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Century ID:"));
-            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.century.centuryID));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.ctProps.centuryID));
         }
         return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryID", validationState: this.state.val },
             label,
@@ -39754,7 +39753,7 @@ var MsTypeApp = (function (_super) {
         _this.state = {
             msTypes: p.msTypes,
             panel: Panel.TABLE,
-            editPanelProps: {}
+            editOpts: {}
         };
         _this.renderEditPanel = _this.renderEditPanel.bind(_this);
         _this.openEdit = _this.openEdit.bind(_this);
@@ -39778,12 +39777,12 @@ var MsTypeApp = (function (_super) {
     };
     MsTypeApp.prototype.renderEditPanel = function () {
         var _this = this;
-        var edp = this.state.editPanelProps;
-        var isNew = edp.isNew;
-        var val = edp.val || null;
+        var edo = this.state.editOpts;
+        var isNew = edo.isNew;
+        var val = edo.val || null;
         var mProps;
-        if (edp.mProps) {
-            mProps = edp.mProps;
+        if (edo.mProps) {
+            mProps = edo.mProps;
         }
         else if (this.state.msType) {
             mProps = this.state.msType.toProperties();
@@ -39792,7 +39791,7 @@ var MsTypeApp = (function (_super) {
             mProps = null;
         }
         return (React.createElement(MsTypeEditPanel_tsx_1.default, { isNew: isNew, mProps: mProps, val: val, onBack: function () { return _this.setPanel(Panel.TABLE, function (s) {
-                s.editPanelProps = {};
+                s.editOpts = {};
                 s.msType = null;
                 return s;
             }); }, onSubmit: this.saveMsType }));
@@ -39843,9 +39842,9 @@ var MsTypeApp = (function (_super) {
                 msTypeName: null
             };
             _this.setState(function (s) {
-                s.editPanelProps.isNew = true;
-                s.editPanelProps.mProps = mProps;
-                s.editPanelProps.val = val;
+                s.editOpts.isNew = isNew;
+                s.editOpts.mProps = mProps;
+                s.editOpts.val = val;
                 _this.setPanel(Panel.EDIT, null, s);
                 return s;
             });
@@ -39857,7 +39856,7 @@ var MsTypeApp = (function (_super) {
                 }
                 else {
                     _this.setState(function (s) {
-                        s.editPanelProps = {};
+                        s.editOpts = {};
                         s.msTypes.push(msType);
                         s.panel = Panel.TABLE;
                         return s;
@@ -39872,7 +39871,7 @@ var MsTypeApp = (function (_super) {
                 }
                 else {
                     _this.setState(function (s) {
-                        s.editPanelProps = {};
+                        s.editOpts = {};
                         var i = s.msTypes.findIndex(function (m) {
                             return mProps.msType === m.msType;
                         });
@@ -42859,12 +42858,12 @@ var SourceCompletenessTablePanel = (function (_super) {
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "success", onClick: function () { return _this.props.onEdit(null); }, className: "ml15" }, "New")),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by sourceCompletenessID and sourceCompletenessName...", onSubmit: this.filter })),
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by scID and scName...", onSubmit: this.filter })),
                     React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
             (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.sourceCompletenesses.length, rowGetter: this.state.rowGetter },
-                React.createElement(react_virtualized_1.Column, { width: 200, label: "Source Completeness ID", dataKey: "sourceCompletenessID" }),
-                React.createElement(react_virtualized_1.Column, { width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 330, label: "Source Completeness Name", dataKey: "sourceCompletenessName" }),
+                React.createElement(react_virtualized_1.Column, { width: 200, label: "SC ID", dataKey: "sourceCompletenessID" }),
+                React.createElement(react_virtualized_1.Column, { width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 330, label: "SC Name", dataKey: "sourceCompletenessName" }),
                 React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderEdit }),
                 React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderDelete })))
         ];

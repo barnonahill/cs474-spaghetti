@@ -5,6 +5,8 @@ import PageLoader from '@src/components/common/PageLoader.tsx';
 import TablePanel from '@src/components/century/CenturyTablePanel.tsx';
 import EditPanel from '@src/components/century/CenturyEditPanel.tsx';
 
+import StateUtils from '@src/components/StateUtilities.ts'
+
 import * as ct from '@src/models/century.ts';
 import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
@@ -24,19 +26,32 @@ interface S {
 	centuries: ct.Century[]
 	panel: Panel
 	loadMessage?: string
+
+	editOpts: {
+		isNew?: boolean
+		ctProps?: ct.Properties
+		val?: null | 'error'
+	}
 }
 
 export default class CenturyApp extends React.Component<P,S> {
-	public state: S;
-	public props: P;
+	public readonly state: S
+	public readonly props: P
+
+	private setPanel: (panel: Panel, callback?: (s:S) => S, state?:S) => void
+	private setLoader: (loadMessage: string, callback?: (s:S) => S, state?:S) => void
 
 	constructor(p:P) {
 		super(p);
 
 		this.state = {
 			panel: Panel.TABLE,
-			centuries: this.props.centuries
+			centuries: this.props.centuries,
+			editOpts: {}
 		};
+
+		// JSX Render Helper
+		this.renderEditPanel = this.renderEditPanel.bind(this);
 
 		// Opener
 		this.openEdit = this.openEdit.bind(this);
@@ -46,8 +61,8 @@ export default class CenturyApp extends React.Component<P,S> {
 		this.confirmDelete = this.confirmDelete.bind(this);
 
 		// State helpers
-		this.setPanel = this.setPanel.bind(this);
-		this.setLoader = this.setLoader.bind(this);
+		this.setPanel = StateUtils.setPanel.bind(this);
+		this.setLoader = StateUtils.setLoader.bind(this, Panel.LOADER);
 	}
 
 	render() {
@@ -65,11 +80,7 @@ export default class CenturyApp extends React.Component<P,S> {
 				/>);
 
 			case Panel.EDIT:
-				return (<EditPanel
-					century={this.state.century}
-					onBack={() => this.setPanel(Panel.TABLE)}
-					onSubmit={this.saveCentury}
-				/>);
+				return this.renderEditPanel();
 
 			case Panel.LOADER:
 				return <PageLoader inner={this.state.loadMessage}/>;
@@ -77,6 +88,32 @@ export default class CenturyApp extends React.Component<P,S> {
 			default:
 				return null;
 		}
+	}
+
+	renderEditPanel() {
+		var edo = this.state.editOpts;
+		var ctProps: ct.Properties;
+
+		if (edo.ctProps) {
+			ctProps = edo.ctProps;
+		}
+		else if (this.state.century) {
+			ctProps = this.state.century.toProperties();
+		}
+		else {
+			ctProps = null;
+		}
+
+		return (<EditPanel
+			onBack={() => this.setPanel(Panel.TABLE, s => {
+				s.editOpts = {};
+				return s;
+			})}
+			onSubmit={this.saveCentury}
+			ctProps={ctProps}
+			isNew={edo.isNew}
+			val={edo.val}
+		/>);
 	}
 
 	/**
@@ -90,15 +127,15 @@ export default class CenturyApp extends React.Component<P,S> {
 
 			proxyFactory.getSectionProxy().deleteCentury(century.centuryID, (success, e?) => {
 				if (e) {
-					alert(e);
+					alert('Error deleting Century: ' + e);
+					this.setPanel(Panel.TABLE);
 				}
 				else if (success) {
-					this.setState((s:S) => {
+					this.setPanel(Panel.TABLE, s => {
 						var i = s.centuries.findIndex(c => century.centuryID === c.centuryID);
 						s.centuries[i].destroy();
 						s.centuries.splice(i, 1);
 
-						this.setPanel(Panel.TABLE, null, s);
 						return s;
 					});
 				}
@@ -115,9 +152,8 @@ export default class CenturyApp extends React.Component<P,S> {
 	 * @param century to edit
 	 */
 	openEdit(century: ct.Century) {
-		this.setState((s:S) => {
+		this.setPanel(Panel.EDIT, s => {
 			s.century = century;
-			this.setPanel(Panel.EDIT, null, s);
 			return s;
 		});
 	}
@@ -130,16 +166,29 @@ export default class CenturyApp extends React.Component<P,S> {
 	saveCentury(ctProps:ct.Properties, isNew:boolean) {
 		this.setLoader('Saving Century ' + ctProps.centuryID + '...');
 
+		var onError = (e:string) => {
+			alert('Error creating new Century: ' + e);
+			this.setPanel(Panel.EDIT, s => {
+
+				s.editOpts = {
+					isNew: isNew,
+					ctProps: ctProps,
+					val: (e.toLowerCase().indexOf(ctProps.centuryID.toLowerCase()) === - 1
+						? null : 'error')
+				};
+				return s;
+			});
+		};
+
 		if (isNew) {
 			proxyFactory.getSectionProxy().createCentury(ctProps, (century, e?) => {
 				if (e) {
-					alert('Error creating new Century: ' + e);
+					onError(e);
 				}
 
 				else {
-					this.setState((s:S) => {
+					this.setPanel(Panel.TABLE, s => {
 						s.centuries.push(century);
-						this.setPanel(Panel.TABLE, null, s);
 						return s;
 					});
 				}
@@ -149,56 +198,18 @@ export default class CenturyApp extends React.Component<P,S> {
 		else {
 			proxyFactory.getSectionProxy().updateCentury(ctProps, (century, e?) => {
 				if (e) {
-					alert('Error updating Century: ' + e);
+					onError(e);
 				}
 
 				else {
-					this.setState((s:S) => {
+					this.setPanel(Panel.TABLE, s => {
 						var i = s.centuries.findIndex(c => century.centuryID === c.centuryID);
 						s.centuries[i].destroy();
-						s.centuries[i] = century;
 
-						this.setPanel(Panel.TABLE, null, s);
+						s.centuries[i] = century;
 						return s;
 					});
 				}
-			});
-		}
-	}
-
-	/**
-	 * Changes the current panel of the App.
-	 */
-	setPanel(p:Panel, callback?: (s:S) => S, s?:S) {
-		if (s) {
-			s.panel = p;
-		}
-		else {
-			this.setState((s:S) => {
-				s.panel = p;
-				if (callback) return callback(s);
-				else return s;
-			});
-		}
-	}
-
-	/**
-	 * Sets the panel to LOADER and loadMessage to msg.
-	 * @param msg load message
-	 * @param callback Callback that has set state for loader, but not returned it.
-	 * @param s State object to set, but not return.
-	 */
-	setLoader(msg:string, callback?: (s:S) => S, s?:S) {
-		if (s) {
-			this.setPanel(Panel.LOADER);
-			s.loadMessage = msg;
-		}
-		else {
-			this.setState((s:S) => {
-				this.setPanel(Panel.LOADER, null, s);
-				s.loadMessage = msg;
-				if (callback) return callback(s);
-				return s;
 			});
 		}
 	}
