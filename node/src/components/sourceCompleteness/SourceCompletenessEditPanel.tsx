@@ -15,41 +15,42 @@ import PanelMenu from '@src/components/common/PanelMenu.tsx';
 import * as sc from '@src/models/sourceCompleteness.ts';
 
 interface P {
-	sourceCompleteness: sc.SourceCompleteness
 	onBack: () => void
 	onSubmit: (scProps:sc.Properties, isNew:boolean) => void
+	scProps?: sc.Properties
+	isNew?: boolean
+	val?: null | 'error'
 }
 interface S {
 	isNew: boolean
 	scProps: sc.Properties
 
 	// validationState
-	val: any
+	val: null | 'error'
 }
 
 export default class SourceCompletenessEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
-		var isNew = !Boolean(p.sourceCompleteness);
-		var scProps: sc.Properties;
-
-		if (isNew) {
-			scProps = {
-				sourceCompletenessID: '',
-				sourceCompletenessName: ''
-			}
+		var isNew: boolean;
+		if (typeof p.isNew === 'boolean')  {
+			isNew = p.isNew;
 		}
-
 		else {
-			scProps = p.sourceCompleteness.toProperties();
-			scProps.sourceCompletenessName = scProps.sourceCompletenessName || '';
+			isNew = !Boolean(p.scProps);
 		}
+
+		var scProps = p.scProps || {
+			sourceCompletenessID: '',
+			sourceCompletenessName: ''
+		}
+		scProps.sourceCompletenessName = scProps.sourceCompletenessName || '';
 
 		this.state = {
 			isNew: isNew,
 			scProps: scProps,
-			val: null
+			val: p.val || null
 		};
 
 		// render helper
@@ -64,7 +65,7 @@ export default class SourceCompletenessEditPanel extends React.Component<P,S> {
 		var x: JSX.Element[] = [];
 		x.push(<Header key="header" min>{this.state.isNew
 			? 'Create a Source Completeness'
-			: 'Edit Source Completeness: ' + this.props.sourceCompleteness.sourceCompletenessName}</Header>);
+			: 'Edit Source Completeness: ' + this.state.scProps.sourceCompletenesID}</Header>);
 
 		x.push(<PanelMenu key="panelMenu">
 			<Button
@@ -85,7 +86,7 @@ export default class SourceCompletenessEditPanel extends React.Component<P,S> {
 				<Col
 					sm={3}
 					componentClass={ControlLabel}
-				>SourceCompleteness Name:</Col>
+				>Source Completeness Name:</Col>
 				<Col sm={4}>
 					<FormControl
 						type="text"
@@ -116,7 +117,7 @@ export default class SourceCompletenessEditPanel extends React.Component<P,S> {
 				sm={3}
 				componentClass={ControlLabel}
 				className="required"
-			>SourceCompleteness ID:</Col>);
+			>Source Completeness ID:</Col>);
 
 			value = (<Col sm={4}>
 				<FormControl
@@ -131,10 +132,10 @@ export default class SourceCompletenessEditPanel extends React.Component<P,S> {
 			label = (<Col
 				sm={3}
 				componentClass={ControlLabel}
-			>SourceCompleteness ID:</Col>);
+			>Source Completeness ID:</Col>);
 
 			value = (<Col sm={4} className="pt7 pl27">
-				{this.props.sourceCompleteness.sourceCompletenessID}
+				{this.state.scProps.sourceCompletenessID}
 			</Col>);
 		}
 
@@ -160,7 +161,7 @@ export default class SourceCompletenessEditPanel extends React.Component<P,S> {
 
 	onSubmit(e:React.FormEvent<Form>) {
 		e.preventDefault();
-		var val = this.state.scProps.sourceCompletenessID ? null : 'error'
+		var val: S['val'] = this.state.scProps.sourceCompletenessID ? null : 'error'
 
 		this.setState((s:S) => {
 			s.val = val;

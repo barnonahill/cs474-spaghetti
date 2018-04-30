@@ -37459,6 +37459,7 @@ var React = __webpack_require__(/*! react */ "react");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
 var CursusTablePanel_tsx_1 = __webpack_require__(/*! @src/components/cursus/CursusTablePanel.tsx */ "./src/components/cursus/CursusTablePanel.tsx");
 var CursusEditPanel_tsx_1 = __webpack_require__(/*! @src/components/cursus/CursusEditPanel.tsx */ "./src/components/cursus/CursusEditPanel.tsx");
+var StateUtilities_ts_1 = __webpack_require__(/*! @src/components/StateUtilities.ts */ "./src/components/StateUtilities.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
 (function (Panel) {
@@ -37479,8 +37480,8 @@ var CursusApp = (function (_super) {
         _this.openEdit = _this.openEdit.bind(_this);
         _this.saveCursus = _this.saveCursus.bind(_this);
         _this.confirmDelete = _this.confirmDelete.bind(_this);
-        _this.setPanel = _this.setPanel.bind(_this);
-        _this.setLoader = _this.setLoader.bind(_this);
+        _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
+        _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         return _this;
     }
     CursusApp.prototype.render = function () {
@@ -37589,36 +37590,6 @@ var CursusApp = (function (_super) {
                         return s;
                     });
                 }
-            });
-        }
-    };
-    CursusApp.prototype.setPanel = function (p, callback, s) {
-        if (s) {
-            s.panel = p;
-        }
-        else {
-            this.setState(function (s) {
-                s.panel = p;
-                if (callback)
-                    return callback(s);
-                else
-                    return s;
-            });
-        }
-    };
-    CursusApp.prototype.setLoader = function (msg, callback, s) {
-        var _this = this;
-        if (s) {
-            this.setPanel(Panel.LOADER);
-            s.loadMessage = msg;
-        }
-        else {
-            this.setState(function (s) {
-                _this.setPanel(Panel.LOADER, null, s);
-                s.loadMessage = msg;
-                if (callback)
-                    return callback(s);
-                return s;
             });
         }
     };
@@ -42586,6 +42557,7 @@ var React = __webpack_require__(/*! react */ "react");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
 var SourceCompletenessTablePanel_tsx_1 = __webpack_require__(/*! @src/components/sourceCompleteness/SourceCompletenessTablePanel.tsx */ "./src/components/sourceCompleteness/SourceCompletenessTablePanel.tsx");
 var SourceCompletenessEditPanel_tsx_1 = __webpack_require__(/*! @src/components/sourceCompleteness/SourceCompletenessEditPanel.tsx */ "./src/components/sourceCompleteness/SourceCompletenessEditPanel.tsx");
+var StateUtilities_ts_1 = __webpack_require__(/*! @src/components/StateUtilities.ts */ "./src/components/StateUtilities.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
 (function (Panel) {
@@ -42599,13 +42571,15 @@ var SourceCompletenessApp = (function (_super) {
         var _this = _super.call(this, p) || this;
         _this.state = {
             panel: Panel.TABLE,
-            sourceCompletenesses: _this.props.sourceCompletenesses
+            sourceCompletenesses: _this.props.sourceCompletenesses,
+            editOpts: {}
         };
+        _this.renderEditPanel = _this.renderEditPanel.bind(_this);
         _this.openEdit = _this.openEdit.bind(_this);
         _this.saveSourceCompleteness = _this.saveSourceCompleteness.bind(_this);
         _this.confirmDelete = _this.confirmDelete.bind(_this);
-        _this.setPanel = _this.setPanel.bind(_this);
-        _this.setLoader = _this.setLoader.bind(_this);
+        _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
+        _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         return _this;
     }
     SourceCompletenessApp.prototype.render = function () {
@@ -42617,12 +42591,31 @@ var SourceCompletenessApp = (function (_super) {
                         _this.props.reloadSourceCompletenesses();
                     } }));
             case Panel.EDIT:
-                return (React.createElement(SourceCompletenessEditPanel_tsx_1.default, { sourceCompleteness: this.state.sourceCompleteness, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveSourceCompleteness }));
+                return this.renderEditPanel();
             case Panel.LOADER:
                 return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
             default:
                 return null;
         }
+    };
+    SourceCompletenessApp.prototype.renderEditPanel = function () {
+        var _this = this;
+        var edo = this.state.editOpts;
+        var sc = this.state.sourceCompleteness;
+        var scProps;
+        if (edo.scProps) {
+            scProps = edo.scProps;
+        }
+        else if (sc) {
+            scProps = sc.toProperties();
+        }
+        else {
+            scProps = null;
+        }
+        return (React.createElement(SourceCompletenessEditPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE, function (s) {
+                s.editOpts = {};
+                return s;
+            }); }, onSubmit: this.saveSourceCompleteness, scProps: scProps, isNew: edo.isNew, val: edo.val }));
     };
     SourceCompletenessApp.prototype.confirmDelete = function (sourceCompleteness) {
         var _this = this;
@@ -42631,93 +42624,74 @@ var SourceCompletenessApp = (function (_super) {
             this.setLoader('Deleting ' + sourceCompleteness.sourceCompletenessID + '...');
             ProxyFactory_ts_1.default.getSectionProxy().deleteSourceCompleteness(sourceCompleteness.sourceCompletenessID, function (success, e) {
                 if (e) {
-                    alert(e);
+                    alert('Error deleting Source Completeness: ' + e);
+                    _this.setPanel(Panel.TABLE);
                 }
                 else if (success) {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         var i = s.sourceCompletenesses.findIndex(function (c) { return sourceCompleteness.sourceCompletenessID === c.sourceCompletenessID; });
                         s.sourceCompletenesses[i].destroy();
                         s.sourceCompletenesses.splice(i, 1);
-                        _this.setPanel(Panel.TABLE, null, s);
                         return s;
                     });
                 }
                 else {
+                    alert('Failed to delete Source Completeness ' + sourceCompleteness.sourceCompletenessID + '.');
                     _this.setPanel(Panel.TABLE);
-                    alert('Failed to delete sourceCompleteness ' + sourceCompleteness.sourceCompletenessName + '.');
                 }
             });
         }
     };
     SourceCompletenessApp.prototype.openEdit = function (sourceCompleteness) {
-        var _this = this;
-        this.setState(function (s) {
+        this.setPanel(Panel.EDIT, function (s) {
             s.sourceCompleteness = sourceCompleteness;
-            _this.setPanel(Panel.EDIT, null, s);
             return s;
         });
     };
-    SourceCompletenessApp.prototype.saveSourceCompleteness = function (ctProps, isNew) {
+    SourceCompletenessApp.prototype.saveSourceCompleteness = function (scProps, isNew) {
         var _this = this;
-        this.setLoader('Saving SourceCompleteness ' + ctProps.sourceCompletenessID + '...');
+        this.setLoader('Saving SourceCompleteness ' + scProps.sourceCompletenessID + '...');
+        var onError = function (e) {
+            alert('Error saving Source Completeness: ' + e);
+            var editOpts = {
+                isNew: isNew,
+                scProps: scProps,
+                val: (e.toLowerCase().indexOf(scProps.sourceCompletenessID.toLowerCase()) === -1
+                    ? null : 'error')
+            };
+            _this.setPanel(Panel.EDIT, function (s) {
+                s.editOpts = editOpts;
+                return s;
+            });
+        };
         if (isNew) {
-            ProxyFactory_ts_1.default.getSectionProxy().createSourceCompleteness(ctProps, function (sourceCompleteness, e) {
+            ProxyFactory_ts_1.default.getSectionProxy().createSourceCompleteness(scProps, function (sourceCompleteness, e) {
                 if (e) {
-                    alert('Error creating new SourceCompleteness: ' + e);
+                    onError(e);
                 }
                 else {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         s.sourceCompletenesses.push(sourceCompleteness);
-                        _this.setPanel(Panel.TABLE, null, s);
+                        s.editOpts = {};
                         return s;
                     });
                 }
             });
         }
         else {
-            ProxyFactory_ts_1.default.getSectionProxy().updateSourceCompleteness(ctProps, function (sourceCompleteness, e) {
+            ProxyFactory_ts_1.default.getSectionProxy().updateSourceCompleteness(scProps, function (sourceCompleteness, e) {
                 if (e) {
-                    alert('Error updating SourceCompleteness: ' + e);
+                    onError(e);
                 }
                 else {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         var i = s.sourceCompletenesses.findIndex(function (c) { return sourceCompleteness.sourceCompletenessID === c.sourceCompletenessID; });
                         s.sourceCompletenesses[i].destroy();
                         s.sourceCompletenesses[i] = sourceCompleteness;
-                        _this.setPanel(Panel.TABLE, null, s);
+                        s.editOpts = {};
                         return s;
                     });
                 }
-            });
-        }
-    };
-    SourceCompletenessApp.prototype.setPanel = function (p, callback, s) {
-        if (s) {
-            s.panel = p;
-        }
-        else {
-            this.setState(function (s) {
-                s.panel = p;
-                if (callback)
-                    return callback(s);
-                else
-                    return s;
-            });
-        }
-    };
-    SourceCompletenessApp.prototype.setLoader = function (msg, callback, s) {
-        var _this = this;
-        if (s) {
-            this.setPanel(Panel.LOADER);
-            s.loadMessage = msg;
-        }
-        else {
-            this.setState(function (s) {
-                _this.setPanel(Panel.LOADER, null, s);
-                s.loadMessage = msg;
-                if (callback)
-                    return callback(s);
-                return s;
             });
         }
     };
@@ -42756,22 +42730,22 @@ var SourceCompletenessEditPanel = (function (_super) {
     __extends(SourceCompletenessEditPanel, _super);
     function SourceCompletenessEditPanel(p) {
         var _this = _super.call(this, p) || this;
-        var isNew = !Boolean(p.sourceCompleteness);
-        var scProps;
-        if (isNew) {
-            scProps = {
-                sourceCompletenessID: '',
-                sourceCompletenessName: ''
-            };
+        var isNew;
+        if (typeof p.isNew === 'boolean') {
+            isNew = p.isNew;
         }
         else {
-            scProps = p.sourceCompleteness.toProperties();
-            scProps.sourceCompletenessName = scProps.sourceCompletenessName || '';
+            isNew = !Boolean(p.scProps);
         }
+        var scProps = p.scProps || {
+            sourceCompletenessID: '',
+            sourceCompletenessName: ''
+        };
+        scProps.sourceCompletenessName = scProps.sourceCompletenessName || '';
         _this.state = {
             isNew: isNew,
             scProps: scProps,
-            val: null
+            val: p.val || null
         };
         _this.getSourceCompletenessIDFormGroup = _this.getSourceCompletenessIDFormGroup.bind(_this);
         _this.onChange = _this.onChange.bind(_this);
@@ -42782,13 +42756,13 @@ var SourceCompletenessEditPanel = (function (_super) {
         var x = [];
         x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
             ? 'Create a Source Completeness'
-            : 'Edit Source Completeness: ' + this.props.sourceCompleteness.sourceCompletenessName));
+            : 'Edit Source Completeness: ' + this.state.scProps.sourceCompletenesID));
         x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
             React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
         x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
             this.getSourceCompletenessIDFormGroup(),
             React.createElement(react_bootstrap_1.FormGroup, { controlId: "sourceCompletenessName" },
-                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "SourceCompleteness Name:"),
+                React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Source Completeness Name:"),
                 React.createElement(react_bootstrap_1.Col, { sm: 4 },
                     React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.scProps.sourceCompletenessName, onChange: this.onChange }))),
             React.createElement(react_bootstrap_1.FormGroup, null,
@@ -42799,13 +42773,13 @@ var SourceCompletenessEditPanel = (function (_super) {
     SourceCompletenessEditPanel.prototype.getSourceCompletenessIDFormGroup = function () {
         var label, value;
         if (this.state.isNew) {
-            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "SourceCompleteness ID:"));
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Source Completeness ID:"));
             value = (React.createElement(react_bootstrap_1.Col, { sm: 4 },
                 React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.scProps.sourceCompletenessID, onChange: this.onChange })));
         }
         else {
-            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "SourceCompleteness ID:"));
-            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.sourceCompleteness.sourceCompletenessID));
+            label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Source Completeness ID:"));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.state.scProps.sourceCompletenessID));
         }
         return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "sourceCompletenessID", validationState: this.state.val },
             label,

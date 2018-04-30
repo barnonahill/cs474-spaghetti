@@ -5,6 +5,8 @@ import PageLoader from '@src/components/common/PageLoader.tsx';
 import TablePanel from '@src/components/cursus/CursusTablePanel.tsx';
 import EditPanel from '@src/components/cursus/CursusEditPanel.tsx';
 
+import StateUtils from '@src/components/StateUtilities.ts'
+
 import * as cs from '@src/models/cursus.ts';
 import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
@@ -33,8 +35,11 @@ interface S {
 }
 
 export default class CursusApp extends React.Component<P,S> {
-	public state: S;
-	public props: P;
+	public readonly state: S
+	public readonly props: P
+
+	private setPanel: (panel: Panel, callback?: (s:S) => S, state?:S) => void
+	private setLoader: (loadMessage: string, callback?: (s:S) => S, state?:S) => void
 
 	constructor(p:P) {
 		super(p);
@@ -56,8 +61,8 @@ export default class CursusApp extends React.Component<P,S> {
 		this.confirmDelete = this.confirmDelete.bind(this);
 
 		// State helpers
-		this.setPanel = this.setPanel.bind(this);
-		this.setLoader = this.setLoader.bind(this);
+		this.setPanel = StateUtils.setPanel.bind(this);
+		this.setLoader = StateUtils.setLoader.bind(this, Panel.LOADER);
 	}
 
 	render() {
@@ -205,43 +210,6 @@ export default class CursusApp extends React.Component<P,S> {
 						return s;
 					});
 				}
-			});
-		}
-	}
-
-	/**
-	 * Changes the current panel of the App.
-	 */
-	setPanel(p:Panel, callback?: (s:S) => S, s?:S) {
-		if (s) {
-			s.panel = p;
-		}
-		else {
-			this.setState((s:S) => {
-				s.panel = p;
-				if (callback) return callback(s);
-				else return s;
-			});
-		}
-	}
-
-	/**
-	 * Sets the panel to LOADER and loadMessage to msg.
-	 * @param msg load message
-	 * @param callback Callback that has set state for loader, but not returned it.
-	 * @param s State object to set, but not return.
-	 */
-	setLoader(msg:string, callback?: (s:S) => S, s?:S) {
-		if (s) {
-			this.setPanel(Panel.LOADER);
-			s.loadMessage = msg;
-		}
-		else {
-			this.setState((s:S) => {
-				this.setPanel(Panel.LOADER, null, s);
-				s.loadMessage = msg;
-				if (callback) return callback(s);
-				return s;
 			});
 		}
 	}

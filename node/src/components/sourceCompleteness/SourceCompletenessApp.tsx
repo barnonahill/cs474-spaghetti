@@ -5,6 +5,8 @@ import PageLoader from '@src/components/common/PageLoader.tsx';
 import TablePanel from '@src/components/sourceCompleteness/SourceCompletenessTablePanel.tsx';
 import EditPanel from '@src/components/sourceCompleteness/SourceCompletenessEditPanel.tsx';
 
+import StateUtils from '@src/components/StateUtilities.ts'
+
 import * as sc from '@src/models/sourceCompleteness.ts';
 import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
@@ -24,19 +26,32 @@ interface S {
 	sourceCompletenesses: sc.SourceCompleteness[]
 	panel: Panel
 	loadMessage?: string
+
+	editOpts: {
+		scProps?: sc.Properties
+		isNew?: boolean
+		val?: null | 'error'
+	}
 }
 
 export default class SourceCompletenessApp extends React.Component<P,S> {
-	public state: S;
-	public props: P;
+	public readonly state: S
+	public readonly props: P
+
+	private setPanel: (panel: Panel, callback?: (s:S) => S, state?:S) => void
+	private setLoader: (loadMessage: string, callback?: (s:S) => S, state?:S) => void
 
 	constructor(p:P) {
 		super(p);
 
 		this.state = {
 			panel: Panel.TABLE,
-			sourceCompletenesses: this.props.sourceCompletenesses
+			sourceCompletenesses: this.props.sourceCompletenesses,
+			editOpts: {}
 		};
+
+		// Render helper
+		this.renderEditPanel = this.renderEditPanel.bind(this);
 
 		// Opener
 		this.openEdit = this.openEdit.bind(this);
@@ -46,8 +61,8 @@ export default class SourceCompletenessApp extends React.Component<P,S> {
 		this.confirmDelete = this.confirmDelete.bind(this);
 
 		// State helpers
-		this.setPanel = this.setPanel.bind(this);
-		this.setLoader = this.setLoader.bind(this);
+		this.setPanel = StateUtils.setPanel.bind(this);
+		this.setLoader = StateUtils.setLoader.bind(this, Panel.LOADER);
 	}
 
 	render() {
@@ -65,11 +80,7 @@ export default class SourceCompletenessApp extends React.Component<P,S> {
 				/>);
 
 			case Panel.EDIT:
-				return (<EditPanel
-					sourceCompleteness={this.state.sourceCompleteness}
-					onBack={() => this.setPanel(Panel.TABLE)}
-					onSubmit={this.saveSourceCompleteness}
-				/>);
+				return this.renderEditPanel();
 
 			case Panel.LOADER:
 				return <PageLoader inner={this.state.loadMessage}/>;
@@ -77,6 +88,34 @@ export default class SourceCompletenessApp extends React.Component<P,S> {
 			default:
 				return null;
 		}
+	}
+
+	renderEditPanel() {
+		var edo = this.state.editOpts;
+		var sc = this.state.sourceCompleteness;
+		var scProps: sc.Properties;
+
+		if (edo.scProps) {
+			scProps = edo.scProps;
+		}
+		else if (sc) {
+			scProps = sc.toProperties();
+		}
+		else {
+			scProps = null;
+		}
+
+		return (<EditPanel
+			onBack={() => this.setPanel(Panel.TABLE, s => {
+				s.editOpts = {};
+				return s;
+			})}
+			onSubmit={this.saveSourceCompleteness}
+			scProps={scProps}
+			isNew={edo.isNew}
+			val={edo.val}
+		/>);
+
 	}
 
 	/**
@@ -88,23 +127,26 @@ export default class SourceCompletenessApp extends React.Component<P,S> {
 		if (del) {
 			this.setLoader('Deleting ' + sourceCompleteness.sourceCompletenessID + '...');
 
-			proxyFactory.getSectionProxy().deleteSourceCompleteness(sourceCompleteness.sourceCompletenessID, (success, e?) => {
+			proxyFactory.getSectionProxy().deleteSourceCompleteness(sourceCompleteness.sourceCompletenessID,
+				(success, e?) =>
+			{
 				if (e) {
-					alert(e);
+					alert('Error deleting Source Completeness: ' + e);
+					this.setPanel(Panel.TABLE);
 				}
+
 				else if (success) {
-					this.setState((s:S) => {
+					this.setPanel(Panel.TABLE, s => {
 						var i = s.sourceCompletenesses.findIndex(c => sourceCompleteness.sourceCompletenessID === c.sourceCompletenessID);
 						s.sourceCompletenesses[i].destroy();
 						s.sourceCompletenesses.splice(i, 1);
-
-						this.setPanel(Panel.TABLE, null, s);
 						return s;
 					});
 				}
+
 				else {
+					alert('Failed to delete Source Completeness ' + sourceCompleteness.sourceCompletenessID + '.');
 					this.setPanel(Panel.TABLE);
-					alert('Failed to delete sourceCompleteness ' + sourceCompleteness.sourceCompletenessName + '.');
 				}
 			});
 		}
@@ -112,34 +154,48 @@ export default class SourceCompletenessApp extends React.Component<P,S> {
 
 	/**
 	 * Opens the edit panel for a SourceCompleteness.
-	 * @param sourceCompleteness to edit
+	 * @param sourceCompleteness to edit, or null for new.
 	 */
 	openEdit(sourceCompleteness: sc.SourceCompleteness) {
-		this.setState((s:S) => {
+		this.setPanel(Panel.EDIT, s => {
 			s.sourceCompleteness = sourceCompleteness;
-			this.setPanel(Panel.EDIT, null, s);
 			return s;
 		});
 	}
 
 	/**
-	 * Utilizes the sectionProxy to create or update a SourceCompleteness.
-	 * @param ctProps properties of the SourceCompleteness.
+	 * Utilizes the sectionProxy to create or update a Source Completeness.
+	 * @param scProps properties of the SourceCompleteness.
 	 * @param isNew
 	 */
-	saveSourceCompleteness(ctProps:sc.Properties, isNew:boolean) {
-		this.setLoader('Saving SourceCompleteness ' + ctProps.sourceCompletenessID + '...');
+	saveSourceCompleteness(scProps:sc.Properties, isNew:boolean) {
+		this.setLoader('Saving SourceCompleteness ' + scProps.sourceCompletenessID + '...');
+
+		var onError = (e:string) => {
+			alert('Error saving Source Completeness: ' + e);
+			var editOpts: S['editOpts'] = {
+				isNew: isNew,
+				scProps: scProps,
+				val: (e.toLowerCase().indexOf(scProps.sourceCompletenessID.toLowerCase()) === -1
+					? null : 'error')
+			};
+
+			this.setPanel(Panel.EDIT, s => {
+				s.editOpts = editOpts;
+				return s;
+			});
+		};
 
 		if (isNew) {
-			proxyFactory.getSectionProxy().createSourceCompleteness(ctProps, (sourceCompleteness, e?) => {
+			proxyFactory.getSectionProxy().createSourceCompleteness(scProps, (sourceCompleteness, e?) => {
 				if (e) {
-					alert('Error creating new SourceCompleteness: ' + e);
+					onError(e);
 				}
 
 				else {
-					this.setState((s:S) => {
+					this.setPanel(Panel.TABLE, s => {
 						s.sourceCompletenesses.push(sourceCompleteness);
-						this.setPanel(Panel.TABLE, null, s);
+						s.editOpts = {};
 						return s;
 					});
 				}
@@ -147,58 +203,21 @@ export default class SourceCompletenessApp extends React.Component<P,S> {
 		}
 
 		else {
-			proxyFactory.getSectionProxy().updateSourceCompleteness(ctProps, (sourceCompleteness, e?) => {
+			proxyFactory.getSectionProxy().updateSourceCompleteness(scProps, (sourceCompleteness, e?) => {
 				if (e) {
-					alert('Error updating SourceCompleteness: ' + e);
+					onError(e);
 				}
 
 				else {
-					this.setState((s:S) => {
+					this.setPanel(Panel.TABLE, s => {
 						var i = s.sourceCompletenesses.findIndex(c => sourceCompleteness.sourceCompletenessID === c.sourceCompletenessID);
 						s.sourceCompletenesses[i].destroy();
 						s.sourceCompletenesses[i] = sourceCompleteness;
 
-						this.setPanel(Panel.TABLE, null, s);
+						s.editOpts = {};
 						return s;
 					});
 				}
-			});
-		}
-	}
-
-	/**
-	 * Changes the current panel of the App.
-	 */
-	setPanel(p:Panel, callback?: (s:S) => S, s?:S) {
-		if (s) {
-			s.panel = p;
-		}
-		else {
-			this.setState((s:S) => {
-				s.panel = p;
-				if (callback) return callback(s);
-				else return s;
-			});
-		}
-	}
-
-	/**
-	 * Sets the panel to LOADER and loadMessage to msg.
-	 * @param msg load message
-	 * @param callback Callback that has set state for loader, but not returned it.
-	 * @param s State object to set, but not return.
-	 */
-	setLoader(msg:string, callback?: (s:S) => S, s?:S) {
-		if (s) {
-			this.setPanel(Panel.LOADER);
-			s.loadMessage = msg;
-		}
-		else {
-			this.setState((s:S) => {
-				this.setPanel(Panel.LOADER, null, s);
-				s.loadMessage = msg;
-				if (callback) return callback(s);
-				return s;
 			});
 		}
 	}
