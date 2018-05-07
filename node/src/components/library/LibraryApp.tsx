@@ -24,27 +24,29 @@ import {
 	default as TablePanel,
 	ButtonType as TButtonType
 } from '@src/components/library/LibraryTablePanel.tsx';
+import StateUtils from '@src/components/StateUtilities.ts'
 
 import { Country } from '@src/models/country.ts';
 import * as lib from '@src/models/library.ts';
 import proxyFactory from '@src/proxies/ProxyFactory.ts';
 
-enum View {
+enum Panel {
 	INIT = 0,
-	TABLE = 1,
-	ENTITY = 2,
-	EDIT = 3,
-	LOADER = 4
+	FILTER = 1,
+	LOADER = 2,
+	TABLE = 3,
+	ENTITY = 4,
+	EDIT = 5
 }
 
-interface Properties {
+interface P {
 	stack: Array<any>
 	countries: Array<Country>
 	onBack: () => void
 }
 
-interface State {
-	view: View
+interface S {
+	panel: Panel
 	country?: Country
 	library?: lib.Library
 	libraries: Array<lib.Library>
@@ -52,11 +54,17 @@ interface State {
 	[x: string]: any
 }
 
-export default class LibraryApp extends React.Component<Properties, State> {
-	constructor(props: Properties) {
+export default class LibraryApp extends React.Component<P, S> {
+	public readonly state: S;
+	public readonly props: P;
+
+	private setPanel: (panel: Panel, callback?: (s:S) => S, state?:S) => void
+	private setLoader: (loadMessage: string, callback?: (s:S) => S, state?:S) => void
+
+	constructor(props: P) {
 		super(props);
 		this.state = {
-			view: View.INIT,
+			panel: Panel.INIT,
 			country: null,
 			library: null,
 			libraries: null,
@@ -67,11 +75,15 @@ export default class LibraryApp extends React.Component<Properties, State> {
 		this.onTableClick = this.onTableClick.bind(this);
 		this.onEditSubmit = this.onEditSubmit.bind(this);
 		this.reloadLibraries = this.reloadLibraries.bind(this);
+
+		// State utility helpers
+		this.setPanel = StateUtils.setPanel.bind(this);
+		this.setLoader = StateUtils.setLoader.bind(this, Panel.LOADER);
 	}
 
 	onCountrySelect(c: Country) {
-		this.setState((s:State) => {
-			s.view = View.LOADER;
+		this.setState((s:S) => {
+			s.panel = Panel.LOADER;
 			s.loadingMessage = 'Loading ' + c.country + ' Libraries...';
 			return s;
 		});
@@ -81,11 +93,11 @@ export default class LibraryApp extends React.Component<Properties, State> {
 				alert(e);
 			}
 			else {
-				this.setState((s:State) => {
+				this.setState((s:S) => {
 					s.library = null;
 					lib.Library.destroyArray(s.libraries);
 
-					s.view = View.TABLE;
+					s.panel = Panel.TABLE;
 					s.country = c;
 					s.libraries = libs;
 					return s;
@@ -98,10 +110,16 @@ export default class LibraryApp extends React.Component<Properties, State> {
 		switch (t) {
 			case TButtonType.VIEW:
 			default:
-				this.changeView(View.ENTITY,{library:l});
+				this.setPanel(Panel.ENTITY, s => {
+					s.library = l;
+					return s;
+				});
 				break;
 			case TButtonType.EDIT:
-				this.changeView(View.EDIT,{library:l});
+				this.setPanel(Panel.EDIT, s => {
+					s.library = l;
+					return s;
+				});
 				break;
 			case TButtonType.DEL:
 				var del = confirm('Delete ' + l.library + '?');
@@ -119,9 +137,9 @@ export default class LibraryApp extends React.Component<Properties, State> {
 					alert(e);
 				}
 				else {
-					this.setState((s:State) => {
+					this.setState((s:S) => {
 						s.libraries.push(l);
-						s.view = View.TABLE;
+						s.panel = Panel.TABLE;
 						return s;
 					});
 				}
@@ -133,7 +151,7 @@ export default class LibraryApp extends React.Component<Properties, State> {
 					alert(e);
 				}
 				else {
-					this.setState((s:State) => {
+					this.setState((s:S) => {
 						var i = s.libraries.findIndex((l:lib.Library) => l.libSiglum === library.libSiglum);
 						s.libraries[i].destroy();
 
@@ -144,30 +162,12 @@ export default class LibraryApp extends React.Component<Properties, State> {
 							s.libraries.splice(i, 1);
 						}
 
-						s.view = View.TABLE;
+						s.panel = Panel.TABLE;
 						return s;
 					});
 				}
 			});
 		}
-	}
-
-	changeView(v:View, stateOpts:Partial<State>) {
-		this.setState((s:State) => {
-			s.view = v;
-
-			if (v === View.INIT && s.libraries) {
-				lib.Library.destroyArray(s.libraries);
-				s.libraries = null;
-			}
-
-			if (stateOpts) {
-				for (let k in stateOpts) {
-					s[k] = stateOpts[k];
-				}
-			}
-			return s;
-		});
 	}
 
 	deleteLibrary(l: lib.Library) {
@@ -176,7 +176,7 @@ export default class LibraryApp extends React.Component<Properties, State> {
 				alert(err);
 			}
 			else if (success) {
-				this.setState((s:State) => {
+				this.setState((s:S) => {
 					var i = s.libraries.findIndex((o: lib.Library) => o.libSiglum === l.libSiglum);
 					s.libraries[i].destroy();
 					s.libraries.splice(i,1);
@@ -190,8 +190,8 @@ export default class LibraryApp extends React.Component<Properties, State> {
 	}
 
 	render() {
-		switch (this.state.view) {
-			case View.INIT:
+		switch (this.state.panel) {
+			case Panel.INIT:
 			default:
 				return [
 					<Header key="header" min>Libraries</Header>,
@@ -203,25 +203,25 @@ export default class LibraryApp extends React.Component<Properties, State> {
 						key="panel"
 					/>)
 				];
-			case View.TABLE:
+			case Panel.TABLE:
 				return (<TablePanel
 						key="panel"
 						country={this.state.country}
 						libraries={this.state.libraries}
 						onClick={this.onTableClick}
 						onRefresh={() => this.onCountrySelect(this.state.country)}
-						onBack={() => this.changeView(View.INIT,{country:this.state.country})}
+						onBack={() => this.setPanel(Panel.INIT)}
 					/>);
 
-			case View.ENTITY:
+			case Panel.ENTITY:
 			return (<EntityPanel
 				countries={this.props.countries}
 				country={this.state.country}
 				library={this.state.library}
-				onBack={() => this.changeView(View.TABLE,null)}
+				onBack={() => this.setPanel(Panel.TABLE,null)}
 			/>);
 
-			case View.EDIT:
+			case Panel.EDIT:
 				var header = this.state.country.country + ' - ' +
 				 	(this.state.library ? 'Edit' : 'Create') + ' Library';
 
@@ -232,17 +232,17 @@ export default class LibraryApp extends React.Component<Properties, State> {
 						library={this.state.library || null}
 						country={this.state.country}
 						onSubmit={this.onEditSubmit}
-						onBack={() => this.changeView(View.TABLE,null)}
+						onBack={() => this.setPanel(Panel.TABLE,null)}
 					/>)
 				];
-			case View.LOADER:
+			case Panel.LOADER:
 				return <PageLoader inner={this.state.loadingMessage} />
 		}
 	}
 
 	reloadLibraries() {
-		this.setState((s:State) => {
-			s.view = View.LOADER;
+		this.setState((s:S) => {
+			s.panel = Panel.LOADER;
 			s.loadingMessage = 'Loading ' + s.country.country + ' Libraries...';
 			return s;
 		});
@@ -254,10 +254,10 @@ export default class LibraryApp extends React.Component<Properties, State> {
 				alert(e);
 			}
 			else {
-				this.setState((s:State) => {
+				this.setState((s:S) => {
 					lib.Library.destroyArray(s.libraries);
 
-					s.view = View.TABLE;
+					s.panel = Panel.TABLE;
 					s.libraries = libraries;
 					return s;
 				});

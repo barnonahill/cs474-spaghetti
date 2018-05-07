@@ -7,6 +7,7 @@ import FilterPanel from '@src/components/section/SectionFilterPanel.tsx';
 import TablePanel from '@src/components/section/SectionTablePanel.tsx';
 import EditPanel from '@src/components/section/SectionEditPanel.tsx';
 import EntityPanel from '@src/components/section/SectionEntityPanel.tsx';
+import StateUtils from '@src/components/StateUtilities.ts'
 
 import CenturyApp from '@src/components/century/CenturyApp.tsx';
 import CursusApp from '@src/components/cursus/CursusApp.tsx';
@@ -79,7 +80,7 @@ interface S {
 
 	// If we're rendering an existing Section from an unfiltered load, temps are set before the panel
 	// is mounted and removed when it unmounts.
-	temps: {
+	temps?: {
 		country?: Country
 		library?: Library
 		manuscript?: Manuscript
@@ -98,6 +99,12 @@ interface S {
 	}
 }
 export default class SectionApp extends React.Component<P,S> {
+	public readonly state: S;
+	public readonly props: P;
+
+	private setPanel: (panel: Panel, callback?: (s:S) => S, state?:S) => void
+	private setLoader: (loadMessage: string, callback?: (s:S) => S, state?:S) => void
+
 	constructor(p:P) {
 		super(p);
 
@@ -143,8 +150,8 @@ export default class SectionApp extends React.Component<P,S> {
 		this.loadManuscript = this.loadManuscript.bind(this);
 
 		// State setter util bindings
-		this.setPanel = this.setPanel.bind(this);
-		this.setLoader = this.setLoader.bind(this);
+		this.setPanel = StateUtils.setPanel.bind(this);
+		this.setLoader = StateUtils.setLoader.bind(this, Panel.LOADER);
 
 		// Panel open bindings
 		this.loadTemps = this.loadTemps.bind(this);
@@ -165,9 +172,9 @@ export default class SectionApp extends React.Component<P,S> {
 	componentDidMount() {
 		if (this.props.sideloads) {
 			// Sideload from ManuscriptEntityPanel
-			console.log('');
+			var side = this.props.sideloads;
 			var finishLoad = (libraries:Library[], sections:sn.Section[]) => {
-				this.loadSupports((s:S) => {
+				this.loadSupports(s => {
 					s.primaries.libraries = libraries;
 					s.primaries.manuscripts = side.manuscripts;
 					s.primaries.sections = sections;
@@ -176,14 +183,13 @@ export default class SectionApp extends React.Component<P,S> {
 					s.primaries.library = side.library;
 					s.primaries.manuscript = side.manuscript;
 
-					s.panel = Panel.TABLE;
+					this.setPanel(Panel.TABLE, null, s);
 					return s;
 				});
 			}
 
-			var side = this.props.sideloads;
 			// Make sure we have everything for a filtered table view
-			this.setLoader('Loading Sections');
+			this.setLoader('Loading Sections...');
 			this.loadSections(side.manuscript.libSiglum, side.manuscript.msSiglum, sections => {
 				if (!side.libraries) {
 					this.setLoader('Loading Libraries...');
@@ -200,7 +206,7 @@ export default class SectionApp extends React.Component<P,S> {
 		else {
 			// Normal load
 			this.loadSupports((s:S) => {
-				s.panel = Panel.INIT;
+				this.setPanel(Panel.INIT, null, s);
 				return s;
 			});
 		}
@@ -243,7 +249,7 @@ export default class SectionApp extends React.Component<P,S> {
 
 		if (this.state.temps) {
 			for (k in this.state.temps) {
-				if (this.state.temps[k]) this.state.temps[k].destroy();
+				if (this.state.temps[k] && k !== 'country') this.state.temps[k].destroy();
 			}
 		}
 	}
@@ -373,7 +379,6 @@ export default class SectionApp extends React.Component<P,S> {
 
 	/**
 	 * Gets the table showing the loaded Sections, with CRUD and refresh options.
-	 * @return {[type]}
 	 */
 	renderTable() {
 		return (<TablePanel
@@ -396,10 +401,9 @@ export default class SectionApp extends React.Component<P,S> {
 			centuries={this.state.supports.centuries}
 			onBack={() => this.setPanel(Panel.INIT)}
 			reloadCenturies={() => this.loadCenturies(centuries => {
-				this.setState((s:S) => {
+				this.setPanel(Panel.CENTURY, s => {
 					Century.destroyArray(s.supports.centuries);
 					s.supports.centuries = centuries;
-					this.setPanel(Panel.CENTURY, null, s);
 					return s;
 				});
 			})}
@@ -411,10 +415,9 @@ export default class SectionApp extends React.Component<P,S> {
 			cursuses={this.state.supports.cursuses}
 			onBack={() => this.setPanel(Panel.INIT)}
 			reloadCursuses={() => this.loadCursuses(cursuses => {
-				this.setState((s:S) => {
+				this.setPanel(Panel.CURSUS, s => {
 					Cursus.destroyArray(s.supports.cursuses);
 					s.supports.cursuses = cursuses;
-					this.setPanel(Panel.CURSUS, null, s);
 					return s;
 				});
 			})}
@@ -426,10 +429,9 @@ export default class SectionApp extends React.Component<P,S> {
 			sourceCompletenesses={this.state.supports.srcComps}
 			onBack={() => this.setPanel(Panel.INIT)}
 			reloadSourceCompletenesses={() => this.loadSrcComps(srcComps => {
-				this.setState((s:S) => {
+				this.setPanel(Panel.SRC_COMP, s => {
 					Cursus.destroyArray(s.supports.srcComps);
 					s.supports.srcComps = srcComps;
-					this.setPanel(Panel.SRC_COMP, null, s);
 					return s;
 				});
 			})}
@@ -441,10 +443,9 @@ export default class SectionApp extends React.Component<P,S> {
 			provenances={this.state.supports.provs}
 			onBack={() => this.setPanel(Panel.INIT)}
 			reloadProvenances={() => this.loadProvenances(provs => {
-				this.setState((s:S) => {
+				this.setPanel(Panel.PROVENANCE, s => {
 					Cursus.destroyArray(s.supports.provs);
 					s.supports.provs = provs;
-					this.setPanel(Panel.PROVENANCE, null, s);
 					return s;
 				});
 			})}
@@ -456,10 +457,9 @@ export default class SectionApp extends React.Component<P,S> {
 			notations={this.state.supports.notations}
 			onBack={() => this.setPanel(Panel.INIT)}
 			reloadNotations={() => this.loadNotations(notations => {
-				this.setState((s:S) => {
+				this.setPanel(Panel.NOTATION, s => {
 					Cursus.destroyArray(s.supports.notations);
 					s.supports.notations = notations;
-					this.setPanel(Panel.NOTATION, null, s);
 					return s;
 				});
 			})}
@@ -471,10 +471,9 @@ export default class SectionApp extends React.Component<P,S> {
 			msTypes={this.state.supports.msTypes}
 			onBack={() => this.setPanel(Panel.INIT)}
 			reloadMsTypes={() => this.loadMsTypes(msTypes => {
-				this.setState((s:S) => {
+				this.setPanel(Panel.MS_TYPE, s => {
 					Cursus.destroyArray(s.supports.msTypes);
 					s.supports.msTypes = msTypes;
-					this.setPanel(Panel.MS_TYPE, null, s);
 					return s;
 				});
 			})}
@@ -497,7 +496,8 @@ export default class SectionApp extends React.Component<P,S> {
 		this.setLoader('Loading Centuries...');
 		proxyFactory.getSectionProxy().getCenturies((a, e?) => {
 			if (e) {
-				return alert(e);
+				alert('Error loading Centuries: ' + e);
+				return this.setPanel(Panel.INIT);
 			}
 			callback(a);
 		});
@@ -510,9 +510,10 @@ export default class SectionApp extends React.Component<P,S> {
 		this.setLoader('Loading Cursuses...');
 		proxyFactory.getSectionProxy().getCursuses((a, e?) => {
 			if (e) {
-				return alert(e);
+				alert('Error loading Cursuses: ' + e);
+				return this.setPanel(Panel.INIT);
 			}
-			return callback(a);
+			callback(a);
 		});
 	}
 
@@ -523,9 +524,10 @@ export default class SectionApp extends React.Component<P,S> {
 		this.setLoader('Loading Source Completenesses...');
 		proxyFactory.getSectionProxy().getSourceCompletenesses((a, e?) => {
 			if (e) {
-				return alert(e);
+				alert('Error loading Source Completenesses: ' + e);
+				return this.setPanel(Panel.INIT);
 			}
-			return callback(a);
+			callback(a);
 		});
 	}
 
@@ -536,9 +538,10 @@ export default class SectionApp extends React.Component<P,S> {
 		this.setLoader('Loading Provenances...');
 		proxyFactory.getSectionProxy().getProvenances((a, e?) => {
 			if (e) {
-				return alert(e);
+				alert('Error loading Provenances: ' + e);
+				return this.setPanel(Panel.INIT);
 			}
-			return callback(a);
+			callback(a);
 		})
 	}
 
@@ -549,9 +552,10 @@ export default class SectionApp extends React.Component<P,S> {
 		this.setLoader('Loading Notations...');
 		proxyFactory.getSectionProxy().getNotations((a, e?) => {
 			if (e) {
-				return alert(e);
+				alert('Error loading Notations: ' + e);
+				return this.setPanel(Panel.INIT);
 			}
-			return callback(a);
+			callback(a);
 		})
 	}
 
@@ -562,9 +566,10 @@ export default class SectionApp extends React.Component<P,S> {
 		this.setLoader('Loading Manuscript Types...');
 		proxyFactory.getManuscriptProxy().getMsTypes((a, e?) => {
 			if (e) {
-				return alert(e);
+				alert('Error loading Manuscript Types: ' + e);
+				return this.setPanel(Panel.INIT);
 			}
-			return callback(a);
+			callback(a);
 		})
 	}
 
@@ -575,7 +580,7 @@ export default class SectionApp extends React.Component<P,S> {
 	loadSupports(callback: (s:S) => S): void
 	{
 		var stateSetter = (centuries:Century[], cursuses: Cursus[], srcComps: SourceCompleteness[],
-			provs: Provenance[], notations: Notation[], msTypes: MsType[], callback: (s:S) => S) =>
+			provs: Provenance[], notations: Notation[], msTypes: MsType[]) =>
 		{
 			this.setState((s:S) => {
 				Century.destroyArray(s.supports.centuries);
@@ -592,7 +597,7 @@ export default class SectionApp extends React.Component<P,S> {
 				s.supports.notations = notations;
 				s.supports.msTypes = msTypes;
 
-				return callback(s);
+				callback(s);
 			});
 		}
 
@@ -608,12 +613,12 @@ export default class SectionApp extends React.Component<P,S> {
 						{
 							if (this.props.sideloads && this.props.sideloads.msTypes) {
 								return stateSetter(centuries, cursuses, srcComps, provs, notations,
-									this.props.sideloads.msTypes, callback);
+									this.props.sideloads.msTypes);
 							}
 
 							this.loadMsTypes((msTypes:MsType[]) =>
 							{
-									stateSetter(centuries, cursuses, srcComps, provs, notations, msTypes, callback);
+									stateSetter(centuries, cursuses, srcComps, provs, notations, msTypes);
 							});
 						});
 					});
@@ -630,9 +635,10 @@ export default class SectionApp extends React.Component<P,S> {
 	loadSections(libSiglum:string, msSiglum:string, callback:(a: sn.Section[]) => void) {
 		proxyFactory.getSectionProxy().getSections(libSiglum, msSiglum, (a, e?) => {
 			if (e) {
-				return alert(e);
+				alert('Error loading Sections: ' + e);
+				return this.setPanel(Panel.INIT);
 			}
-			return callback(a);
+			callback(a);
 		});
 	}
 
@@ -642,9 +648,10 @@ export default class SectionApp extends React.Component<P,S> {
 	loadLibraries(countryID:string, callback: (a: Library[]) => void) {
 		proxyFactory.getLibraryProxy().getLibraries(countryID, (a, e?) => {
 			if (e) {
-				return alert(e);
+				alert('Error loading Libraries: ' + e);
+				return this.setPanel(Panel.INIT);
 			}
-			return callback(a);
+			callback(a);
 		});
 	}
 
@@ -654,9 +661,10 @@ export default class SectionApp extends React.Component<P,S> {
 	loadManuscripts(libSiglum: string, callback: (a: Manuscript[]) => void) {
 		proxyFactory.getManuscriptProxy().getManuscripts(libSiglum, (a, e?) => {
 			if (e) {
-				return alert(e);
+				alert('Error loading Manuscripts: ' + e);
+				return this.setPanel(Panel.INIT);
 			}
-			return callback(a);
+			callback(a);
 		});
 	}
 
@@ -668,9 +676,10 @@ export default class SectionApp extends React.Component<P,S> {
 	loadLibrary(libSiglum:string, callback: (l:Library) => void) {
 		proxyFactory.getLibraryProxy().getLibrary(libSiglum, (l, e?) => {
 			if (e) {
-				return alert(e);
+				alert('Error loading Library ' + libSiglum + ': ' + e);
+				return this.setPanel(Panel.INIT);
 			}
-			return callback(l);
+			callback(l);
 		});
 	}
 
@@ -680,57 +689,20 @@ export default class SectionApp extends React.Component<P,S> {
 	loadManuscript(libSiglum:string, msSiglum:string, callback:(m:Manuscript) => void) {
 		proxyFactory.getManuscriptProxy().getManuscript(libSiglum, msSiglum, (m, e?) => {
 			if (e) {
-				return alert(e);
+				alert('Error loading Manuscript ' + libSiglum + ' ' + msSiglum + ': ' + e);
+				return this.setPanel(Panel.INIT);
 			}
 			callback(m);
 		});
-	}
-
-	/**
-	 * Changes the current panel of the Section App.
-	 */
-	setPanel(p:Panel, callback?: (s:S) => S, s?:S) {
-		if (s) {
-			s.panel = p;
-		}
-		else {
-			this.setState((s:S) => {
-				s.panel = p;
-				if (callback) return callback(s);
-				else return s;
-			});
-		}
-	}
-
-	/**
-	 * Sets the panel to LOADER and loadMessage to msg.
-	 * @param msg load message
-	 * @param callback Callback that has set state for loader, but not returned it.
-	 * @param s State object to set, but not return.
-	 */
-	setLoader(msg:string, callback?: (s:S) => S, s?:S) {
-		if (s) {
-			this.setPanel(Panel.LOADER);
-			s.loadMessage = msg;
-		}
-		else {
-			this.setState((s:S) => {
-				this.setPanel(Panel.LOADER, null, s);
-				s.loadMessage = msg;
-				if (callback) return callback(s);
-				return s;
-			});
-		}
 	}
 
 	onInitSubmit(p:Panel) {
 		if (p === Panel.TABLE) {
 			this.setLoader('Loading Sections...');
 			this.loadSections(null, null, sections => {
-				this.setState((s:S) => {
+				this.setPanel(Panel.TABLE, s => {
 					sn.Section.destroyArray(s.primaries.sections);
 					s.primaries.sections = sections;
-					this.setPanel(p, null, s);
 					return s;
 				});
 			});
@@ -810,19 +782,20 @@ export default class SectionApp extends React.Component<P,S> {
 			this.loadLibrary(stn.libSiglum, library => {
 
 				// Load manuscript temp
-				this.setLoader('Loading manuscript ' + stn.msSiglum + ' from ' + library.library);
+				this.setLoader('Loading manuscript ' + stn.msSiglum + ' from ' + library.library + '...');
 				this.loadManuscript(stn.libSiglum, stn.msSiglum, manuscript => {
 
 					// Set our temps and go to the edit panel.
 					this.setState((s:S) => {
 						s.primaries.section = stn;
 
+						s.temps = {};
 						s.temps.country = country;
 						// These two will be destroyed upon exit
 						s.temps.library = library;
 						s.temps.manuscript = manuscript;
 
-						return callback(s);
+						callback(s);
 					});
 				});
 			});
@@ -830,7 +803,7 @@ export default class SectionApp extends React.Component<P,S> {
 		else {
 			this.setState((s:S) => {
 				s.primaries.section = stn;
-				return callback(s);
+				callback(s);
 			});
 		}
 	}

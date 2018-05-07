@@ -172,7 +172,7 @@ public class LibraryServlet extends SpgHttpServlet {
 	 */
 	private String getLibrary(String libSiglum) throws Exception {
 		Library l = libraryController.getLibrary(libSiglum);
-		return l.toJSON().toString();
+		return l.toString();
 	}
 
 	/**

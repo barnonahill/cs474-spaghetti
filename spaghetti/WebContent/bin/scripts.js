@@ -37836,22 +37836,24 @@ var LibraryCountryPanel_tsx_1 = __webpack_require__(/*! @src/components/library/
 var LibraryEntityPanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryEntityPanel.tsx */ "./src/components/library/LibraryEntityPanel.tsx");
 var LibraryEditPanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryEditPanel.tsx */ "./src/components/library/LibraryEditPanel.tsx");
 var LibraryTablePanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryTablePanel.tsx */ "./src/components/library/LibraryTablePanel.tsx");
+var StateUtilities_ts_1 = __webpack_require__(/*! @src/components/StateUtilities.ts */ "./src/components/StateUtilities.ts");
 var lib = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
-var View;
-(function (View) {
-    View[View["INIT"] = 0] = "INIT";
-    View[View["TABLE"] = 1] = "TABLE";
-    View[View["ENTITY"] = 2] = "ENTITY";
-    View[View["EDIT"] = 3] = "EDIT";
-    View[View["LOADER"] = 4] = "LOADER";
-})(View || (View = {}));
+var Panel;
+(function (Panel) {
+    Panel[Panel["INIT"] = 0] = "INIT";
+    Panel[Panel["FILTER"] = 1] = "FILTER";
+    Panel[Panel["LOADER"] = 2] = "LOADER";
+    Panel[Panel["TABLE"] = 3] = "TABLE";
+    Panel[Panel["ENTITY"] = 4] = "ENTITY";
+    Panel[Panel["EDIT"] = 5] = "EDIT";
+})(Panel || (Panel = {}));
 var LibraryApp = (function (_super) {
     __extends(LibraryApp, _super);
     function LibraryApp(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
-            view: View.INIT,
+            panel: Panel.INIT,
             country: null,
             library: null,
             libraries: null,
@@ -37861,12 +37863,14 @@ var LibraryApp = (function (_super) {
         _this.onTableClick = _this.onTableClick.bind(_this);
         _this.onEditSubmit = _this.onEditSubmit.bind(_this);
         _this.reloadLibraries = _this.reloadLibraries.bind(_this);
+        _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
+        _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         return _this;
     }
     LibraryApp.prototype.onCountrySelect = function (c) {
         var _this = this;
         this.setState(function (s) {
-            s.view = View.LOADER;
+            s.panel = Panel.LOADER;
             s.loadingMessage = 'Loading ' + c.country + ' Libraries...';
             return s;
         });
@@ -37878,7 +37882,7 @@ var LibraryApp = (function (_super) {
                 _this.setState(function (s) {
                     s.library = null;
                     lib.Library.destroyArray(s.libraries);
-                    s.view = View.TABLE;
+                    s.panel = Panel.TABLE;
                     s.country = c;
                     s.libraries = libs;
                     return s;
@@ -37890,10 +37894,16 @@ var LibraryApp = (function (_super) {
         switch (t) {
             case LibraryTablePanel_tsx_1.ButtonType.VIEW:
             default:
-                this.changeView(View.ENTITY, { library: l });
+                this.setPanel(Panel.ENTITY, function (s) {
+                    s.library = l;
+                    return s;
+                });
                 break;
             case LibraryTablePanel_tsx_1.ButtonType.EDIT:
-                this.changeView(View.EDIT, { library: l });
+                this.setPanel(Panel.EDIT, function (s) {
+                    s.library = l;
+                    return s;
+                });
                 break;
             case LibraryTablePanel_tsx_1.ButtonType.DEL:
                 var del = confirm('Delete ' + l.library + '?');
@@ -37913,7 +37923,7 @@ var LibraryApp = (function (_super) {
                 else {
                     _this.setState(function (s) {
                         s.libraries.push(l);
-                        s.view = View.TABLE;
+                        s.panel = Panel.TABLE;
                         return s;
                     });
                 }
@@ -37934,27 +37944,12 @@ var LibraryApp = (function (_super) {
                         else {
                             s.libraries.splice(i, 1);
                         }
-                        s.view = View.TABLE;
+                        s.panel = Panel.TABLE;
                         return s;
                     });
                 }
             });
         }
-    };
-    LibraryApp.prototype.changeView = function (v, stateOpts) {
-        this.setState(function (s) {
-            s.view = v;
-            if (v === View.INIT && s.libraries) {
-                lib.Library.destroyArray(s.libraries);
-                s.libraries = null;
-            }
-            if (stateOpts) {
-                for (var k in stateOpts) {
-                    s[k] = stateOpts[k];
-                }
-            }
-            return s;
-        });
     };
     LibraryApp.prototype.deleteLibrary = function (l) {
         var _this = this;
@@ -37977,32 +37972,32 @@ var LibraryApp = (function (_super) {
     };
     LibraryApp.prototype.render = function () {
         var _this = this;
-        switch (this.state.view) {
-            case View.INIT:
+        switch (this.state.panel) {
+            case Panel.INIT:
             default:
                 return [
                     React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Libraries"),
                     (React.createElement(LibraryCountryPanel_tsx_1.default, { country: this.state.country || null, countries: this.props.countries, onSubmit: this.onCountrySelect, onBack: this.props.onBack, key: "panel" }))
                 ];
-            case View.TABLE:
-                return (React.createElement(LibraryTablePanel_tsx_1.default, { key: "panel", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick, onRefresh: function () { return _this.onCountrySelect(_this.state.country); }, onBack: function () { return _this.changeView(View.INIT, { country: _this.state.country }); } }));
-            case View.ENTITY:
-                return (React.createElement(LibraryEntityPanel_tsx_1.default, { countries: this.props.countries, country: this.state.country, library: this.state.library, onBack: function () { return _this.changeView(View.TABLE, null); } }));
-            case View.EDIT:
+            case Panel.TABLE:
+                return (React.createElement(LibraryTablePanel_tsx_1.default, { key: "panel", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick, onRefresh: function () { return _this.onCountrySelect(_this.state.country); }, onBack: function () { return _this.setPanel(Panel.INIT); } }));
+            case Panel.ENTITY:
+                return (React.createElement(LibraryEntityPanel_tsx_1.default, { countries: this.props.countries, country: this.state.country, library: this.state.library, onBack: function () { return _this.setPanel(Panel.TABLE, null); } }));
+            case Panel.EDIT:
                 var header = this.state.country.country + ' - ' +
                     (this.state.library ? 'Edit' : 'Create') + ' Library';
                 return [
                     React.createElement(Header_tsx_1.default, { key: "header", min: true }, header),
-                    (React.createElement(LibraryEditPanel_tsx_1.default, { key: "panel", library: this.state.library || null, country: this.state.country, onSubmit: this.onEditSubmit, onBack: function () { return _this.changeView(View.TABLE, null); } }))
+                    (React.createElement(LibraryEditPanel_tsx_1.default, { key: "panel", library: this.state.library || null, country: this.state.country, onSubmit: this.onEditSubmit, onBack: function () { return _this.setPanel(Panel.TABLE, null); } }))
                 ];
-            case View.LOADER:
+            case Panel.LOADER:
                 return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadingMessage });
         }
     };
     LibraryApp.prototype.reloadLibraries = function () {
         var _this = this;
         this.setState(function (s) {
-            s.view = View.LOADER;
+            s.panel = Panel.LOADER;
             s.loadingMessage = 'Loading ' + s.country.country + ' Libraries...';
             return s;
         });
@@ -38013,7 +38008,7 @@ var LibraryApp = (function (_super) {
             else {
                 _this.setState(function (s) {
                     lib.Library.destroyArray(s.libraries);
-                    s.view = View.TABLE;
+                    s.panel = Panel.TABLE;
                     s.libraries = libraries;
                     return s;
                 });
@@ -40857,6 +40852,7 @@ var SectionFilterPanel_tsx_1 = __webpack_require__(/*! @src/components/section/S
 var SectionTablePanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionTablePanel.tsx */ "./src/components/section/SectionTablePanel.tsx");
 var SectionEditPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionEditPanel.tsx */ "./src/components/section/SectionEditPanel.tsx");
 var SectionEntityPanel_tsx_1 = __webpack_require__(/*! @src/components/section/SectionEntityPanel.tsx */ "./src/components/section/SectionEntityPanel.tsx");
+var StateUtilities_ts_1 = __webpack_require__(/*! @src/components/StateUtilities.ts */ "./src/components/StateUtilities.ts");
 var CenturyApp_tsx_1 = __webpack_require__(/*! @src/components/century/CenturyApp.tsx */ "./src/components/century/CenturyApp.tsx");
 var CursusApp_tsx_1 = __webpack_require__(/*! @src/components/cursus/CursusApp.tsx */ "./src/components/cursus/CursusApp.tsx");
 var SourceCompletenessApp_tsx_1 = __webpack_require__(/*! @src/components/sourceCompleteness/SourceCompletenessApp.tsx */ "./src/components/sourceCompleteness/SourceCompletenessApp.tsx");
@@ -40924,8 +40920,8 @@ var SectionApp = (function (_super) {
         _this.reloadSections = _this.reloadSections.bind(_this);
         _this.loadLibrary = _this.loadLibrary.bind(_this);
         _this.loadManuscript = _this.loadManuscript.bind(_this);
-        _this.setPanel = _this.setPanel.bind(_this);
-        _this.setLoader = _this.setLoader.bind(_this);
+        _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
+        _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         _this.loadTemps = _this.loadTemps.bind(_this);
         _this.destroyTemps = _this.destroyTemps.bind(_this);
         _this.openEntity = _this.openEntity.bind(_this);
@@ -40940,7 +40936,7 @@ var SectionApp = (function (_super) {
     SectionApp.prototype.componentDidMount = function () {
         var _this = this;
         if (this.props.sideloads) {
-            console.log('');
+            var side = this.props.sideloads;
             var finishLoad = function (libraries, sections) {
                 _this.loadSupports(function (s) {
                     s.primaries.libraries = libraries;
@@ -40949,12 +40945,11 @@ var SectionApp = (function (_super) {
                     s.primaries.country = side.country;
                     s.primaries.library = side.library;
                     s.primaries.manuscript = side.manuscript;
-                    s.panel = Panel.TABLE;
+                    _this.setPanel(Panel.TABLE, null, s);
                     return s;
                 });
             };
-            var side = this.props.sideloads;
-            this.setLoader('Loading Sections');
+            this.setLoader('Loading Sections...');
             this.loadSections(side.manuscript.libSiglum, side.manuscript.msSiglum, function (sections) {
                 if (!side.libraries) {
                     _this.setLoader('Loading Libraries...');
@@ -40969,7 +40964,7 @@ var SectionApp = (function (_super) {
         }
         else {
             this.loadSupports(function (s) {
-                s.panel = Panel.INIT;
+                _this.setPanel(Panel.INIT, null, s);
                 return s;
             });
         }
@@ -41005,7 +41000,7 @@ var SectionApp = (function (_super) {
         }
         if (this.state.temps) {
             for (k in this.state.temps) {
-                if (this.state.temps[k])
+                if (this.state.temps[k] && k !== 'country')
                     this.state.temps[k].destroy();
             }
         }
@@ -41085,10 +41080,9 @@ var SectionApp = (function (_super) {
     SectionApp.prototype.renderCenturyApp = function () {
         var _this = this;
         return (React.createElement(CenturyApp_tsx_1.default, { centuries: this.state.supports.centuries, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadCenturies: function () { return _this.loadCenturies(function (centuries) {
-                _this.setState(function (s) {
+                _this.setPanel(Panel.CENTURY, function (s) {
                     century_ts_1.Century.destroyArray(s.supports.centuries);
                     s.supports.centuries = centuries;
-                    _this.setPanel(Panel.CENTURY, null, s);
                     return s;
                 });
             }); } }));
@@ -41096,10 +41090,9 @@ var SectionApp = (function (_super) {
     SectionApp.prototype.renderCursusApp = function () {
         var _this = this;
         return (React.createElement(CursusApp_tsx_1.default, { cursuses: this.state.supports.cursuses, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadCursuses: function () { return _this.loadCursuses(function (cursuses) {
-                _this.setState(function (s) {
+                _this.setPanel(Panel.CURSUS, function (s) {
                     cursus_ts_1.Cursus.destroyArray(s.supports.cursuses);
                     s.supports.cursuses = cursuses;
-                    _this.setPanel(Panel.CURSUS, null, s);
                     return s;
                 });
             }); } }));
@@ -41107,10 +41100,9 @@ var SectionApp = (function (_super) {
     SectionApp.prototype.renderSourceCompletenessApp = function () {
         var _this = this;
         return (React.createElement(SourceCompletenessApp_tsx_1.default, { sourceCompletenesses: this.state.supports.srcComps, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadSourceCompletenesses: function () { return _this.loadSrcComps(function (srcComps) {
-                _this.setState(function (s) {
+                _this.setPanel(Panel.SRC_COMP, function (s) {
                     cursus_ts_1.Cursus.destroyArray(s.supports.srcComps);
                     s.supports.srcComps = srcComps;
-                    _this.setPanel(Panel.SRC_COMP, null, s);
                     return s;
                 });
             }); } }));
@@ -41118,10 +41110,9 @@ var SectionApp = (function (_super) {
     SectionApp.prototype.renderProvenanceApp = function () {
         var _this = this;
         return (React.createElement(ProvenanceApp_tsx_1.default, { provenances: this.state.supports.provs, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadProvenances: function () { return _this.loadProvenances(function (provs) {
-                _this.setState(function (s) {
+                _this.setPanel(Panel.PROVENANCE, function (s) {
                     cursus_ts_1.Cursus.destroyArray(s.supports.provs);
                     s.supports.provs = provs;
-                    _this.setPanel(Panel.PROVENANCE, null, s);
                     return s;
                 });
             }); } }));
@@ -41129,10 +41120,9 @@ var SectionApp = (function (_super) {
     SectionApp.prototype.renderNotationApp = function () {
         var _this = this;
         return (React.createElement(NotationApp_tsx_1.default, { notations: this.state.supports.notations, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadNotations: function () { return _this.loadNotations(function (notations) {
-                _this.setState(function (s) {
+                _this.setPanel(Panel.NOTATION, function (s) {
                     cursus_ts_1.Cursus.destroyArray(s.supports.notations);
                     s.supports.notations = notations;
-                    _this.setPanel(Panel.NOTATION, null, s);
                     return s;
                 });
             }); } }));
@@ -41140,10 +41130,9 @@ var SectionApp = (function (_super) {
     SectionApp.prototype.renderMsTypeApp = function () {
         var _this = this;
         return (React.createElement(MsTypeApp_tsx_1.default, { msTypes: this.state.supports.msTypes, onBack: function () { return _this.setPanel(Panel.INIT); }, reloadMsTypes: function () { return _this.loadMsTypes(function (msTypes) {
-                _this.setState(function (s) {
+                _this.setPanel(Panel.MS_TYPE, function (s) {
                     cursus_ts_1.Cursus.destroyArray(s.supports.msTypes);
                     s.supports.msTypes = msTypes;
-                    _this.setPanel(Panel.MS_TYPE, null, s);
                     return s;
                 });
             }); } }));
@@ -41152,62 +41141,74 @@ var SectionApp = (function (_super) {
         return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
     };
     SectionApp.prototype.loadCenturies = function (callback) {
+        var _this = this;
         this.setLoader('Loading Centuries...');
         ProxyFactory_ts_1.default.getSectionProxy().getCenturies(function (a, e) {
             if (e) {
-                return alert(e);
+                alert('Error loading Centuries: ' + e);
+                return _this.setPanel(Panel.INIT);
             }
             callback(a);
         });
     };
     SectionApp.prototype.loadCursuses = function (callback) {
+        var _this = this;
         this.setLoader('Loading Cursuses...');
         ProxyFactory_ts_1.default.getSectionProxy().getCursuses(function (a, e) {
             if (e) {
-                return alert(e);
+                alert('Error loading Cursuses: ' + e);
+                return _this.setPanel(Panel.INIT);
             }
-            return callback(a);
+            callback(a);
         });
     };
     SectionApp.prototype.loadSrcComps = function (callback) {
+        var _this = this;
         this.setLoader('Loading Source Completenesses...');
         ProxyFactory_ts_1.default.getSectionProxy().getSourceCompletenesses(function (a, e) {
             if (e) {
-                return alert(e);
+                alert('Error loading Source Completenesses: ' + e);
+                return _this.setPanel(Panel.INIT);
             }
-            return callback(a);
+            callback(a);
         });
     };
     SectionApp.prototype.loadProvenances = function (callback) {
+        var _this = this;
         this.setLoader('Loading Provenances...');
         ProxyFactory_ts_1.default.getSectionProxy().getProvenances(function (a, e) {
             if (e) {
-                return alert(e);
+                alert('Error loading Provenances: ' + e);
+                return _this.setPanel(Panel.INIT);
             }
-            return callback(a);
+            callback(a);
         });
     };
     SectionApp.prototype.loadNotations = function (callback) {
+        var _this = this;
         this.setLoader('Loading Notations...');
         ProxyFactory_ts_1.default.getSectionProxy().getNotations(function (a, e) {
             if (e) {
-                return alert(e);
+                alert('Error loading Notations: ' + e);
+                return _this.setPanel(Panel.INIT);
             }
-            return callback(a);
+            callback(a);
         });
     };
     SectionApp.prototype.loadMsTypes = function (callback) {
+        var _this = this;
         this.setLoader('Loading Manuscript Types...');
         ProxyFactory_ts_1.default.getManuscriptProxy().getMsTypes(function (a, e) {
             if (e) {
-                return alert(e);
+                alert('Error loading Manuscript Types: ' + e);
+                return _this.setPanel(Panel.INIT);
             }
-            return callback(a);
+            callback(a);
         });
     };
     SectionApp.prototype.loadSupports = function (callback) {
         var _this = this;
-        var stateSetter = function (centuries, cursuses, srcComps, provs, notations, msTypes, callback) {
+        var stateSetter = function (centuries, cursuses, srcComps, provs, notations, msTypes) {
             _this.setState(function (s) {
                 century_ts_1.Century.destroyArray(s.supports.centuries);
                 cursus_ts_1.Cursus.destroyArray(s.supports.cursuses);
@@ -41221,7 +41222,7 @@ var SectionApp = (function (_super) {
                 s.supports.provs = provs;
                 s.supports.notations = notations;
                 s.supports.msTypes = msTypes;
-                return callback(s);
+                callback(s);
             });
         };
         this.loadCenturies(function (centuries) {
@@ -41230,10 +41231,10 @@ var SectionApp = (function (_super) {
                     _this.loadProvenances(function (provs) {
                         _this.loadNotations(function (notations) {
                             if (_this.props.sideloads && _this.props.sideloads.msTypes) {
-                                return stateSetter(centuries, cursuses, srcComps, provs, notations, _this.props.sideloads.msTypes, callback);
+                                return stateSetter(centuries, cursuses, srcComps, provs, notations, _this.props.sideloads.msTypes);
                             }
                             _this.loadMsTypes(function (msTypes) {
-                                stateSetter(centuries, cursuses, srcComps, provs, notations, msTypes, callback);
+                                stateSetter(centuries, cursuses, srcComps, provs, notations, msTypes);
                             });
                         });
                     });
@@ -41242,84 +41243,63 @@ var SectionApp = (function (_super) {
         });
     };
     SectionApp.prototype.loadSections = function (libSiglum, msSiglum, callback) {
+        var _this = this;
         ProxyFactory_ts_1.default.getSectionProxy().getSections(libSiglum, msSiglum, function (a, e) {
             if (e) {
-                return alert(e);
+                alert('Error loading Sections: ' + e);
+                return _this.setPanel(Panel.INIT);
             }
-            return callback(a);
+            callback(a);
         });
     };
     SectionApp.prototype.loadLibraries = function (countryID, callback) {
+        var _this = this;
         ProxyFactory_ts_1.default.getLibraryProxy().getLibraries(countryID, function (a, e) {
             if (e) {
-                return alert(e);
+                alert('Error loading Libraries: ' + e);
+                return _this.setPanel(Panel.INIT);
             }
-            return callback(a);
+            callback(a);
         });
     };
     SectionApp.prototype.loadManuscripts = function (libSiglum, callback) {
+        var _this = this;
         ProxyFactory_ts_1.default.getManuscriptProxy().getManuscripts(libSiglum, function (a, e) {
             if (e) {
-                return alert(e);
+                alert('Error loading Manuscripts: ' + e);
+                return _this.setPanel(Panel.INIT);
             }
-            return callback(a);
+            callback(a);
         });
     };
     SectionApp.prototype.loadLibrary = function (libSiglum, callback) {
+        var _this = this;
         ProxyFactory_ts_1.default.getLibraryProxy().getLibrary(libSiglum, function (l, e) {
             if (e) {
-                return alert(e);
+                alert('Error loading Library ' + libSiglum + ': ' + e);
+                return _this.setPanel(Panel.INIT);
             }
-            return callback(l);
+            callback(l);
         });
     };
     SectionApp.prototype.loadManuscript = function (libSiglum, msSiglum, callback) {
+        var _this = this;
         ProxyFactory_ts_1.default.getManuscriptProxy().getManuscript(libSiglum, msSiglum, function (m, e) {
             if (e) {
-                return alert(e);
+                alert('Error loading Manuscript ' + libSiglum + ' ' + msSiglum + ': ' + e);
+                return _this.setPanel(Panel.INIT);
             }
             callback(m);
         });
-    };
-    SectionApp.prototype.setPanel = function (p, callback, s) {
-        if (s) {
-            s.panel = p;
-        }
-        else {
-            this.setState(function (s) {
-                s.panel = p;
-                if (callback)
-                    return callback(s);
-                else
-                    return s;
-            });
-        }
-    };
-    SectionApp.prototype.setLoader = function (msg, callback, s) {
-        var _this = this;
-        if (s) {
-            this.setPanel(Panel.LOADER);
-            s.loadMessage = msg;
-        }
-        else {
-            this.setState(function (s) {
-                _this.setPanel(Panel.LOADER, null, s);
-                s.loadMessage = msg;
-                if (callback)
-                    return callback(s);
-                return s;
-            });
-        }
     };
     SectionApp.prototype.onInitSubmit = function (p) {
         var _this = this;
         if (p === Panel.TABLE) {
             this.setLoader('Loading Sections...');
             this.loadSections(null, null, function (sections) {
-                _this.setState(function (s) {
+                _this.setPanel(Panel.TABLE, function (s) {
                     sn.Section.destroyArray(s.primaries.sections);
                     s.primaries.sections = sections;
-                    _this.setPanel(p, null, s);
                     return s;
                 });
             });
@@ -41379,14 +41359,15 @@ var SectionApp = (function (_super) {
             var country = this.props.countries.find(function (c) { return countryID === c.countryID; });
             this.setLoader('Loading Library ' + stn.libSiglum + '...');
             this.loadLibrary(stn.libSiglum, function (library) {
-                _this.setLoader('Loading manuscript ' + stn.msSiglum + ' from ' + library.library);
+                _this.setLoader('Loading manuscript ' + stn.msSiglum + ' from ' + library.library + '...');
                 _this.loadManuscript(stn.libSiglum, stn.msSiglum, function (manuscript) {
                     _this.setState(function (s) {
                         s.primaries.section = stn;
+                        s.temps = {};
                         s.temps.country = country;
                         s.temps.library = library;
                         s.temps.manuscript = manuscript;
-                        return callback(s);
+                        callback(s);
                     });
                 });
             });
@@ -41394,7 +41375,7 @@ var SectionApp = (function (_super) {
         else {
             this.setState(function (s) {
                 s.primaries.section = stn;
-                return callback(s);
+                callback(s);
             });
         }
     };
