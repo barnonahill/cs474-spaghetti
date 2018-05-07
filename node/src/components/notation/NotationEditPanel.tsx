@@ -15,9 +15,12 @@ import PanelMenu from '@src/components/common/PanelMenu.tsx';
 import * as nt from '@src/models/notation.ts';
 
 interface P {
-	notation: nt.Notation
 	onBack: () => void
 	onSubmit: (ntProps:nt.Properties, isNew:boolean) => void
+
+	ntProps?: nt.Properties
+	isNew?: boolean
+	val?: null | 'error'
 }
 interface S {
 	isNew: boolean
@@ -31,25 +34,22 @@ export default class NotationEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
-		var isNew = !Boolean(p.notation);
-		var ntProps: nt.Properties;
-
-		if (isNew) {
-			ntProps = {
-				notationID: '',
-				notationName: ''
-			}
+		var isNew: boolean;
+		if (typeof p.isNew === 'boolean') {
+			isNew = p.isNew;
 		}
-
 		else {
-			ntProps = p.notation.toProperties();
-			ntProps.notationName = ntProps.notationName || '';
+			isNew = !Boolean(p.ntProps);
 		}
+		var ntProps = p.ntProps || {
+			notationID: '',
+			notationName: ''
+		};
 
 		this.state = {
 			isNew: isNew,
 			ntProps: ntProps,
-			val: null
+			val: p.val || null
 		};
 
 		// render helper
@@ -64,7 +64,7 @@ export default class NotationEditPanel extends React.Component<P,S> {
 		var x: JSX.Element[] = [];
 		x.push(<Header key="header" min>{this.state.isNew
 			? 'Create a Notation'
-			: 'Edit Notation: ' + this.props.notation.notationName}</Header>);
+			: 'Edit Notation: ' + this.state.ntProps.notationID}</Header>);
 
 		x.push(<PanelMenu key="panelMenu">
 			<Button
@@ -134,7 +134,7 @@ export default class NotationEditPanel extends React.Component<P,S> {
 			>Notation ID:</Col>);
 
 			value = (<Col sm={4} className="pt7 pl27">
-				{this.props.notation.notationID}
+				{this.state.ntProps.notationID}
 			</Col>);
 		}
 

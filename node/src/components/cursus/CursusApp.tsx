@@ -105,7 +105,10 @@ export default class CursusApp extends React.Component<P,S> {
 		}
 
 		return (<EditPanel
-			onBack={() => this.setPanel(Panel.TABLE)}
+			onBack={() => this.setPanel(Panel.TABLE, s => {
+				s.editOpts = {};
+				return s;
+			})}
 			onSubmit={this.saveCursus}
 			csProps={csProps}
 			isNew={edo.isNew}
@@ -168,10 +171,10 @@ export default class CursusApp extends React.Component<P,S> {
 			alert('Error saving Cursus: ' + e);
 			this.setPanel(Panel.EDIT, s => {
 
-				this.state.editOpts = {
+				s.editOpts = {
 					csProps: csProps,
 					isNew: isNew,
-					val: (e.toLowerCase().indexOf(csProps.cursusID.toLowerCase()) == -1
+					val: (e.toLowerCase().indexOf(csProps.cursusID.toLowerCase()) === -1
 						? null : 'error')
 				};
 				return s;

@@ -15,9 +15,12 @@ import PanelMenu from '@src/components/common/PanelMenu.tsx';
 import * as pv from '@src/models/provenance.ts';
 
 interface P {
-	provenance: pv.Provenance
 	onBack: () => void
 	onSubmit: (pvProps:pv.Properties, isNew:boolean) => void
+
+	pvProps?: pv.Properties
+	isNew?: boolean
+	val?: null | 'error'
 }
 interface S {
 	isNew: boolean
@@ -31,25 +34,22 @@ export default class ProvenanceEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
-		var isNew = !Boolean(p.provenance);
-		var pvProps: pv.Properties;
-
-		if (isNew) {
-			pvProps = {
-				provenanceID: '',
-				provenanceName: ''
-			}
+		var isNew: boolean;
+		if  (typeof p.isNew === 'boolean') {
+			isNew = p.isNew;
 		}
-
 		else {
-			pvProps = p.provenance.toProperties();
-			pvProps.provenanceName = pvProps.provenanceName || '';
+			isNew = !Boolean(p.pvProps);
 		}
+		var pvProps = p.pvProps || {
+			provenanceID: '',
+			provenanceName: ''
+		};
 
 		this.state = {
 			isNew: isNew,
 			pvProps: pvProps,
-			val: null
+			val: p.val || null
 		};
 
 		// render helper
@@ -64,7 +64,7 @@ export default class ProvenanceEditPanel extends React.Component<P,S> {
 		var x: JSX.Element[] = [];
 		x.push(<Header key="header" min>{this.state.isNew
 			? 'Create a Provenance'
-			: 'Edit Provenance: ' + this.props.provenance.provenanceName}</Header>);
+			: 'Edit Provenance: ' + this.state.pvProps.provenanceID}</Header>);
 
 		x.push(<PanelMenu key="panelMenu">
 			<Button
@@ -134,7 +134,7 @@ export default class ProvenanceEditPanel extends React.Component<P,S> {
 			>Provenance ID:</Col>);
 
 			value = (<Col sm={4} className="pt7 pl27">
-				{this.props.provenance.provenanceID}
+				{this.state.pvProps.provenanceID}
 			</Col>);
 		}
 

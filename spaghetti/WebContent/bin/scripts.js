@@ -37513,7 +37513,10 @@ var CursusApp = (function (_super) {
         else {
             csProps = null;
         }
-        return (React.createElement(CursusEditPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveCursus, csProps: csProps, isNew: edo.isNew, val: edo.val }));
+        return (React.createElement(CursusEditPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE, function (s) {
+                s.editOpts = {};
+                return s;
+            }); }, onSubmit: this.saveCursus, csProps: csProps, isNew: edo.isNew, val: edo.val }));
     };
     CursusApp.prototype.confirmDelete = function (cursus) {
         var _this = this;
@@ -37553,10 +37556,10 @@ var CursusApp = (function (_super) {
         var onError = function (e) {
             alert('Error saving Cursus: ' + e);
             _this.setPanel(Panel.EDIT, function (s) {
-                _this.state.editOpts = {
+                s.editOpts = {
                     csProps: csProps,
                     isNew: isNew,
-                    val: (e.toLowerCase().indexOf(csProps.cursusID.toLowerCase()) == -1
+                    val: (e.toLowerCase().indexOf(csProps.cursusID.toLowerCase()) === -1
                         ? null : 'error')
                 };
                 return s;
@@ -40107,6 +40110,7 @@ var React = __webpack_require__(/*! react */ "react");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
 var NotationTablePanel_tsx_1 = __webpack_require__(/*! @src/components/notation/NotationTablePanel.tsx */ "./src/components/notation/NotationTablePanel.tsx");
 var NotationEditPanel_tsx_1 = __webpack_require__(/*! @src/components/notation/NotationEditPanel.tsx */ "./src/components/notation/NotationEditPanel.tsx");
+var StateUtilities_ts_1 = __webpack_require__(/*! @src/components/StateUtilities.ts */ "./src/components/StateUtilities.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
 (function (Panel) {
@@ -40120,13 +40124,15 @@ var NotationApp = (function (_super) {
         var _this = _super.call(this, p) || this;
         _this.state = {
             panel: Panel.TABLE,
-            notations: _this.props.notations
+            notations: _this.props.notations,
+            editOpts: {}
         };
         _this.openEdit = _this.openEdit.bind(_this);
+        _this.renderEditPanel = _this.renderEditPanel.bind(_this);
         _this.saveNotation = _this.saveNotation.bind(_this);
         _this.confirmDelete = _this.confirmDelete.bind(_this);
-        _this.setPanel = _this.setPanel.bind(_this);
-        _this.setLoader = _this.setLoader.bind(_this);
+        _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
+        _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         return _this;
     }
     NotationApp.prototype.render = function () {
@@ -40138,12 +40144,31 @@ var NotationApp = (function (_super) {
                         _this.props.reloadNotations();
                     } }));
             case Panel.EDIT:
-                return (React.createElement(NotationEditPanel_tsx_1.default, { notation: this.state.notation, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveNotation }));
+                return this.renderEditPanel();
             case Panel.LOADER:
                 return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
             default:
                 return null;
         }
+    };
+    NotationApp.prototype.renderEditPanel = function () {
+        var _this = this;
+        var edo = this.state.editOpts;
+        var ntProps;
+        if (edo.ntProps) {
+            ntProps = edo.ntProps;
+        }
+        else if (this.state.notation) {
+            ntProps = this.state.notation.toProperties();
+            ntProps.notationName = ntProps.notationName || '';
+        }
+        else {
+            ntProps = null;
+        }
+        return React.createElement(NotationEditPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE, function (s) {
+                s.editOpts = {};
+                return s;
+            }); }, onSubmit: this.saveNotation, ntProps: ntProps, isNew: edo.isNew, val: edo.val });
     };
     NotationApp.prototype.confirmDelete = function (notation) {
         var _this = this;
@@ -40152,14 +40177,14 @@ var NotationApp = (function (_super) {
             this.setLoader('Deleting ' + notation.notationID + '...');
             ProxyFactory_ts_1.default.getSectionProxy().deleteNotation(notation.notationID, function (success, e) {
                 if (e) {
-                    alert(e);
+                    alert('Error deleting notation: ' + e);
+                    _this.setPanel(Panel.TABLE);
                 }
                 else if (success) {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         var i = s.notations.findIndex(function (c) { return notation.notationID === c.notationID; });
                         s.notations[i].destroy();
                         s.notations.splice(i, 1);
-                        _this.setPanel(Panel.TABLE, null, s);
                         return s;
                     });
                 }
@@ -40171,20 +40196,30 @@ var NotationApp = (function (_super) {
         }
     };
     NotationApp.prototype.openEdit = function (notation) {
-        var _this = this;
-        this.setState(function (s) {
+        this.setPanel(Panel.EDIT, function (s) {
             s.notation = notation;
-            _this.setPanel(Panel.EDIT, null, s);
             return s;
         });
     };
     NotationApp.prototype.saveNotation = function (ntProps, isNew) {
         var _this = this;
         this.setLoader('Saving Notation ' + ntProps.notationID + '...');
+        var onError = function (e) {
+            alert('Error saving Notation: ' + e);
+            _this.setPanel(Panel.EDIT, function (s) {
+                s.editOpts = {
+                    isNew: isNew,
+                    ntProps: ntProps,
+                    val: (e.toLowerCase().indexOf(ntProps.notationID.toLowerCase()) === -1
+                        ? null : 'error')
+                };
+                return s;
+            });
+        };
         if (isNew) {
             ProxyFactory_ts_1.default.getSectionProxy().createNotation(ntProps, function (notation, e) {
                 if (e) {
-                    alert('Error creating new Notation: ' + e);
+                    onError(e);
                 }
                 else {
                     _this.setState(function (s) {
@@ -40198,7 +40233,7 @@ var NotationApp = (function (_super) {
         else {
             ProxyFactory_ts_1.default.getSectionProxy().updateNotation(ntProps, function (notation, e) {
                 if (e) {
-                    alert('Error updating Notation: ' + e);
+                    onError(e);
                 }
                 else {
                     _this.setState(function (s) {
@@ -40209,36 +40244,6 @@ var NotationApp = (function (_super) {
                         return s;
                     });
                 }
-            });
-        }
-    };
-    NotationApp.prototype.setPanel = function (p, callback, s) {
-        if (s) {
-            s.panel = p;
-        }
-        else {
-            this.setState(function (s) {
-                s.panel = p;
-                if (callback)
-                    return callback(s);
-                else
-                    return s;
-            });
-        }
-    };
-    NotationApp.prototype.setLoader = function (msg, callback, s) {
-        var _this = this;
-        if (s) {
-            this.setPanel(Panel.LOADER);
-            s.loadMessage = msg;
-        }
-        else {
-            this.setState(function (s) {
-                _this.setPanel(Panel.LOADER, null, s);
-                s.loadMessage = msg;
-                if (callback)
-                    return callback(s);
-                return s;
             });
         }
     };
@@ -40277,22 +40282,21 @@ var NotationEditPanel = (function (_super) {
     __extends(NotationEditPanel, _super);
     function NotationEditPanel(p) {
         var _this = _super.call(this, p) || this;
-        var isNew = !Boolean(p.notation);
-        var ntProps;
-        if (isNew) {
-            ntProps = {
-                notationID: '',
-                notationName: ''
-            };
+        var isNew;
+        if (typeof p.isNew === 'boolean') {
+            isNew = p.isNew;
         }
         else {
-            ntProps = p.notation.toProperties();
-            ntProps.notationName = ntProps.notationName || '';
+            isNew = !Boolean(p.ntProps);
         }
+        var ntProps = p.ntProps || {
+            notationID: '',
+            notationName: ''
+        };
         _this.state = {
             isNew: isNew,
             ntProps: ntProps,
-            val: null
+            val: p.val || null
         };
         _this.getNotationIDFormGroup = _this.getNotationIDFormGroup.bind(_this);
         _this.onChange = _this.onChange.bind(_this);
@@ -40303,7 +40307,7 @@ var NotationEditPanel = (function (_super) {
         var x = [];
         x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
             ? 'Create a Notation'
-            : 'Edit Notation: ' + this.props.notation.notationName));
+            : 'Edit Notation: ' + this.state.ntProps.notationID));
         x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
             React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
         x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
@@ -40326,7 +40330,7 @@ var NotationEditPanel = (function (_super) {
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Notation ID:"));
-            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.notation.notationID));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.state.ntProps.notationID));
         }
         return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "notationID", validationState: this.state.val },
             label,
@@ -40479,6 +40483,7 @@ var React = __webpack_require__(/*! react */ "react");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
 var ProvenanceTablePanel_tsx_1 = __webpack_require__(/*! @src/components/provenance/ProvenanceTablePanel.tsx */ "./src/components/provenance/ProvenanceTablePanel.tsx");
 var ProvenanceEditPanel_tsx_1 = __webpack_require__(/*! @src/components/provenance/ProvenanceEditPanel.tsx */ "./src/components/provenance/ProvenanceEditPanel.tsx");
+var StateUtilities_ts_1 = __webpack_require__(/*! @src/components/StateUtilities.ts */ "./src/components/StateUtilities.ts");
 var ProxyFactory_ts_1 = __webpack_require__(/*! @src/proxies/ProxyFactory.ts */ "./src/proxies/ProxyFactory.ts");
 var Panel;
 (function (Panel) {
@@ -40492,13 +40497,15 @@ var ProvenanceApp = (function (_super) {
         var _this = _super.call(this, p) || this;
         _this.state = {
             panel: Panel.TABLE,
-            provenances: _this.props.provenances
+            provenances: _this.props.provenances,
+            editOpts: {}
         };
         _this.openEdit = _this.openEdit.bind(_this);
+        _this.renderEditPanel = _this.renderEditPanel.bind(_this);
         _this.saveProvenance = _this.saveProvenance.bind(_this);
         _this.confirmDelete = _this.confirmDelete.bind(_this);
-        _this.setPanel = _this.setPanel.bind(_this);
-        _this.setLoader = _this.setLoader.bind(_this);
+        _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
+        _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         return _this;
     }
     ProvenanceApp.prototype.render = function () {
@@ -40510,12 +40517,31 @@ var ProvenanceApp = (function (_super) {
                         _this.props.reloadProvenances();
                     } }));
             case Panel.EDIT:
-                return (React.createElement(ProvenanceEditPanel_tsx_1.default, { provenance: this.state.provenance, onBack: function () { return _this.setPanel(Panel.TABLE); }, onSubmit: this.saveProvenance }));
+                return this.renderEditPanel();
             case Panel.LOADER:
                 return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
             default:
                 return null;
         }
+    };
+    ProvenanceApp.prototype.renderEditPanel = function () {
+        var _this = this;
+        var edo = this.state.editOpts;
+        var pvProps;
+        if (edo.pvProps) {
+            pvProps = edo.pvProps;
+        }
+        else if (this.state.provenance) {
+            pvProps = this.state.provenance.toProperties();
+            pvProps.provenanceName = pvProps.provenanceName || '';
+        }
+        else {
+            pvProps = null;
+        }
+        return (React.createElement(ProvenanceEditPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE, function (s) {
+                s.editOpts = {};
+                return s;
+            }); }, onSubmit: this.saveProvenance, pvProps: pvProps, isNew: edo.isNew, val: edo.val }));
     };
     ProvenanceApp.prototype.confirmDelete = function (provenance) {
         var _this = this;
@@ -40524,14 +40550,14 @@ var ProvenanceApp = (function (_super) {
             this.setLoader('Deleting ' + provenance.provenanceID + '...');
             ProxyFactory_ts_1.default.getSectionProxy().deleteProvenance(provenance.provenanceID, function (success, e) {
                 if (e) {
-                    alert(e);
+                    alert('Error deleting provenance: ' + e);
+                    _this.setPanel(Panel.TABLE);
                 }
                 else if (success) {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         var i = s.provenances.findIndex(function (c) { return provenance.provenanceID === c.provenanceID; });
                         s.provenances[i].destroy();
                         s.provenances.splice(i, 1);
-                        _this.setPanel(Panel.TABLE, null, s);
                         return s;
                     });
                 }
@@ -40543,25 +40569,34 @@ var ProvenanceApp = (function (_super) {
         }
     };
     ProvenanceApp.prototype.openEdit = function (provenance) {
-        var _this = this;
-        this.setState(function (s) {
+        this.setPanel(Panel.EDIT, function (s) {
             s.provenance = provenance;
-            _this.setPanel(Panel.EDIT, null, s);
             return s;
         });
     };
     ProvenanceApp.prototype.saveProvenance = function (pvProps, isNew) {
         var _this = this;
         this.setLoader('Saving Provenance ' + pvProps.provenanceID + '...');
+        var onError = function (e) {
+            alert('Error saving provenance: ' + e);
+            _this.setPanel(Panel.EDIT, function (s) {
+                s.editOpts = {
+                    isNew: isNew,
+                    pvProps: pvProps,
+                    val: (e.toLowerCase().indexOf(pvProps.provenanceID.toLowerCase()) === -1
+                        ? null : 'error')
+                };
+                return s;
+            });
+        };
         if (isNew) {
             ProxyFactory_ts_1.default.getSectionProxy().createProvenance(pvProps, function (provenance, e) {
                 if (e) {
-                    alert('Error creating new Provenance: ' + e);
+                    onError(e);
                 }
                 else {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         s.provenances.push(provenance);
-                        _this.setPanel(Panel.TABLE, null, s);
                         return s;
                     });
                 }
@@ -40570,47 +40605,16 @@ var ProvenanceApp = (function (_super) {
         else {
             ProxyFactory_ts_1.default.getSectionProxy().updateProvenance(pvProps, function (provenance, e) {
                 if (e) {
-                    alert('Error updating Provenance: ' + e);
+                    onError(e);
                 }
                 else {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         var i = s.provenances.findIndex(function (c) { return provenance.provenanceID === c.provenanceID; });
                         s.provenances[i].destroy();
                         s.provenances[i] = provenance;
-                        _this.setPanel(Panel.TABLE, null, s);
                         return s;
                     });
                 }
-            });
-        }
-    };
-    ProvenanceApp.prototype.setPanel = function (p, callback, s) {
-        if (s) {
-            s.panel = p;
-        }
-        else {
-            this.setState(function (s) {
-                s.panel = p;
-                if (callback)
-                    return callback(s);
-                else
-                    return s;
-            });
-        }
-    };
-    ProvenanceApp.prototype.setLoader = function (msg, callback, s) {
-        var _this = this;
-        if (s) {
-            this.setPanel(Panel.LOADER);
-            s.loadMessage = msg;
-        }
-        else {
-            this.setState(function (s) {
-                _this.setPanel(Panel.LOADER, null, s);
-                s.loadMessage = msg;
-                if (callback)
-                    return callback(s);
-                return s;
             });
         }
     };
@@ -40649,22 +40653,21 @@ var ProvenanceEditPanel = (function (_super) {
     __extends(ProvenanceEditPanel, _super);
     function ProvenanceEditPanel(p) {
         var _this = _super.call(this, p) || this;
-        var isNew = !Boolean(p.provenance);
-        var pvProps;
-        if (isNew) {
-            pvProps = {
-                provenanceID: '',
-                provenanceName: ''
-            };
+        var isNew;
+        if (typeof p.isNew === 'boolean') {
+            isNew = p.isNew;
         }
         else {
-            pvProps = p.provenance.toProperties();
-            pvProps.provenanceName = pvProps.provenanceName || '';
+            isNew = !Boolean(p.pvProps);
         }
+        var pvProps = p.pvProps || {
+            provenanceID: '',
+            provenanceName: ''
+        };
         _this.state = {
             isNew: isNew,
             pvProps: pvProps,
-            val: null
+            val: p.val || null
         };
         _this.getProvenanceIDFormGroup = _this.getProvenanceIDFormGroup.bind(_this);
         _this.onChange = _this.onChange.bind(_this);
@@ -40675,7 +40678,7 @@ var ProvenanceEditPanel = (function (_super) {
         var x = [];
         x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
             ? 'Create a Provenance'
-            : 'Edit Provenance: ' + this.props.provenance.provenanceName));
+            : 'Edit Provenance: ' + this.state.pvProps.provenanceID));
         x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
             React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
         x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
@@ -40698,7 +40701,7 @@ var ProvenanceEditPanel = (function (_super) {
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Provenance ID:"));
-            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.provenance.provenanceID));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.state.pvProps.provenanceID));
         }
         return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "provenanceID", validationState: this.state.val },
             label,
