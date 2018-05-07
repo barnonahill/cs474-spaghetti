@@ -1,19 +1,18 @@
 package spg.controllers;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-
+import java.util.List;
 
 import spg.models.Country;
 import spg.models.Library;
 
 /**
- * LibraryController - Static methods used for handling Library and Country sql commands.
+ * Library Controllers handle all actions related to Library and Country Entities in the DB.
  * @author Paul Barnhill, Carl Clermont
- *
+ * @version 2018-05-07
  */
 public class LibraryController extends SpgController {
 	private final static String LIBRARY = "Library"; 
@@ -27,10 +26,10 @@ public class LibraryController extends SpgController {
 
 	/**
 	 * getCountries - gets an array list of all the counties.
-	 * @return - Arraylist of Country objects.
+	 * @return - List of Country objects.
 	 * @throws Exception - any exception. 
 	 */
-	public ArrayList<Country> getCountries() throws Exception {
+	public List<Country> getCountries() throws Exception {
 		String query = super.buildSelectQuery("Country", null);
 		ResultSet resultSet;
 		resultSet = super.getResultSet(query);
@@ -180,10 +179,10 @@ public class LibraryController extends SpgController {
 	
 	/**
 	 * getLibraries - gets an array list of all the Libraries. 
-	 * @return - Arraylist of Library objects.
+	 * @return - List of Library objects.
 	 * @throws Exception - any exception. 
 	 */
-	public ArrayList<Library> getLibraries(String countryID) throws Exception{
+	public List<Library> getLibraries(String countryID) throws Exception{
 		HashMap<String,String> namesToValues = new HashMap<String, String>();
 		String query;
 		ResultSet resultSet;

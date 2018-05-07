@@ -9,7 +9,7 @@ import org.json.JSONObject;
  * Model for a Library.
  * 
  * @author Paul Barnhill, Kyle Tran, Carl Clermont
- * @version 2018-04-18
+ * @version 2018-05-07
  */
 public class Library {
 	private final String libSiglum;
@@ -70,7 +70,7 @@ public class Library {
 	}
 	
 	/**
-	 * Returns a JSONObject representation of this Country
+	 * Returns a JSONObject representation of this Library.
 	 */
 	public JSONObject toJSON() {
 		JSONObject j = new JSONObject();
@@ -85,7 +85,7 @@ public class Library {
 	}
 	
 	/**
-	 * Returns a JSONObject String representation of this Country.
+	 * Returns a JSONObject String representation of this Library.
 	 */
 	public String toString() {
 		return this.toJSON().toString();
