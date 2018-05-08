@@ -205,7 +205,7 @@ export default class SectionApp extends React.Component<P,S> {
 
 		else {
 			// Normal load
-			this.loadSupports((s:S) => {
+			this.loadSupports(s => {
 				this.setPanel(Panel.INIT, null, s);
 				return s;
 			});
@@ -317,8 +317,6 @@ export default class SectionApp extends React.Component<P,S> {
 	 * Gets the edit screen to create a new Section or edit an existing one.
 	 */
 	renderEdit() {
-		var isNew = Boolean();
-
 		return (<EditPanel
 			loadLibraries={this.loadLibraries}
 			loadManuscripts={this.loadManuscripts}
@@ -338,7 +336,10 @@ export default class SectionApp extends React.Component<P,S> {
 	 */
 	renderEntity() {
 		return (<EntityPanel
-		 	onBack={() => this.setPanel(Panel.TABLE)}
+		 	onBack={() => this.setPanel(Panel.TABLE, s => {
+				this.destroyTemps(null, s);
+				return s;
+			})}
 			entities = {{
 				country: this.state.temps.country || this.state.primaries.country,
 				library: this.state.temps.library || this.state.primaries.library,
@@ -580,7 +581,7 @@ export default class SectionApp extends React.Component<P,S> {
 	loadSupports(callback: (s:S) => S): void
 	{
 		var stateSetter = (centuries:Century[], cursuses: Cursus[], srcComps: SourceCompleteness[],
-			provs: Provenance[], notations: Notation[], msTypes: MsType[]) =>
+			provs: Provenance[], notations: Notation[], msTypes: MsType[], callback: (s:S) => S) =>
 		{
 			this.setState((s:S) => {
 				Century.destroyArray(s.supports.centuries);
@@ -597,7 +598,7 @@ export default class SectionApp extends React.Component<P,S> {
 				s.supports.notations = notations;
 				s.supports.msTypes = msTypes;
 
-				callback(s);
+				return callback(s);
 			});
 		}
 
@@ -613,12 +614,13 @@ export default class SectionApp extends React.Component<P,S> {
 						{
 							if (this.props.sideloads && this.props.sideloads.msTypes) {
 								return stateSetter(centuries, cursuses, srcComps, provs, notations,
-									this.props.sideloads.msTypes);
+									this.props.sideloads.msTypes, callback);
 							}
 
 							this.loadMsTypes((msTypes:MsType[]) =>
 							{
-									stateSetter(centuries, cursuses, srcComps, provs, notations, msTypes);
+									return stateSetter(centuries, cursuses, srcComps, provs, notations, msTypes,
+										callback);
 							});
 						});
 					});
@@ -789,13 +791,13 @@ export default class SectionApp extends React.Component<P,S> {
 					this.setState((s:S) => {
 						s.primaries.section = stn;
 
-						s.temps = {};
+						// Don't destroy the country!
 						s.temps.country = country;
 						// These two will be destroyed upon exit
 						s.temps.library = library;
 						s.temps.manuscript = manuscript;
 
-						callback(s);
+						return callback(s);
 					});
 				});
 			});
@@ -803,14 +805,14 @@ export default class SectionApp extends React.Component<P,S> {
 		else {
 			this.setState((s:S) => {
 				s.primaries.section = stn;
-				callback(s);
+				return callback(s);
 			});
 		}
 	}
 
-	destroyTemps() {
+	destroyTemps(callback?: (s:S) => S, s?: S) {
 		if (this.state.temps) {
-			this.setState(s => {
+			if (s) {
 				if (s.temps.library) {
 					s.temps.library.destroy();
 					s.temps.library = null;
@@ -822,8 +824,24 @@ export default class SectionApp extends React.Component<P,S> {
 				}
 
 				s.temps.country = null;
-				return s;
-			});
+			}
+			else {
+				this.setState(s => {
+					if (s.temps.library) {
+						s.temps.library.destroy();
+						s.temps.library = null;
+					}
+
+					if (s.temps.manuscript) {
+						s.temps.manuscript.destroy();
+						s.temps.manuscript = null;
+					}
+
+					s.temps.country = null;
+					if (callback) return callback(s);
+					return s;
+				});
+			}
 		}
 	}
 
@@ -836,7 +854,7 @@ export default class SectionApp extends React.Component<P,S> {
 
 	openEdit(stn?:sn.Section) {
 		this.loadTemps(stn, s => {
-			s.panel = Panel.EDIT;
+			this.setPanel(Panel.EDIT, null, s);
 			return s;
 		});
 	}
@@ -911,12 +929,12 @@ export default class SectionApp extends React.Component<P,S> {
 
 					s.primaries.sections[i].destroy();
 					s.primaries.sections[i] = stn;
-					s.panel = Panel.TABLE;
+
+					this.setPanel(Panel.TABLE, null, s);
+					this.destroyTemps(null, s);
 					return s;
 				});
 			});
 		}
-
-		this.destroyTemps();
 	}
 }

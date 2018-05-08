@@ -112,44 +112,6 @@ public class LibraryController extends SpgController {
 		return l;
 	}
 	
-	
-	/**
-	 * is used ONLY for testing if a library already exists!!!!!!!!!!!!!!!!!!
-	 * @param libSiglum
-	 * @return
-	 * @throws Exception
-	 */
-	public Library getLibraryOrNull(String libSiglum){
-		HashMap<String, String> pkNamesToValues = new HashMap<String, String>();
-		Library l = null;
-		ResultSet resultSet;
-		String query;
-		String countryID;
-		
-		try {
-			int i = libSiglum.indexOf('-');
-			countryID = libSiglum.substring(0, i);
-		}
-		catch (NullPointerException | IndexOutOfBoundsException e) {
-			return null;
-		}
-		
-		pkNamesToValues.put("countryID", countryID);
-		pkNamesToValues.put("libSiglum", libSiglum);
-		query = super.buildSelectQuery(LIBRARY, pkNamesToValues);
-		try {
-			resultSet = super.getResultSet(query);
-			
-			resultSet.next();
-			l = new Library(resultSet);
-		} catch (Exception e) {
-			//Catch and do nothing.
-			//Because this is meant to return null if there is no library with the libSiglum
-		}
-		
-		return l;
-	}
-	
 	public Library getLibrary(String libSiglum) throws Exception {
 		HashMap<String, String> pkNamesToValues = new HashMap<String, String>();
 		Library l = null;

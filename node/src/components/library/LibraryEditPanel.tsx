@@ -7,64 +7,66 @@ import {
 	Form,
 	FormControl,
 	FormGroup,
+	HelpBlock
 } from 'react-bootstrap';
 
+import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
 
 import { Country } from '@src/models/country.ts';
 import * as lib from '@src/models/library.ts';
 
+export interface Val {
+	libSiglum: null | 'error'
+	library: null | 'error'
+	city: null | 'error'
+	[x: string]: any
+}
+
 interface P {
-	library?: lib.Library
 	country: Country
 	onSubmit: (props:lib.Properties, isNew:boolean) => void
 	onBack: () => void
+
+	lProps?: lib.Properties
+	isNew?: boolean
+	val?: Val
 }
 interface S {
 	isNew: boolean
-	props: lib.Properties
-	valStates: {
-		libSiglum: any
-		library: any
-		city: any
-	}
+	lProps: lib.Properties
+	val: Val
 }
 
 export default class LibraryEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
 
-		var state: S;
 		var isNew: boolean;
-		var props: lib.Properties;
-
-		if (p.library) {
-			isNew = false;
-			props = p.library.toProperties();
-			props.address1 = props.address1 || '';
-			props.address2 = props.address2 || '';
-			props.postCode = props.postCode || '';
+		if (typeof p.isNew === 'boolean') {
+			isNew = p.isNew;
 		}
 		else {
-			isNew = true;
-			props = {
-				libSiglum: '',
-				countryID: p.country.countryID,
-				city: '',
-				library: '',
-				address1: '',
-				address2: '',
-				postCode: ''
-			};
+			isNew = !Boolean(p.lProps);
 		}
+
+		var lProps = p.lProps || {
+			countryID: p.country.countryID,
+			libSiglum: '',
+			library: '',
+			city: '',
+			address1: '',
+			address2: '',
+			postCode: ''
+		};
 
 		this.state = {
 			isNew: isNew,
-			props: props,
-			valStates: {
+			lProps: lProps,
+			val: p.val || {
 				libSiglum: null,
 				library: null,
-				city: null,
+				city: null
 			}
 		};
 
@@ -77,40 +79,44 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 		const k = target.id;
 		const v = target.value;
 		this.setState((s:S) => {
-			s.props[k] = v;
+			s.lProps[k] = v;
 			return s;
 		});
 	}
 
 	onSubmit(e:React.FormEvent<Form>) {
 		e.preventDefault();
-		const props: lib.Properties = this.state.props;
-
-		var valStates:any = {
-			libSiglum: props.libSiglum ? null : 'error',
-			library: props.library ? null : 'error',
-			city: props.city ? null : 'error'
+		const lProps: lib.Properties = this.state.lProps;
+		var val: Val = {
+			libSiglum: lProps.libSiglum ? null : 'error',
+			library: lProps.library ? null : 'error',
+			city: lProps.city ? null : 'error'
 		}
 		this.setState((s:S) => {
 			// Render validation states
-			s.valStates = valStates;
+			s.val = val;
 			return s;
 		});
-		for (let k in valStates) {
-			if (valStates[k] === 'error') {
+		for (let k in val) {
+			if (val[k] === 'error') {
 				return;
 			}
 		}
 
 		const isNew: boolean = this.state.isNew;
-		if (isNew && props.libSiglum.indexOf(props.countryID + '-') !== 0) {
-			props.libSiglum = props.countryID + '-' + props.libSiglum;
+		if (isNew && lProps.libSiglum.indexOf(lProps.countryID + '-') !== 0) {
+			lProps.libSiglum = lProps.countryID + '-' + lProps.libSiglum;
 		}
-		this.props.onSubmit(props, isNew);
+		this.props.onSubmit(lProps, isNew);
 	}
 
 	render() {
+		var h = this.props.country.country + ': ' + (this.state.isNew
+			? 'Create a Library'
+			: 'Edit Library ' + this.state.lProps.library);
+
 		return [
+			<Header min key="header">{h}</Header>,
 			(<PanelMenu key="panel">
 				<Button
 					onClick = {() => this.props.onBack()}
@@ -118,7 +124,7 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 			</PanelMenu>),
 
 			(<Form horizontal onSubmit={this.onSubmit} key="form">
-				<FormGroup controlId="libSiglum" validationState={this.state.valStates.libSiglum}>
+				<FormGroup controlId="libSiglum" validationState={this.state.val.libSiglum}>
 					{this.state.isNew
 						? [(<Col sm={3} key="label"
 								componentClass={ControlLabel}
@@ -129,19 +135,23 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 									<InputGroup.Addon>{this.props.country.countryID}-</InputGroup.Addon>
 									<FormControl
 										type="text"
-										value={this.state.props.libSiglum}
+										value={this.state.lProps.libSiglum}
 										onChange={this.onInputChange}
 										className="dib"
 									/>
 								</InputGroup>
-							</Col>)]
+							</Col>),
+							(<HelpBlock key="hb">
+								{this.props.country.countryID.length + 1 +
+									this.state.lProps.libSiglum.length + ' / 10'}
+							</HelpBlock>)]
 
 						: [(<Col
 								key="label"
 								sm={3}
 								componentClass={ControlLabel}
 							>Library Siglum:</Col>),
-							<Col key="value" sm={4} className="pt7 pl27">{this.state.props.libSiglum}</Col>]
+							<Col key="value" sm={4} className="pt7 pl27">{this.state.lProps.libSiglum}</Col>]
 					}
 				</FormGroup>
 
@@ -152,30 +162,32 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 
 				<FormGroup
 					controlId="library"
-					validationState={this.state.valStates.library}
+					validationState={this.state.val.library}
 				>
 					<Col sm={3} componentClass={ControlLabel} className="required">Library Name:</Col>
 					<Col sm={4}>
 						<FormControl
 							type="text"
-							value={this.state.props.library}
+							value={this.state.lProps.library}
 							onChange={this.onInputChange}
 						/>
 					</Col>
+					<HelpBlock>{this.state.lProps.library.length + ' / 255'}</HelpBlock>
 				</FormGroup>
 
 				<FormGroup
 					controlId="city"
-					validationState={this.state.valStates.city}
+					validationState={this.state.val.city}
 				>
 					<Col sm={3} componentClass={ControlLabel} className="required">City:</Col>
 					<Col sm={4}>
 						<FormControl
 							type="text"
-							value={this.state.props.city}
+							value={this.state.lProps.city}
 							onChange={this.onInputChange}
 						/>
 					</Col>
+					<HelpBlock>{this.state.lProps.city.length + ' / 255'}</HelpBlock>
 				</FormGroup>
 
 				<FormGroup controlId="address1">
@@ -183,10 +195,11 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 					<Col sm={4}>
 						<FormControl
 							type="text"
-							value={this.state.props.address1}
+							value={this.state.lProps.address1}
 							onChange={this.onInputChange}
 						/>
 					</Col>
+					<HelpBlock>{this.state.lProps.address1.length + ' / 255'}</HelpBlock>
 				</FormGroup>
 
 				<FormGroup controlId="address2">
@@ -194,10 +207,11 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 					<Col sm={4}>
 						<FormControl
 							type="text"
-							value={this.state.props.address2}
+							value={this.state.lProps.address2}
 							onChange={this.onInputChange}
 						/>
 					</Col>
+					<HelpBlock>{this.state.lProps.address2.length + ' / 255'}</HelpBlock>
 				</FormGroup>
 
 				<FormGroup controlId="postCode">
@@ -205,10 +219,11 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 					<Col sm={4}>
 						<FormControl
 							type="text"
-							value={this.state.props.postCode}
+							value={this.state.lProps.postCode}
 							onChange={this.onInputChange}
 						/>
 					</Col>
+					<HelpBlock>{this.state.lProps.postCode.length + ' / 12'}</HelpBlock>
 				</FormGroup>
 
 				<FormGroup controlId="submit">

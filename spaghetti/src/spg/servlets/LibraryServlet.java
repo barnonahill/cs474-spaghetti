@@ -135,11 +135,6 @@ public class LibraryServlet extends SpgHttpServlet {
 	 */
 	public String createLibrary(String libSiglum, String countryID, String city, String library, String address1,
 			String address2, String postCode) throws Exception {
-		// Check if it already exists:
-		if (libraryController.getLibraryOrNull(libSiglum) != null) {
-			throw new Exception("Library with same libSiglum already exists.");
-		}
-
 		Library lib = libraryController.createLibrary(libSiglum, countryID, city, library, address1, address2,
 				postCode);
 		return lib.toString();

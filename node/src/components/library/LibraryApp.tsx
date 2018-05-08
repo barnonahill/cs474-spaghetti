@@ -14,12 +14,11 @@ import {
 	Option
 } from 'react-select';
 
-import Header from '@src/components/common/Header.tsx';
 import PageLoader from '@src/components/common/PageLoader.tsx';
 
 import CountryPanel from '@src/components/library/LibraryCountryPanel.tsx';
 import EntityPanel from '@src/components/library/LibraryEntityPanel.tsx';
-import EditPanel from '@src/components/library/LibraryEditPanel.tsx';
+import { default as EditPanel, Val } from '@src/components/library/LibraryEditPanel.tsx';
 import {
 	default as TablePanel,
 	ButtonType as TButtonType
@@ -50,7 +49,14 @@ interface S {
 	country?: Country
 	library?: lib.Library
 	libraries: Array<lib.Library>
-	loadingMessage: string
+	loadMessage?: string
+
+	editOpts: {
+		lProps?: lib.Properties
+		isNew?: boolean
+		val?: Val
+	}
+
 	[x: string]: any
 }
 
@@ -68,42 +74,37 @@ export default class LibraryApp extends React.Component<P, S> {
 			country: null,
 			library: null,
 			libraries: null,
-			loadingMessage: 'Loading Libraries...'
+			loadMessage: 'Loading Libraries...',
+			editOpts: {}
 		};
 
+		// Event Listeners
 		this.onCountrySelect = this.onCountrySelect.bind(this);
 		this.onTableClick = this.onTableClick.bind(this);
-		this.onEditSubmit = this.onEditSubmit.bind(this);
-		this.reloadLibraries = this.reloadLibraries.bind(this);
+		this.saveLibrary = this.saveLibrary.bind(this);
+		this.loadLibraries = this.loadLibraries.bind(this);
 
 		// State utility helpers
 		this.setPanel = StateUtils.setPanel.bind(this);
 		this.setLoader = StateUtils.setLoader.bind(this, Panel.LOADER);
+
+		// Render helpers
+		this.renderEditPanel = this.renderEditPanel.bind(this);
 	}
 
-	onCountrySelect(c: Country) {
-		this.setState((s:S) => {
-			s.panel = Panel.LOADER;
-			s.loadingMessage = 'Loading ' + c.country + ' Libraries...';
-			return s;
-		});
+	onCountrySelect(country: Country) {
+		this.setLoader('Loading ' + country.country + ' Libraries...');
 
-		proxyFactory.getLibraryProxy().getLibraries(c.countryID, (libs:Array<lib.Library>, e?:string) => {
-			if (e) {
-				alert(e);
-			}
-			else {
-				this.setState((s:S) => {
-					s.library = null;
-					lib.Library.destroyArray(s.libraries);
+		this.loadLibraries(country, libraries => {
+			this.setPanel(Panel.TABLE, s => {
+				lib.Library.destroyArray(s.libraries);
+				s.library = null;
 
-					s.panel = Panel.TABLE;
-					s.country = c;
-					s.libraries = libs;
-					return s;
-				});
-			}
-		});
+				s.country = country;
+				s.libraries = libraries;
+				return s;
+			});
+		})
 	}
 
 	onTableClick(l:lib.Library, t:TButtonType) {
@@ -130,28 +131,51 @@ export default class LibraryApp extends React.Component<P, S> {
 		}
 	}
 
-	onEditSubmit(p:lib.Properties, isNew:boolean) {
+	saveLibrary(lProps:lib.Properties, isNew:boolean) {
+		this.setLoader('Saving Library ' + lProps.library + '...');
+		var onError = (e:string) => {
+			alert('Error saving Library: ' + e);
+			this.setPanel(Panel.EDIT, s => {
+				e = e.toLowerCase();
+				s.editOpts = {
+					lProps: lProps,
+					isNew: isNew,
+					val: {
+						libSiglum: e.indexOf(lProps.libSiglum.toLowerCase()) === -1 ? null : 'error',
+						library: e.indexOf(lProps.library.toLowerCase()) === -1 ? null : 'error',
+						city: e.indexOf(lProps.city.toLowerCase()) === -1 ? null : 'error'
+					}
+				};
+
+				var i = lProps.libSiglum.indexOf('-');
+				if (i >= 0 && i < lProps.libSiglum.length - 2) {
+					lProps.libSiglum = lProps.libSiglum.slice(i + 1);
+				}
+				return s;
+			});
+		};
+
+		const proxy = proxyFactory.getLibraryProxy();
 		if (isNew) {
-			proxyFactory.getLibraryProxy().createLibrary(p, (l:lib.Library, e?:string) => {
+			proxy.createLibrary(lProps, (library, e?) => {
 				if (e) {
-					alert(e);
+					onError(e);
 				}
 				else {
-					this.setState((s:S) => {
-						s.libraries.push(l);
-						s.panel = Panel.TABLE;
+					this.setPanel(Panel.TABLE, s => {
+						s.libraries.push(library);
 						return s;
 					});
 				}
 			});
 		}
 		else {
-			proxyFactory.getLibraryProxy().updateLibrary(p, (library:lib.Library, e?:string) => {
+			proxy.updateLibrary(lProps, (library, e?) => {
 				if (e) {
-					alert(e);
+					onError(e);
 				}
 				else {
-					this.setState((s:S) => {
+					this.setPanel(Panel.TABLE, s => {
 						var i = s.libraries.findIndex((l:lib.Library) => l.libSiglum === library.libSiglum);
 						s.libraries[i].destroy();
 
@@ -161,8 +185,6 @@ export default class LibraryApp extends React.Component<P, S> {
 						else {
 							s.libraries.splice(i, 1);
 						}
-
-						s.panel = Panel.TABLE;
 						return s;
 					});
 				}
@@ -171,12 +193,13 @@ export default class LibraryApp extends React.Component<P, S> {
 	}
 
 	deleteLibrary(l: lib.Library) {
-		proxyFactory.getLibraryProxy().deleteLibrary(l.libSiglum, (success:boolean, err?:string) => {
-			if (err) {
-				alert(err);
+		proxyFactory.getLibraryProxy().deleteLibrary(l.libSiglum, (success, e?) => {
+			if (e) {
+				alert('Error deleting Library: ' + e);
+				this.setPanel(Panel.TABLE);
 			}
 			else if (success) {
-				this.setState((s:S) => {
+				this.setPanel(Panel.TABLE, s => {
 					var i = s.libraries.findIndex((o: lib.Library) => o.libSiglum === l.libSiglum);
 					s.libraries[i].destroy();
 					s.libraries.splice(i,1);
@@ -185,6 +208,7 @@ export default class LibraryApp extends React.Component<P, S> {
 			}
 			else {
 				alert('Could not delete ' + l.library);
+				this.setPanel(Panel.TABLE);
 			}
 		})
 	}
@@ -193,74 +217,82 @@ export default class LibraryApp extends React.Component<P, S> {
 		switch (this.state.panel) {
 			case Panel.INIT:
 			default:
-				return [
-					<Header key="header" min>Libraries</Header>,
-					(<CountryPanel
-						country={this.state.country || null}
-						countries={this.props.countries}
-						onSubmit={this.onCountrySelect}
-						onBack={this.props.onBack}
-						key="panel"
-					/>)
-				];
+				return (<CountryPanel
+					country={this.state.country || null}
+					countries={this.props.countries}
+					onSubmit={this.onCountrySelect}
+					onBack={this.props.onBack}
+				/>);
+
 			case Panel.TABLE:
 				return (<TablePanel
-						key="panel"
-						country={this.state.country}
-						libraries={this.state.libraries}
-						onClick={this.onTableClick}
-						onRefresh={() => this.onCountrySelect(this.state.country)}
-						onBack={() => this.setPanel(Panel.INIT)}
-					/>);
+					key="panel"
+					country={this.state.country}
+					libraries={this.state.libraries}
+					onClick={this.onTableClick}
+					onRefresh={() => this.loadLibraries(this.state.country, libraries => {
+						this.setPanel(Panel.TABLE, s => {
+							lib.Library.destroyArray(s.libraries);
+							s.library = null;
+							s.libraries = libraries;
+							return s;
+						});
+					})}
+					onBack={() => this.setPanel(Panel.INIT)}
+				/>);
 
 			case Panel.ENTITY:
-			return (<EntityPanel
-				countries={this.props.countries}
-				country={this.state.country}
-				library={this.state.library}
-				onBack={() => this.setPanel(Panel.TABLE,null)}
-			/>);
+				return (<EntityPanel
+					countries={this.props.countries}
+					country={this.state.country}
+					library={this.state.library}
+					onBack={() => this.setPanel(Panel.TABLE)}
+				/>);
 
 			case Panel.EDIT:
-				var header = this.state.country.country + ' - ' +
-				 	(this.state.library ? 'Edit' : 'Create') + ' Library';
+				return this.renderEditPanel();
 
-				return [
-					<Header key="header" min>{header}</Header>,
-					(<EditPanel
-						key="panel"
-						library={this.state.library || null}
-						country={this.state.country}
-						onSubmit={this.onEditSubmit}
-						onBack={() => this.setPanel(Panel.TABLE,null)}
-					/>)
-				];
 			case Panel.LOADER:
-				return <PageLoader inner={this.state.loadingMessage} />
+				return <PageLoader inner={this.state.loadMessage} />
 		}
 	}
 
-	reloadLibraries() {
-		this.setState((s:S) => {
-			s.panel = Panel.LOADER;
-			s.loadingMessage = 'Loading ' + s.country.country + ' Libraries...';
-			return s;
-		});
+	renderEditPanel() {
+		var edo = this.state.editOpts;
+		var lProps: lib.Properties;
+		if (edo.lProps) {
+			lProps = edo.lProps;
+		}
+		else if (this.state.library) {
+			lProps = this.state.library.toProperties();
+			lProps.address1 = lProps.address1 || '';
+			lProps.address2 = lProps.address2 || '';
+			lProps.postCode = lProps.postCode || '';
+		}
+		else {
+			lProps = null;
+		}
 
-		proxyFactory.getLibraryProxy().getLibraries(this.state.country.countryID,
-		(libraries: lib.Library[], e?:string) =>
-		{
+		return (<EditPanel
+			country={this.state.country}
+			onSubmit={this.saveLibrary}
+			onBack={() => this.setPanel(Panel.TABLE,null)}
+			lProps={lProps}
+			isNew={edo.isNew}
+			val={edo.val}
+		/>);
+	}
+
+	loadLibraries(country: Country, callback: (libraries: lib.Library[]) => void) {
+		this.setLoader('Loading ' + country.country + ' Libraries...');
+
+		proxyFactory.getLibraryProxy().getLibraries(country.countryID, (libraries, e?) => {
 			if (e) {
-				alert(e);
+				alert('Error loading Libraries: ' + e);
+				this.setPanel(Panel.INIT);
 			}
 			else {
-				this.setState((s:S) => {
-					lib.Library.destroyArray(s.libraries);
-
-					s.panel = Panel.TABLE;
-					s.libraries = libraries;
-					return s;
-				});
+				callback(libraries);
 			}
 		});
 	}

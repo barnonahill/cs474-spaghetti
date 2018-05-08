@@ -37830,7 +37830,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
-var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PageLoader_tsx_1 = __webpack_require__(/*! @src/components/common/PageLoader.tsx */ "./src/components/common/PageLoader.tsx");
 var LibraryCountryPanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryCountryPanel.tsx */ "./src/components/library/LibraryCountryPanel.tsx");
 var LibraryEntityPanel_tsx_1 = __webpack_require__(/*! @src/components/library/LibraryEntityPanel.tsx */ "./src/components/library/LibraryEntityPanel.tsx");
@@ -37857,37 +37856,29 @@ var LibraryApp = (function (_super) {
             country: null,
             library: null,
             libraries: null,
-            loadingMessage: 'Loading Libraries...'
+            loadMessage: 'Loading Libraries...',
+            editOpts: {}
         };
         _this.onCountrySelect = _this.onCountrySelect.bind(_this);
         _this.onTableClick = _this.onTableClick.bind(_this);
-        _this.onEditSubmit = _this.onEditSubmit.bind(_this);
-        _this.reloadLibraries = _this.reloadLibraries.bind(_this);
+        _this.saveLibrary = _this.saveLibrary.bind(_this);
+        _this.loadLibraries = _this.loadLibraries.bind(_this);
         _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
         _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
+        _this.renderEditPanel = _this.renderEditPanel.bind(_this);
         return _this;
     }
-    LibraryApp.prototype.onCountrySelect = function (c) {
+    LibraryApp.prototype.onCountrySelect = function (country) {
         var _this = this;
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadingMessage = 'Loading ' + c.country + ' Libraries...';
-            return s;
-        });
-        ProxyFactory_ts_1.default.getLibraryProxy().getLibraries(c.countryID, function (libs, e) {
-            if (e) {
-                alert(e);
-            }
-            else {
-                _this.setState(function (s) {
-                    s.library = null;
-                    lib.Library.destroyArray(s.libraries);
-                    s.panel = Panel.TABLE;
-                    s.country = c;
-                    s.libraries = libs;
-                    return s;
-                });
-            }
+        this.setLoader('Loading ' + country.country + ' Libraries...');
+        this.loadLibraries(country, function (libraries) {
+            _this.setPanel(Panel.TABLE, function (s) {
+                lib.Library.destroyArray(s.libraries);
+                s.library = null;
+                s.country = country;
+                s.libraries = libraries;
+                return s;
+            });
         });
     };
     LibraryApp.prototype.onTableClick = function (l, t) {
@@ -37913,29 +37904,50 @@ var LibraryApp = (function (_super) {
                 break;
         }
     };
-    LibraryApp.prototype.onEditSubmit = function (p, isNew) {
+    LibraryApp.prototype.saveLibrary = function (lProps, isNew) {
         var _this = this;
+        this.setLoader('Saving Library ' + lProps.library + '...');
+        var onError = function (e) {
+            alert('Error saving Library: ' + e);
+            _this.setPanel(Panel.EDIT, function (s) {
+                e = e.toLowerCase();
+                s.editOpts = {
+                    lProps: lProps,
+                    isNew: isNew,
+                    val: {
+                        libSiglum: e.indexOf(lProps.libSiglum.toLowerCase()) === -1 ? null : 'error',
+                        library: e.indexOf(lProps.library.toLowerCase()) === -1 ? null : 'error',
+                        city: e.indexOf(lProps.city.toLowerCase()) === -1 ? null : 'error'
+                    }
+                };
+                var i = lProps.libSiglum.indexOf('-');
+                if (i >= 0 && i < lProps.libSiglum.length - 2) {
+                    lProps.libSiglum = lProps.libSiglum.slice(i + 1);
+                }
+                return s;
+            });
+        };
+        var proxy = ProxyFactory_ts_1.default.getLibraryProxy();
         if (isNew) {
-            ProxyFactory_ts_1.default.getLibraryProxy().createLibrary(p, function (l, e) {
+            proxy.createLibrary(lProps, function (library, e) {
                 if (e) {
-                    alert(e);
+                    onError(e);
                 }
                 else {
-                    _this.setState(function (s) {
-                        s.libraries.push(l);
-                        s.panel = Panel.TABLE;
+                    _this.setPanel(Panel.TABLE, function (s) {
+                        s.libraries.push(library);
                         return s;
                     });
                 }
             });
         }
         else {
-            ProxyFactory_ts_1.default.getLibraryProxy().updateLibrary(p, function (library, e) {
+            proxy.updateLibrary(lProps, function (library, e) {
                 if (e) {
-                    alert(e);
+                    onError(e);
                 }
                 else {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         var i = s.libraries.findIndex(function (l) { return l.libSiglum === library.libSiglum; });
                         s.libraries[i].destroy();
                         if (library.countryID === s.country.countryID) {
@@ -37944,7 +37956,6 @@ var LibraryApp = (function (_super) {
                         else {
                             s.libraries.splice(i, 1);
                         }
-                        s.panel = Panel.TABLE;
                         return s;
                     });
                 }
@@ -37953,12 +37964,13 @@ var LibraryApp = (function (_super) {
     };
     LibraryApp.prototype.deleteLibrary = function (l) {
         var _this = this;
-        ProxyFactory_ts_1.default.getLibraryProxy().deleteLibrary(l.libSiglum, function (success, err) {
-            if (err) {
-                alert(err);
+        ProxyFactory_ts_1.default.getLibraryProxy().deleteLibrary(l.libSiglum, function (success, e) {
+            if (e) {
+                alert('Error deleting Library: ' + e);
+                _this.setPanel(Panel.TABLE);
             }
             else if (success) {
-                _this.setState(function (s) {
+                _this.setPanel(Panel.TABLE, function (s) {
                     var i = s.libraries.findIndex(function (o) { return o.libSiglum === l.libSiglum; });
                     s.libraries[i].destroy();
                     s.libraries.splice(i, 1);
@@ -37967,6 +37979,7 @@ var LibraryApp = (function (_super) {
             }
             else {
                 alert('Could not delete ' + l.library);
+                _this.setPanel(Panel.TABLE);
             }
         });
     };
@@ -37975,43 +37988,52 @@ var LibraryApp = (function (_super) {
         switch (this.state.panel) {
             case Panel.INIT:
             default:
-                return [
-                    React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Libraries"),
-                    (React.createElement(LibraryCountryPanel_tsx_1.default, { country: this.state.country || null, countries: this.props.countries, onSubmit: this.onCountrySelect, onBack: this.props.onBack, key: "panel" }))
-                ];
+                return (React.createElement(LibraryCountryPanel_tsx_1.default, { country: this.state.country || null, countries: this.props.countries, onSubmit: this.onCountrySelect, onBack: this.props.onBack }));
             case Panel.TABLE:
-                return (React.createElement(LibraryTablePanel_tsx_1.default, { key: "panel", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick, onRefresh: function () { return _this.onCountrySelect(_this.state.country); }, onBack: function () { return _this.setPanel(Panel.INIT); } }));
+                return (React.createElement(LibraryTablePanel_tsx_1.default, { key: "panel", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick, onRefresh: function () { return _this.loadLibraries(_this.state.country, function (libraries) {
+                        _this.setPanel(Panel.TABLE, function (s) {
+                            lib.Library.destroyArray(s.libraries);
+                            s.library = null;
+                            s.libraries = libraries;
+                            return s;
+                        });
+                    }); }, onBack: function () { return _this.setPanel(Panel.INIT); } }));
             case Panel.ENTITY:
-                return (React.createElement(LibraryEntityPanel_tsx_1.default, { countries: this.props.countries, country: this.state.country, library: this.state.library, onBack: function () { return _this.setPanel(Panel.TABLE, null); } }));
+                return (React.createElement(LibraryEntityPanel_tsx_1.default, { countries: this.props.countries, country: this.state.country, library: this.state.library, onBack: function () { return _this.setPanel(Panel.TABLE); } }));
             case Panel.EDIT:
-                var header = this.state.country.country + ' - ' +
-                    (this.state.library ? 'Edit' : 'Create') + ' Library';
-                return [
-                    React.createElement(Header_tsx_1.default, { key: "header", min: true }, header),
-                    (React.createElement(LibraryEditPanel_tsx_1.default, { key: "panel", library: this.state.library || null, country: this.state.country, onSubmit: this.onEditSubmit, onBack: function () { return _this.setPanel(Panel.TABLE, null); } }))
-                ];
+                return this.renderEditPanel();
             case Panel.LOADER:
-                return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadingMessage });
+                return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
         }
     };
-    LibraryApp.prototype.reloadLibraries = function () {
+    LibraryApp.prototype.renderEditPanel = function () {
         var _this = this;
-        this.setState(function (s) {
-            s.panel = Panel.LOADER;
-            s.loadingMessage = 'Loading ' + s.country.country + ' Libraries...';
-            return s;
-        });
-        ProxyFactory_ts_1.default.getLibraryProxy().getLibraries(this.state.country.countryID, function (libraries, e) {
+        var edo = this.state.editOpts;
+        var lProps;
+        if (edo.lProps) {
+            lProps = edo.lProps;
+        }
+        else if (this.state.library) {
+            lProps = this.state.library.toProperties();
+            lProps.address1 = lProps.address1 || '';
+            lProps.address2 = lProps.address2 || '';
+            lProps.postCode = lProps.postCode || '';
+        }
+        else {
+            lProps = null;
+        }
+        return (React.createElement(LibraryEditPanel_tsx_1.default, { country: this.state.country, onSubmit: this.saveLibrary, onBack: function () { return _this.setPanel(Panel.TABLE, null); }, lProps: lProps, isNew: edo.isNew, val: edo.val }));
+    };
+    LibraryApp.prototype.loadLibraries = function (country, callback) {
+        var _this = this;
+        this.setLoader('Loading ' + country.country + ' Libraries...');
+        ProxyFactory_ts_1.default.getLibraryProxy().getLibraries(country.countryID, function (libraries, e) {
             if (e) {
-                alert(e);
+                alert('Error loading Libraries: ' + e);
+                _this.setPanel(Panel.INIT);
             }
             else {
-                _this.setState(function (s) {
-                    lib.Library.destroyArray(s.libraries);
-                    s.panel = Panel.TABLE;
-                    s.libraries = libraries;
-                    return s;
-                });
+                callback(libraries);
             }
         });
     };
@@ -38045,6 +38067,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
 var react_select_1 = __webpack_require__(/*! react-select */ "./node_modules/react-select/dist/react-select.es.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
 var LibraryCountryPanel = (function (_super) {
     __extends(LibraryCountryPanel, _super);
@@ -38090,6 +38113,7 @@ var LibraryCountryPanel = (function (_super) {
     };
     LibraryCountryPanel.prototype.render = function () {
         return [
+            React.createElement(Header_tsx_1.default, { key: "header", min: true }, "Libraries"),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
                 React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"))),
             (React.createElement(react_bootstrap_1.Alert, { bsStyle: "info", className: "mb20 mr15p ml15p text-center", key: "alert" },
@@ -38133,40 +38157,35 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
 var LibraryEditPanel = (function (_super) {
     __extends(LibraryEditPanel, _super);
     function LibraryEditPanel(p) {
         var _this = _super.call(this, p) || this;
-        var state;
         var isNew;
-        var props;
-        if (p.library) {
-            isNew = false;
-            props = p.library.toProperties();
-            props.address1 = props.address1 || '';
-            props.address2 = props.address2 || '';
-            props.postCode = props.postCode || '';
+        if (typeof p.isNew === 'boolean') {
+            isNew = p.isNew;
         }
         else {
-            isNew = true;
-            props = {
-                libSiglum: '',
-                countryID: p.country.countryID,
-                city: '',
-                library: '',
-                address1: '',
-                address2: '',
-                postCode: ''
-            };
+            isNew = !Boolean(p.lProps);
         }
+        var lProps = p.lProps || {
+            countryID: p.country.countryID,
+            libSiglum: '',
+            library: '',
+            city: '',
+            address1: '',
+            address2: '',
+            postCode: ''
+        };
         _this.state = {
             isNew: isNew,
-            props: props,
-            valStates: {
+            lProps: lProps,
+            val: p.val || {
                 libSiglum: null,
                 library: null,
-                city: null,
+                city: null
             }
         };
         _this.onInputChange = _this.onInputChange.bind(_this);
@@ -38178,72 +38197,83 @@ var LibraryEditPanel = (function (_super) {
         var k = target.id;
         var v = target.value;
         this.setState(function (s) {
-            s.props[k] = v;
+            s.lProps[k] = v;
             return s;
         });
     };
     LibraryEditPanel.prototype.onSubmit = function (e) {
         e.preventDefault();
-        var props = this.state.props;
-        var valStates = {
-            libSiglum: props.libSiglum ? null : 'error',
-            library: props.library ? null : 'error',
-            city: props.city ? null : 'error'
+        var lProps = this.state.lProps;
+        var val = {
+            libSiglum: lProps.libSiglum ? null : 'error',
+            library: lProps.library ? null : 'error',
+            city: lProps.city ? null : 'error'
         };
         this.setState(function (s) {
-            s.valStates = valStates;
+            s.val = val;
             return s;
         });
-        for (var k in valStates) {
-            if (valStates[k] === 'error') {
+        for (var k in val) {
+            if (val[k] === 'error') {
                 return;
             }
         }
         var isNew = this.state.isNew;
-        if (isNew && props.libSiglum.indexOf(props.countryID + '-') !== 0) {
-            props.libSiglum = props.countryID + '-' + props.libSiglum;
+        if (isNew && lProps.libSiglum.indexOf(lProps.countryID + '-') !== 0) {
+            lProps.libSiglum = lProps.countryID + '-' + lProps.libSiglum;
         }
-        this.props.onSubmit(props, isNew);
+        this.props.onSubmit(lProps, isNew);
     };
     LibraryEditPanel.prototype.render = function () {
         var _this = this;
+        var h = this.props.country.country + ': ' + (this.state.isNew
+            ? 'Create a Library'
+            : 'Edit Library ' + this.state.lProps.library);
         return [
+            React.createElement(Header_tsx_1.default, { min: true, key: "header" }, h),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panel" },
                 React.createElement(react_bootstrap_1.Button, { onClick: function () { return _this.props.onBack(); } }, "Back"))),
             (React.createElement(react_bootstrap_1.Form, { horizontal: true, onSubmit: this.onSubmit, key: "form" },
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "libSiglum", validationState: this.state.valStates.libSiglum }, this.state.isNew
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "libSiglum", validationState: this.state.val.libSiglum }, this.state.isNew
                     ? [(React.createElement(react_bootstrap_1.Col, { sm: 3, key: "label", componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Library Siglum:")),
                         (React.createElement(react_bootstrap_1.Col, { sm: 4, key: "value" },
                             React.createElement(react_bootstrap_1.InputGroup, null,
                                 React.createElement(react_bootstrap_1.InputGroup.Addon, null,
                                     this.props.country.countryID,
                                     "-"),
-                                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.libSiglum, onChange: this.onInputChange, className: "dib" }))))]
+                                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.libSiglum, onChange: this.onInputChange, className: "dib" })))),
+                        (React.createElement(react_bootstrap_1.HelpBlock, { key: "hb" }, this.props.country.countryID.length + 1 +
+                            this.state.lProps.libSiglum.length + ' / 10'))]
                     : [(React.createElement(react_bootstrap_1.Col, { key: "label", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:")),
-                        React.createElement(react_bootstrap_1.Col, { key: "value", sm: 4, className: "pt7 pl27" }, this.state.props.libSiglum)]),
+                        React.createElement(react_bootstrap_1.Col, { key: "value", sm: 4, className: "pt7 pl27" }, this.state.lProps.libSiglum)]),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.country.country)),
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "library", validationState: this.state.valStates.library },
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "library", validationState: this.state.val.library },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Library Name:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.library, onChange: this.onInputChange }))),
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "city", validationState: this.state.valStates.city },
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.library, onChange: this.onInputChange })),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.library.length + ' / 255')),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "city", validationState: this.state.val.city },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "City:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.city, onChange: this.onInputChange }))),
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.city, onChange: this.onInputChange })),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.city.length + ' / 255')),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "address1" },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.address1, onChange: this.onInputChange }))),
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.address1, onChange: this.onInputChange })),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.address1.length + ' / 255')),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "address2" },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address 2:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.address2, onChange: this.onInputChange }))),
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.address2, onChange: this.onInputChange })),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.address2.length + ' / 255')),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "postCode" },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Post Code:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.props.postCode, onChange: this.onInputChange }))),
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.postCode, onChange: this.onInputChange })),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.postCode.length + ' / 12')),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
                     React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))))
@@ -38611,7 +38641,7 @@ var ManuscriptApp = (function (_super) {
             if (_this.props.panel === Panel.TABLE) {
                 _this.setLoader('Loading Manuscripts...');
                 _this.loadManuscripts(_this.props.library.libSiglum, function (manuscripts) {
-                    _this.setState(function (s) {
+                    _this.setPanel(Panel.TABLE, function (s) {
                         country_ts_1.Country.destroyArray(s.msTypes);
                         country_ts_1.Country.destroyArray(s.manuscripts);
                         s.msType = null;
@@ -38620,17 +38650,15 @@ var ManuscriptApp = (function (_super) {
                         s.manuscripts = manuscripts;
                         s.country = _this.props.country;
                         s.library = _this.props.library;
-                        _this.setPanel(Panel.TABLE, null, s);
                         return s;
                     });
                 });
             }
             else {
-                _this.setState(function (s) {
+                _this.setPanel(Panel.INIT, function (s) {
                     country_ts_1.Country.destroyArray(s.msTypes);
                     s.msType = null;
                     s.msTypes = msTypes;
-                    _this.setPanel(Panel.INIT, null, s);
                     return s;
                 });
             }
@@ -41040,7 +41068,6 @@ var SectionApp = (function (_super) {
     };
     SectionApp.prototype.renderEdit = function () {
         var _this = this;
-        var isNew = Boolean();
         return (React.createElement(SectionEditPanel_tsx_1.default, { loadLibraries: this.loadLibraries, loadManuscripts: this.loadManuscripts, primaries: this.getEditPrimaries(), supports: this.state.supports, temps: this.state.temps, onBack: function () {
                 _this.destroyTemps();
                 _this.setPanel(Panel.TABLE);
@@ -41048,7 +41075,10 @@ var SectionApp = (function (_super) {
     };
     SectionApp.prototype.renderEntity = function () {
         var _this = this;
-        return (React.createElement(SectionEntityPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE); }, entities: {
+        return (React.createElement(SectionEntityPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE, function (s) {
+                _this.destroyTemps(null, s);
+                return s;
+            }); }, entities: {
                 country: this.state.temps.country || this.state.primaries.country,
                 library: this.state.temps.library || this.state.primaries.library,
                 manuscript: this.state.temps.manuscript || this.state.primaries.manuscript,
@@ -41208,7 +41238,7 @@ var SectionApp = (function (_super) {
     };
     SectionApp.prototype.loadSupports = function (callback) {
         var _this = this;
-        var stateSetter = function (centuries, cursuses, srcComps, provs, notations, msTypes) {
+        var stateSetter = function (centuries, cursuses, srcComps, provs, notations, msTypes, callback) {
             _this.setState(function (s) {
                 century_ts_1.Century.destroyArray(s.supports.centuries);
                 cursus_ts_1.Cursus.destroyArray(s.supports.cursuses);
@@ -41222,7 +41252,7 @@ var SectionApp = (function (_super) {
                 s.supports.provs = provs;
                 s.supports.notations = notations;
                 s.supports.msTypes = msTypes;
-                callback(s);
+                return callback(s);
             });
         };
         this.loadCenturies(function (centuries) {
@@ -41231,10 +41261,10 @@ var SectionApp = (function (_super) {
                     _this.loadProvenances(function (provs) {
                         _this.loadNotations(function (notations) {
                             if (_this.props.sideloads && _this.props.sideloads.msTypes) {
-                                return stateSetter(centuries, cursuses, srcComps, provs, notations, _this.props.sideloads.msTypes);
+                                return stateSetter(centuries, cursuses, srcComps, provs, notations, _this.props.sideloads.msTypes, callback);
                             }
                             _this.loadMsTypes(function (msTypes) {
-                                stateSetter(centuries, cursuses, srcComps, provs, notations, msTypes);
+                                return stateSetter(centuries, cursuses, srcComps, provs, notations, msTypes, callback);
                             });
                         });
                     });
@@ -41363,11 +41393,10 @@ var SectionApp = (function (_super) {
                 _this.loadManuscript(stn.libSiglum, stn.msSiglum, function (manuscript) {
                     _this.setState(function (s) {
                         s.primaries.section = stn;
-                        s.temps = {};
                         s.temps.country = country;
                         s.temps.library = library;
                         s.temps.manuscript = manuscript;
-                        callback(s);
+                        return callback(s);
                     });
                 });
             });
@@ -41375,13 +41404,13 @@ var SectionApp = (function (_super) {
         else {
             this.setState(function (s) {
                 s.primaries.section = stn;
-                callback(s);
+                return callback(s);
             });
         }
     };
-    SectionApp.prototype.destroyTemps = function () {
+    SectionApp.prototype.destroyTemps = function (callback, s) {
         if (this.state.temps) {
-            this.setState(function (s) {
+            if (s) {
                 if (s.temps.library) {
                     s.temps.library.destroy();
                     s.temps.library = null;
@@ -41391,8 +41420,23 @@ var SectionApp = (function (_super) {
                     s.temps.manuscript = null;
                 }
                 s.temps.country = null;
-                return s;
-            });
+            }
+            else {
+                this.setState(function (s) {
+                    if (s.temps.library) {
+                        s.temps.library.destroy();
+                        s.temps.library = null;
+                    }
+                    if (s.temps.manuscript) {
+                        s.temps.manuscript.destroy();
+                        s.temps.manuscript = null;
+                    }
+                    s.temps.country = null;
+                    if (callback)
+                        return callback(s);
+                    return s;
+                });
+            }
         }
     };
     SectionApp.prototype.openEntity = function (stn) {
@@ -41403,8 +41447,9 @@ var SectionApp = (function (_super) {
         });
     };
     SectionApp.prototype.openEdit = function (stn) {
+        var _this = this;
         this.loadTemps(stn, function (s) {
-            s.panel = Panel.EDIT;
+            _this.setPanel(Panel.EDIT, null, s);
             return s;
         });
     };
@@ -41468,12 +41513,12 @@ var SectionApp = (function (_super) {
                     });
                     s.primaries.sections[i].destroy();
                     s.primaries.sections[i] = stn;
-                    s.panel = Panel.TABLE;
+                    _this.setPanel(Panel.TABLE, null, s);
+                    _this.destroyTemps(null, s);
                     return s;
                 });
             });
         }
-        this.destroyTemps();
     };
     return SectionApp;
 }(React.Component));
@@ -42500,7 +42545,7 @@ var SectionTablePanel = (function (_super) {
             if (v) {
                 s.sections = _this.props.sections.filter(function (s) {
                     return s.libSiglum.toLowerCase().indexOf(v) !== -1 ||
-                        s.sectionID.toString().toLowerCase().indexOf(v) !== -1 ||
+                        s.sectionID.toString().indexOf(v) !== -1 ||
                         s.msSiglum.toLowerCase().indexOf(v) !== -1;
                 });
             }

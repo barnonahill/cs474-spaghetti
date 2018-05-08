@@ -13,6 +13,7 @@ import {
 	Options
 } from 'react-select';
 
+import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
 
 import { Country } from '@src/models/country.ts';
@@ -76,6 +77,7 @@ export default class LibraryCountryPanel extends React.Component<P, S> {
 
 	public render() {
 		return [
+			<Header key="header" min>Libraries</Header>,
 			(<PanelMenu key="panelMenu">
 				<Button
 					bsStyle="default"

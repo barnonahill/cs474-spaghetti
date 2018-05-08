@@ -187,7 +187,7 @@ export default class SectionTablePanel extends React.Component<P,S> {
 			if (v) {
 				s.sections = this.props.sections.filter(s => {
 					return s.libSiglum.toLowerCase().indexOf(v) !== -1 ||
-						s.sectionID.toString().toLowerCase().indexOf(v) !== -1 ||
+						s.sectionID.toString().indexOf(v) !== -1 ||
 						s.msSiglum.toLowerCase().indexOf(v) !== -1;
 				});
 			}

@@ -105,7 +105,7 @@ export default class ManuscriptApp extends React.Component<P,S> {
 				// Opened from LibraryEntityPanel
 				this.setLoader('Loading Manuscripts...');
 				this.loadManuscripts(this.props.library.libSiglum, manuscripts => {
-					this.setState((s:S) => {
+					this.setPanel(Panel.TABLE, s => {
 						Country.destroyArray(s.msTypes);
 						Country.destroyArray(s.manuscripts);
 						s.msType = null;
@@ -115,19 +115,17 @@ export default class ManuscriptApp extends React.Component<P,S> {
 						s.manuscripts = manuscripts;
 						s.country = this.props.country;
 						s.library = this.props.library;
-						this.setPanel(Panel.TABLE, null, s);
 						return s;
 					});
 				});
 			}
 
 			else {
-				this.setState((s:S) => {
+				this.setPanel(Panel.INIT, s => {
 					Country.destroyArray(s.msTypes);
 					s.msType = null;
 
 					s.msTypes = msTypes;
-					this.setPanel(Panel.INIT, null, s);
 					return s;
 				});
 			}
