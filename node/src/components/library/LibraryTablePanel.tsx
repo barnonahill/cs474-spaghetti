@@ -29,7 +29,9 @@ export enum ButtonType {
 interface Properties {
 	country: Country
 	libraries: Array<Library>
-	onClick: (l:Library,t:ButtonType) => void
+	onView: (l:Library) => void
+	onEdit: (l:Library) => void
+	onDelete: (l:Library) => void
 	onRefresh: () => void
 	onBack: () => void
 }
@@ -66,7 +68,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 						>Back</Button>
 						<Button key="new"
 							bsStyle="success"
-							onClick={() => this.props.onClick(null,ButtonType.EDIT)}
+							onClick={() => this.props.onEdit(null)}
 							className="ml15"
 						>New</Button>
 					</Col>
@@ -154,7 +156,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 			bsStyle="danger"
 			bsSize="small"
 			className="w100p"
-			onClick={this.props.onClick.bind(this,l,t)}
+			onClick={() => this.props.onDelete(l)}
 			>Delete
 		</Button>;
 	}
@@ -166,7 +168,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 			bsStyle="success"
 			bsSize="small"
 			className="w100p"
-			onClick={this.props.onClick.bind(this,l,t)}
+			onClick={() => this.props.onEdit(l)}
 			>Edit
 		</Button>;
 	}
@@ -179,7 +181,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 			bsStyle="info"
 			bsSize="small"
 			className="w100p"
-			onClick={this.props.onClick.bind(this,l,t)}
+			onClick={() => this.props.onView(l)}
 			>View
 		</Button>;
 	}

@@ -18,7 +18,11 @@ import PageLoader from '@src/components/common/PageLoader.tsx';
 
 import CountryPanel from '@src/components/library/LibraryCountryPanel.tsx';
 import EntityPanel from '@src/components/library/LibraryEntityPanel.tsx';
-import { default as EditPanel, Val } from '@src/components/library/LibraryEditPanel.tsx';
+import {
+	default as EditPanel,
+	Val,
+	S as EditState
+} from '@src/components/library/LibraryEditPanel.tsx';
 import {
 	default as TablePanel,
 	ButtonType as TButtonType
@@ -50,13 +54,7 @@ interface S {
 	library?: lib.Library
 	libraries: Array<lib.Library>
 	loadMessage?: string
-
-	editOpts: {
-		lProps?: lib.Properties
-		isNew?: boolean
-		val?: Val
-	}
-
+	editState?: EditState
 	[x: string]: any
 }
 
@@ -74,13 +72,12 @@ export default class LibraryApp extends React.Component<P, S> {
 			country: null,
 			library: null,
 			libraries: null,
-			loadMessage: 'Loading Libraries...',
-			editOpts: {}
 		};
 
 		// Event Listeners
 		this.onCountrySelect = this.onCountrySelect.bind(this);
-		this.onTableClick = this.onTableClick.bind(this);
+
+		// Data operators
 		this.saveLibrary = this.saveLibrary.bind(this);
 		this.loadLibraries = this.loadLibraries.bind(this);
 
@@ -89,6 +86,7 @@ export default class LibraryApp extends React.Component<P, S> {
 		this.setLoader = StateUtils.setLoader.bind(this, Panel.LOADER);
 
 		// Render helpers
+		this.renderTablePanel = this.renderTablePanel.bind(this);
 		this.renderEditPanel = this.renderEditPanel.bind(this);
 	}
 
@@ -107,70 +105,43 @@ export default class LibraryApp extends React.Component<P, S> {
 		})
 	}
 
-	onTableClick(l:lib.Library, t:TButtonType) {
-		switch (t) {
-			case TButtonType.VIEW:
-			default:
-				this.setPanel(Panel.ENTITY, s => {
-					s.library = l;
-					return s;
-				});
-				break;
-			case TButtonType.EDIT:
-				this.setPanel(Panel.EDIT, s => {
-					s.library = l;
-					return s;
-				});
-				break;
-			case TButtonType.DEL:
-				var del = confirm('Delete ' + l.library + '?');
-				if (del) {
-					this.deleteLibrary(l);
-				}
-				break;
-		}
-	}
-
-	saveLibrary(lProps:lib.Properties, isNew:boolean) {
-		this.setLoader('Saving Library ' + lProps.library + '...');
+	saveLibrary(editState: EditState) {
+		this.setLoader('Saving Library ' + editState.lProps.library + '...');
 		var onError = (e:string) => {
 			alert('Error saving Library: ' + e);
 			this.setPanel(Panel.EDIT, s => {
 				e = e.toLowerCase();
-				s.editOpts = {
-					lProps: lProps,
-					isNew: isNew,
-					val: {
-						libSiglum: e.indexOf(lProps.libSiglum.toLowerCase()) === -1 ? null : 'error',
-						library: e.indexOf(lProps.library.toLowerCase()) === -1 ? null : 'error',
-						city: e.indexOf(lProps.city.toLowerCase()) === -1 ? null : 'error'
+				for (let k in editState.val) {
+					if (s.lProps[k] && (e.indexOf(editState.val[k]) !== -1 || e.indexOf(k) !== -1)) {
+						editState.val[k] = 'error';
 					}
-				};
-
-				var i = lProps.libSiglum.indexOf('-');
-				if (i >= 0 && i < lProps.libSiglum.length - 2) {
-					lProps.libSiglum = lProps.libSiglum.slice(i + 1);
+				}
+				s.editState = editState;
+				var i = s.lProps.libSiglum.indexOf('-');
+				if (i >= 0 && i < s.lProps.libSiglum.length - 2) {
+					s.lProps.libSiglum = s.lProps.libSiglum.slice(i + 1);
 				}
 				return s;
 			});
 		};
 
 		const proxy = proxyFactory.getLibraryProxy();
-		if (isNew) {
-			proxy.createLibrary(lProps, (library, e?) => {
+		if (editState.isNew) {
+			proxy.createLibrary(editState.lProps, (library, e?) => {
 				if (e) {
 					onError(e);
 				}
 				else {
 					this.setPanel(Panel.TABLE, s => {
 						s.libraries.push(library);
+						delete s.editState;
 						return s;
 					});
 				}
 			});
 		}
 		else {
-			proxy.updateLibrary(lProps, (library, e?) => {
+			proxy.updateLibrary(editState.lProps, (library, e?) => {
 				if (e) {
 					onError(e);
 				}
@@ -185,6 +156,7 @@ export default class LibraryApp extends React.Component<P, S> {
 						else {
 							s.libraries.splice(i, 1);
 						}
+						delete s.editState;
 						return s;
 					});
 				}
@@ -193,6 +165,7 @@ export default class LibraryApp extends React.Component<P, S> {
 	}
 
 	deleteLibrary(l: lib.Library) {
+		this.setLoader('Deleting Library ' + l.library + '...');
 		proxyFactory.getLibraryProxy().deleteLibrary(l.libSiglum, (success, e?) => {
 			if (e) {
 				alert('Error deleting Library: ' + e);
@@ -225,21 +198,7 @@ export default class LibraryApp extends React.Component<P, S> {
 				/>);
 
 			case Panel.TABLE:
-				return (<TablePanel
-					key="panel"
-					country={this.state.country}
-					libraries={this.state.libraries}
-					onClick={this.onTableClick}
-					onRefresh={() => this.loadLibraries(this.state.country, libraries => {
-						this.setPanel(Panel.TABLE, s => {
-							lib.Library.destroyArray(s.libraries);
-							s.library = null;
-							s.libraries = libraries;
-							return s;
-						});
-					})}
-					onBack={() => this.setPanel(Panel.INIT)}
-				/>);
+				return this.renderTablePanel();
 
 			case Panel.ENTITY:
 				return (<EntityPanel
@@ -257,29 +216,59 @@ export default class LibraryApp extends React.Component<P, S> {
 		}
 	}
 
+	renderTablePanel() {
+		return (<TablePanel
+			key="panel"
+			country={this.state.country}
+			libraries={this.state.libraries}
+			onBack={() => this.setPanel(Panel.INIT)}
+			onRefresh={() => this.loadLibraries(this.state.country, libraries => {
+				this.setPanel(Panel.TABLE, s => {
+					lib.Library.destroyArray(s.libraries);
+					s.library = null;
+					s.libraries = libraries;
+					return s;
+				});
+			})}
+
+			onEdit={(l:lib.Library) => this.setPanel(Panel.EDIT, s => {
+				s.library = l;
+				return s;
+			})}
+
+			onView={(l:lib.Library) => this.setPanel(Panel.ENTITY, s => {
+				s.library = l;
+				return s;
+			})}
+
+			onDelete={(l:lib.Library) => {
+				var del = confirm('Delete ' + l.library + '?');
+				if (del) {
+					this.deleteLibrary(l);
+				}
+			}}
+		/>);
+	}
+
 	renderEditPanel() {
-		var edo = this.state.editOpts;
-		var lProps: lib.Properties;
-		if (edo.lProps) {
-			lProps = edo.lProps;
-		}
-		else if (this.state.library) {
-			lProps = this.state.library.toProperties();
-			lProps.address1 = lProps.address1 || '';
-			lProps.address2 = lProps.address2 || '';
-			lProps.postCode = lProps.postCode || '';
-		}
-		else {
-			lProps = null;
+		var es: Partial<EditState> = this.state.editState || {};
+		if (!es.lProps) {
+			if (this.state.library) {
+				es.lProps = this.state.library.toProperties();
+				es.lProps.address1 = es.lProps.address1 || '';
+				es.lProps.address2 = es.lProps.address2 || '';
+				es.lProps.postCode = es.lProps.postCode || '';
+			}
+			else {
+				es.lProps = null;
+			}
 		}
 
 		return (<EditPanel
 			country={this.state.country}
 			onSubmit={this.saveLibrary}
 			onBack={() => this.setPanel(Panel.TABLE,null)}
-			lProps={lProps}
-			isNew={edo.isNew}
-			val={edo.val}
+			editState={es}
 		/>);
 	}
 

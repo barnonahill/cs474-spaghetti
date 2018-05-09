@@ -24,6 +24,8 @@ public abstract class SpgController {
 	// public static final String DB_PASS = "cs474";
 	
 	public static final String SQL_STATE_DUPLICATE_ENTRY = "23000";
+	public static final String SQL_STATE_DATA_TRUNCATION = "22001";
+	String[] THROWABLE_SQL_STATES = { SQL_STATE_DUPLICATE_ENTRY, SQL_STATE_DATA_TRUNCATION };
 
 	public SpgController() {
 		SpgController.initProperties();
@@ -88,7 +90,7 @@ public abstract class SpgController {
 			return resultSet;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new Exception("Could not connect to database");
+			throw new Exception("Internal service error.");
 		} catch (Exception e) {
 			throw new Exception("Internal service error.");
 		}
@@ -119,9 +121,14 @@ public abstract class SpgController {
 			rows = statement.executeUpdate(queryString);
 			return rows;
 		} catch (SQLException e) {
-			if (e.getSQLState().equals(SQL_STATE_DUPLICATE_ENTRY)) {
-				throw e;
+			String sqlState = e.getSQLState();
+			for (String s : THROWABLE_SQL_STATES) {
+				if (s.equals(sqlState)) {
+					throw e;
+				}
 			}
+			
+			System.err.println(e.getSQLState());
 			e.printStackTrace();
 			throw new Exception("Could not connect to database");
 		} catch (Exception e) {

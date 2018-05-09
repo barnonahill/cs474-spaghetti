@@ -34,6 +34,16 @@ export class Library extends SpgModel implements Properties {
 	public address2: string;
 	public postCode: string;
 
+	public static MAX_LENGTH = {
+		libSiglum: 10,
+		countryID: 20,
+		city: 255,
+		library: 255,
+		address1: 255,
+		address2: 255,
+		postCode: 12,
+	};
+
 	// Index signature to allow iteration over properties in Typescript
 	[x: string]: any;
 

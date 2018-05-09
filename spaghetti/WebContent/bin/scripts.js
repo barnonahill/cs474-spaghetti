@@ -37856,15 +37856,13 @@ var LibraryApp = (function (_super) {
             country: null,
             library: null,
             libraries: null,
-            loadMessage: 'Loading Libraries...',
-            editOpts: {}
         };
         _this.onCountrySelect = _this.onCountrySelect.bind(_this);
-        _this.onTableClick = _this.onTableClick.bind(_this);
         _this.saveLibrary = _this.saveLibrary.bind(_this);
         _this.loadLibraries = _this.loadLibraries.bind(_this);
         _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
         _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
+        _this.renderTablePanel = _this.renderTablePanel.bind(_this);
         _this.renderEditPanel = _this.renderEditPanel.bind(_this);
         return _this;
     }
@@ -37881,68 +37879,43 @@ var LibraryApp = (function (_super) {
             });
         });
     };
-    LibraryApp.prototype.onTableClick = function (l, t) {
-        switch (t) {
-            case LibraryTablePanel_tsx_1.ButtonType.VIEW:
-            default:
-                this.setPanel(Panel.ENTITY, function (s) {
-                    s.library = l;
-                    return s;
-                });
-                break;
-            case LibraryTablePanel_tsx_1.ButtonType.EDIT:
-                this.setPanel(Panel.EDIT, function (s) {
-                    s.library = l;
-                    return s;
-                });
-                break;
-            case LibraryTablePanel_tsx_1.ButtonType.DEL:
-                var del = confirm('Delete ' + l.library + '?');
-                if (del) {
-                    this.deleteLibrary(l);
-                }
-                break;
-        }
-    };
-    LibraryApp.prototype.saveLibrary = function (lProps, isNew) {
+    LibraryApp.prototype.saveLibrary = function (editState) {
         var _this = this;
-        this.setLoader('Saving Library ' + lProps.library + '...');
+        this.setLoader('Saving Library ' + editState.lProps.library + '...');
         var onError = function (e) {
             alert('Error saving Library: ' + e);
             _this.setPanel(Panel.EDIT, function (s) {
                 e = e.toLowerCase();
-                s.editOpts = {
-                    lProps: lProps,
-                    isNew: isNew,
-                    val: {
-                        libSiglum: e.indexOf(lProps.libSiglum.toLowerCase()) === -1 ? null : 'error',
-                        library: e.indexOf(lProps.library.toLowerCase()) === -1 ? null : 'error',
-                        city: e.indexOf(lProps.city.toLowerCase()) === -1 ? null : 'error'
+                for (var k in editState.val) {
+                    if (s.lProps[k] && (e.indexOf(editState.val[k]) !== -1 || e.indexOf(k) !== -1)) {
+                        editState.val[k] = 'error';
                     }
-                };
-                var i = lProps.libSiglum.indexOf('-');
-                if (i >= 0 && i < lProps.libSiglum.length - 2) {
-                    lProps.libSiglum = lProps.libSiglum.slice(i + 1);
+                }
+                s.editState = editState;
+                var i = s.lProps.libSiglum.indexOf('-');
+                if (i >= 0 && i < s.lProps.libSiglum.length - 2) {
+                    s.lProps.libSiglum = s.lProps.libSiglum.slice(i + 1);
                 }
                 return s;
             });
         };
         var proxy = ProxyFactory_ts_1.default.getLibraryProxy();
-        if (isNew) {
-            proxy.createLibrary(lProps, function (library, e) {
+        if (editState.isNew) {
+            proxy.createLibrary(editState.lProps, function (library, e) {
                 if (e) {
                     onError(e);
                 }
                 else {
                     _this.setPanel(Panel.TABLE, function (s) {
                         s.libraries.push(library);
+                        delete s.editState;
                         return s;
                     });
                 }
             });
         }
         else {
-            proxy.updateLibrary(lProps, function (library, e) {
+            proxy.updateLibrary(editState.lProps, function (library, e) {
                 if (e) {
                     onError(e);
                 }
@@ -37956,6 +37929,7 @@ var LibraryApp = (function (_super) {
                         else {
                             s.libraries.splice(i, 1);
                         }
+                        delete s.editState;
                         return s;
                     });
                 }
@@ -37964,6 +37938,7 @@ var LibraryApp = (function (_super) {
     };
     LibraryApp.prototype.deleteLibrary = function (l) {
         var _this = this;
+        this.setLoader('Deleting Library ' + l.library + '...');
         ProxyFactory_ts_1.default.getLibraryProxy().deleteLibrary(l.libSiglum, function (success, e) {
             if (e) {
                 alert('Error deleting Library: ' + e);
@@ -37990,14 +37965,7 @@ var LibraryApp = (function (_super) {
             default:
                 return (React.createElement(LibraryCountryPanel_tsx_1.default, { country: this.state.country || null, countries: this.props.countries, onSubmit: this.onCountrySelect, onBack: this.props.onBack }));
             case Panel.TABLE:
-                return (React.createElement(LibraryTablePanel_tsx_1.default, { key: "panel", country: this.state.country, libraries: this.state.libraries, onClick: this.onTableClick, onRefresh: function () { return _this.loadLibraries(_this.state.country, function (libraries) {
-                        _this.setPanel(Panel.TABLE, function (s) {
-                            lib.Library.destroyArray(s.libraries);
-                            s.library = null;
-                            s.libraries = libraries;
-                            return s;
-                        });
-                    }); }, onBack: function () { return _this.setPanel(Panel.INIT); } }));
+                return this.renderTablePanel();
             case Panel.ENTITY:
                 return (React.createElement(LibraryEntityPanel_tsx_1.default, { countries: this.props.countries, country: this.state.country, library: this.state.library, onBack: function () { return _this.setPanel(Panel.TABLE); } }));
             case Panel.EDIT:
@@ -38006,23 +37974,43 @@ var LibraryApp = (function (_super) {
                 return React.createElement(PageLoader_tsx_1.default, { inner: this.state.loadMessage });
         }
     };
+    LibraryApp.prototype.renderTablePanel = function () {
+        var _this = this;
+        return (React.createElement(LibraryTablePanel_tsx_1.default, { key: "panel", country: this.state.country, libraries: this.state.libraries, onBack: function () { return _this.setPanel(Panel.INIT); }, onRefresh: function () { return _this.loadLibraries(_this.state.country, function (libraries) {
+                _this.setPanel(Panel.TABLE, function (s) {
+                    lib.Library.destroyArray(s.libraries);
+                    s.library = null;
+                    s.libraries = libraries;
+                    return s;
+                });
+            }); }, onEdit: function (l) { return _this.setPanel(Panel.EDIT, function (s) {
+                s.library = l;
+                return s;
+            }); }, onView: function (l) { return _this.setPanel(Panel.ENTITY, function (s) {
+                s.library = l;
+                return s;
+            }); }, onDelete: function (l) {
+                var del = confirm('Delete ' + l.library + '?');
+                if (del) {
+                    _this.deleteLibrary(l);
+                }
+            } }));
+    };
     LibraryApp.prototype.renderEditPanel = function () {
         var _this = this;
-        var edo = this.state.editOpts;
-        var lProps;
-        if (edo.lProps) {
-            lProps = edo.lProps;
+        var es = this.state.editState || {};
+        if (!es.lProps) {
+            if (this.state.library) {
+                es.lProps = this.state.library.toProperties();
+                es.lProps.address1 = es.lProps.address1 || '';
+                es.lProps.address2 = es.lProps.address2 || '';
+                es.lProps.postCode = es.lProps.postCode || '';
+            }
+            else {
+                es.lProps = null;
+            }
         }
-        else if (this.state.library) {
-            lProps = this.state.library.toProperties();
-            lProps.address1 = lProps.address1 || '';
-            lProps.address2 = lProps.address2 || '';
-            lProps.postCode = lProps.postCode || '';
-        }
-        else {
-            lProps = null;
-        }
-        return (React.createElement(LibraryEditPanel_tsx_1.default, { country: this.state.country, onSubmit: this.saveLibrary, onBack: function () { return _this.setPanel(Panel.TABLE, null); }, lProps: lProps, isNew: edo.isNew, val: edo.val }));
+        return (React.createElement(LibraryEditPanel_tsx_1.default, { country: this.state.country, onSubmit: this.saveLibrary, onBack: function () { return _this.setPanel(Panel.TABLE, null); }, editState: es }));
     };
     LibraryApp.prototype.loadLibraries = function (country, callback) {
         var _this = this;
@@ -38159,18 +38147,20 @@ var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
 var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var lib = __webpack_require__(/*! @src/models/library.ts */ "./src/models/library.ts");
 var LibraryEditPanel = (function (_super) {
     __extends(LibraryEditPanel, _super);
     function LibraryEditPanel(p) {
         var _this = _super.call(this, p) || this;
+        var es = p.editState || {};
         var isNew;
-        if (typeof p.isNew === 'boolean') {
-            isNew = p.isNew;
+        if (typeof es.isNew === 'boolean') {
+            isNew = es.isNew;
         }
         else {
-            isNew = !Boolean(p.lProps);
+            isNew = !Boolean(es.lProps);
         }
-        var lProps = p.lProps || {
+        var lProps = es.lProps || {
             countryID: p.country.countryID,
             libSiglum: '',
             library: '',
@@ -38182,10 +38172,13 @@ var LibraryEditPanel = (function (_super) {
         _this.state = {
             isNew: isNew,
             lProps: lProps,
-            val: p.val || {
+            val: es.val || {
                 libSiglum: null,
                 library: null,
-                city: null
+                city: null,
+                address1: null,
+                address2: null,
+                postCode: null
             }
         };
         _this.onInputChange = _this.onInputChange.bind(_this);
@@ -38198,31 +38191,29 @@ var LibraryEditPanel = (function (_super) {
         var v = target.value;
         this.setState(function (s) {
             s.lProps[k] = v;
+            if (v) {
+                s.val[k] = (v.length <= lib.Library.MAX_LENGTH[k]) ? null : 'error';
+            }
+            else {
+                s.val[k] = null;
+            }
             return s;
         });
     };
     LibraryEditPanel.prototype.onSubmit = function (e) {
+        var _this = this;
         e.preventDefault();
-        var lProps = this.state.lProps;
-        var val = {
-            libSiglum: lProps.libSiglum ? null : 'error',
-            library: lProps.library ? null : 'error',
-            city: lProps.city ? null : 'error'
-        };
-        this.setState(function (s) {
-            s.val = val;
-            return s;
-        });
-        for (var k in val) {
-            if (val[k] === 'error') {
+        for (var k in this.state.val) {
+            if (this.state.val[k] === 'error') {
                 return;
             }
         }
-        var isNew = this.state.isNew;
-        if (isNew && lProps.libSiglum.indexOf(lProps.countryID + '-') !== 0) {
-            lProps.libSiglum = lProps.countryID + '-' + lProps.libSiglum;
-        }
-        this.props.onSubmit(lProps, isNew);
+        this.setState(function (s) {
+            if (s.isNew && s.lProps.libSiglum.indexOf(s.lProps.countryID + '-') !== 0) {
+                s.lProps.libSiglum = s.lProps.countryID + '-' + s.lProps.libSiglum;
+            }
+            _this.props.onSubmit(s);
+        });
     };
     LibraryEditPanel.prototype.render = function () {
         var _this = this;
@@ -38241,39 +38232,65 @@ var LibraryEditPanel = (function (_super) {
                                 React.createElement(react_bootstrap_1.InputGroup.Addon, null,
                                     this.props.country.countryID,
                                     "-"),
-                                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.libSiglum, onChange: this.onInputChange, className: "dib" })))),
+                                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.libSiglum, onChange: function (e) {
+                                        var libSiglum = e.target.value;
+                                        _this.setState(function (s) {
+                                            s.lProps.libSiglum = libSiglum;
+                                            if (libSiglum) {
+                                                s.val.libSiglum = (libSiglum.length +
+                                                    _this.props.country.countryID.length + 1 <= lib.Library.MAX_LENGTH.libSiglum) ? null :
+                                                    'error';
+                                            }
+                                            return s;
+                                        });
+                                    }, className: "dib" })))),
                         (React.createElement(react_bootstrap_1.HelpBlock, { key: "hb" }, this.props.country.countryID.length + 1 +
                             this.state.lProps.libSiglum.length + ' / 10'))]
                     : [(React.createElement(react_bootstrap_1.Col, { key: "label", sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Library Siglum:")),
                         React.createElement(react_bootstrap_1.Col, { key: "value", sm: 4, className: "pt7 pl27" }, this.state.lProps.libSiglum)]),
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "countryID" },
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "country" },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Country:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.country.country)),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "library", validationState: this.state.val.library },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Library Name:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.library, onChange: this.onInputChange })),
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.library, onChange: function (e) {
+                                var library = e.target.value;
+                                _this.setState(function (s) {
+                                    s.lProps.library = library;
+                                    s.val.library = (library && library.length <= lib.Library.MAX_LENGTH.library) ?
+                                        null : 'error';
+                                    return s;
+                                });
+                            } })),
                     React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.library.length + ' / 255')),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "city", validationState: this.state.val.city },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "City:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.city, onChange: this.onInputChange })),
-                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.city.length + ' / 255')),
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "address1" },
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.city, onChange: function (e) {
+                                var city = e.target.value;
+                                _this.setState(function (s) {
+                                    s.lProps.city = city;
+                                    s.val.city = (city && city.length <= lib.Library.MAX_LENGTH.city) ? null : 'error';
+                                    return s;
+                                });
+                            } })),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.city.length + ' / ' + lib.Library.MAX_LENGTH.city)),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "address1", validationState: this.state.val.address1 },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.address1, onChange: this.onInputChange })),
-                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.address1.length + ' / 255')),
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "address2" },
+                        React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.address1, onChange: (this.onInputChange) })),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.address1.length + ' / ' + lib.Library.MAX_LENGTH.address1)),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "address2", validationState: this.state.val.address2 },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address 2:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
                         React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.address2, onChange: this.onInputChange })),
-                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.address2.length + ' / 255')),
-                React.createElement(react_bootstrap_1.FormGroup, { controlId: "postCode" },
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.address2.length + ' / ' + lib.Library.MAX_LENGTH.address2)),
+                React.createElement(react_bootstrap_1.FormGroup, { controlId: "postCode", validationState: this.state.val.postCode },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Post Code:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
                         React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.postCode, onChange: this.onInputChange })),
-                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.postCode.length + ' / 12')),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.postCode.length + ' / ' + lib.Library.MAX_LENGTH.postCode)),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
                     React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))))
@@ -38508,7 +38525,7 @@ var LibraryTablePanel = (function (_super) {
                 React.createElement(react_bootstrap_1.Row, null,
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
                         React.createElement(react_bootstrap_1.Button, { key: "back", bsStyle: "default", onClick: this.props.onBack }, "Back"),
-                        React.createElement(react_bootstrap_1.Button, { key: "new", bsStyle: "success", onClick: function () { return _this.props.onClick(null, ButtonType.EDIT); }, className: "ml15" }, "New")),
+                        React.createElement(react_bootstrap_1.Button, { key: "new", bsStyle: "success", onClick: function () { return _this.props.onEdit(null); }, className: "ml15" }, "New")),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
                         React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by name, city, and siglum...", onSubmit: this.filter })),
                     React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
@@ -38539,19 +38556,22 @@ var LibraryTablePanel = (function (_super) {
         });
     };
     LibraryTablePanel.prototype.renderDelete = function (props) {
+        var _this = this;
         var l = props.rowData;
         var t = ButtonType.DEL;
-        return React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", className: "w100p", onClick: this.props.onClick.bind(this, l, t) }, "Delete");
+        return React.createElement(react_bootstrap_1.Button, { bsStyle: "danger", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onDelete(l); } }, "Delete");
     };
     LibraryTablePanel.prototype.renderEdit = function (props) {
+        var _this = this;
         var l = props.rowData;
         var t = ButtonType.EDIT;
-        return React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: this.props.onClick.bind(this, l, t) }, "Edit");
+        return React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onEdit(l); } }, "Edit");
     };
     LibraryTablePanel.prototype.renderView = function (props) {
+        var _this = this;
         var l = props.rowData;
         var t = ButtonType.VIEW;
-        return React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "small", className: "w100p", onClick: this.props.onClick.bind(this, l, t) }, "View");
+        return React.createElement(react_bootstrap_1.Button, { bsStyle: "info", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onView(l); } }, "View");
     };
     return LibraryTablePanel;
 }(React.Component));
@@ -43272,6 +43292,15 @@ var Library = (function (_super) {
             postCode: this.postCode,
             countryID: this.countryID
         };
+    };
+    Library.MAX_LENGTH = {
+        libSiglum: 10,
+        countryID: 20,
+        city: 255,
+        library: 255,
+        address1: 255,
+        address2: 255,
+        postCode: 12,
     };
     return Library;
 }(SpgModel_ts_1.default));
