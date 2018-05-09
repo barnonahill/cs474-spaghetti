@@ -112,7 +112,9 @@ export default class LibraryApp extends React.Component<P, S> {
 			this.setPanel(Panel.EDIT, s => {
 				e = e.toLowerCase();
 				for (let k in editState.val) {
-					if (s.lProps[k] && (e.indexOf(editState.val[k]) !== -1 || e.indexOf(k) !== -1)) {
+					if (editState.lProps[k] && (e.indexOf(editState.val[k]) !== -1 ||
+						e.indexOf(k.toLowerCase()) !== -1))
+					{
 						editState.val[k] = 'error';
 					}
 				}

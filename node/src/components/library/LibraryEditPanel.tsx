@@ -29,11 +29,7 @@ export interface Val {
 
 interface P {
 	country: Country
-	onSubmit: (editState: {
-		lProps: lib.Properties
-		isNew: boolean
-		val: Val
-	}) => void
+	onSubmit: (editState: S) => void
 	onBack: () => void
 
 	editState: {
@@ -107,8 +103,24 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 
 	onSubmit(e:React.FormEvent<Form>) {
 		e.preventDefault();
-		for (let k in this.state.val) {
-			if (this.state.val[k] === 'error') {
+		var val = this.state.val;
+		if (!this.state.lProps.libSiglum) {
+			val.libSiglum = 'error';
+		}
+		if (!this.state.lProps.library) {
+			val.library = 'error';
+		}
+		if (!this.state.lProps.city) {
+			val.city = 'error';
+		}
+
+		this.setState((s:S) => {
+			s.val = val;
+			return s;
+		});
+
+		for (let k in val) {
+			if (val[k] === 'error') {
 				return;
 			}
 		}

@@ -3,7 +3,10 @@ import * as React from 'react';
 import PageLoader from '@src/components/common/PageLoader.tsx';
 
 import TablePanel from '@src/components/msType/MsTypeTablePanel.tsx';
-import EditPanel from '@src/components/msType/MsTypeEditPanel.tsx';
+import {
+	default as EditPanel,
+	S as EditState
+} from '@src/components/msType/MsTypeEditPanel.tsx';
 
 import StateUtils from '@src/components/StateUtilities.ts'
 
@@ -26,15 +29,7 @@ interface S {
 	panel: Panel
 	loadMessage?: string
 	msType?: mst.MsType
-
-	editOpts: {
-		isNew?: boolean
-		mProps?: mst.Properties
-		val?: {
-			msType: null | 'error'
-			msTypeName: null | 'error'
-		}
-	}
+	editState?: EditState
 }
 
 export default class MsTypeApp extends React.Component<P,S> {
@@ -49,18 +44,15 @@ export default class MsTypeApp extends React.Component<P,S> {
 
 		this.state = {
 			msTypes: p.msTypes,
-			panel: Panel.TABLE,
-			editOpts: {}
+			panel: Panel.TABLE
 		};
 
-		// JSX Element getters
+		// Render helpers
+		this.renderTablePanel = this.renderTablePanel.bind(this);
 		this.renderEditPanel = this.renderEditPanel.bind(this);
 
-		// Panel opener
-		this.openEdit = this.openEdit.bind(this);
-
 		// Data manipulators
-		this.confirmDelete = this.confirmDelete.bind(this);
+		this.deleteMsType = this.deleteMsType.bind(this);
 		this.saveMsType = this.saveMsType.bind(this);
 
 		// State utilities
@@ -71,13 +63,7 @@ export default class MsTypeApp extends React.Component<P,S> {
 	render() {
 		switch (this.state.panel)  {
 			case Panel.TABLE:
-				return (<TablePanel
-					msTypes={this.state.msTypes}
-					onBack={this.props.onBack}
-					onEdit={this.openEdit}
-					onDelete={this.confirmDelete}
-					onRefresh={this.props.reloadMsTypes}
-				/>);
+				return this.renderTablePanel();
 
 			case Panel.EDIT:
 				return this.renderEditPanel();
@@ -89,121 +75,120 @@ export default class MsTypeApp extends React.Component<P,S> {
 		}
 	}
 
-	renderEditPanel() {
-		const edo = this.state.editOpts;
-		var isNew = edo.isNew;
-		var val = edo.val || null;
-		var mProps: mst.Properties;
+	renderTablePanel() {
+		return (<TablePanel
+			msTypes={this.state.msTypes}
+			onBack={this.props.onBack}
+			onRefresh={this.props.reloadMsTypes}
+			onEdit={msType => {
+				this.setPanel(Panel.EDIT, state => {
+					state.msType = msType;
+					return state;
+				});
+			}}
 
-		if (edo.mProps) {
-			mProps = edo.mProps;
-		}
-		else if (this.state.msType) {
-			mProps = this.state.msType.toProperties();
-		}
-		else {
-			mProps = null;
+			onDelete={msType => {
+				var del = confirm('Delete ' + msType.msType +
+					'? This will delete all manuscripts of this type!');
+				if (del) {
+					this.deleteMsType(msType);
+				}
+			}}
+		/>);
+	}
+
+	renderEditPanel() {
+		var es: Partial<EditState> = this.state.editState || {};
+		if (!es.mProps) {
+			if (this.state.msType) {
+				es.mProps = this.state.msType.toProperties();
+				es.mProps.msTypeName = es.mProps.msTypeName || '';
+			}
+			else {
+				es.mProps = null;
+			}
 		}
 
 		return (<EditPanel
-			isNew={isNew}
-			mProps={mProps}
-			val={val}
 			onBack={() => this.setPanel(Panel.TABLE, s => {
-				s.editOpts = {};
+				delete s.editState;
 				s.msType = null;
 				return s;
 			})}
 			onSubmit={this.saveMsType}
+			editState={es}
 		/>);
 	}
 
-	confirmDelete(msType: mst.MsType) {
-		var del = confirm('Delete ' + msType.msTypeName +
-			'? This will delete all manuscripts of this type!');
-		if (del) {
-			this.setLoader('Deleting ' + msType.msType + '...')
-
-			proxyFactory.getManuscriptProxy().deleteMsType(msType.msType, (s:boolean, e?:string) => {
-				if (e) {
-					alert('Error deleting Manuscript Type: ' + e);
-					this.setPanel(Panel.TABLE);
-				}
-				else if (s) {
-					this.setPanel(Panel.TABLE, (s:S) => {
-						var i = s.msTypes.findIndex((m:mst.MsType) => {
-							return m.msType === msType.msType;
-						});
-						s.msTypes[i].destroy();
-						s.msTypes.splice(i, 1);
-						s.msType = null;
-						return s;
+	deleteMsType(msType: mst.MsType) {
+		this.setLoader('Deleting ' + msType.msType + '...')
+		proxyFactory.getManuscriptProxy().deleteMsType(msType.msType, (s, e?) => {
+			if (e) {
+				alert('Error deleting Manuscript Type: ' + e);
+				this.setPanel(Panel.TABLE);
+			}
+			else if (s) {
+				this.setPanel(Panel.TABLE, (s:S) => {
+					var i = s.msTypes.findIndex((m:mst.MsType) => {
+						return m.msType === msType.msType;
 					});
-				}
-				else {
-					this.setPanel(Panel.TABLE);
-					alert('Could not delete Manuscript Type ' + msType.msType);
-				}
-			});
-		}
-	}
-
-	openEdit(msType: mst.MsType) {
-		this.setPanel(Panel.EDIT, state => {
-			state.msType = msType;
-			return state;
+					s.msTypes[i].destroy();
+					s.msTypes.splice(i, 1);
+					s.msType = null;
+					return s;
+				});
+			}
+			else {
+				this.setPanel(Panel.TABLE);
+				alert('Could not delete Manuscript Type ' + msType.msType);
+			}
 		});
 	}
 
-	saveMsType(mProps:mst.Properties, isNew:boolean) {
-		this.setLoader('Saving ' + mProps.msType + '...');
+	saveMsType(editState: EditState) {
+		this.setLoader('Saving ' + editState.mProps.msType + '...');
 
 		var onError = (e:string) => {
 			alert('Error saving Manuscript Type: ' + e);
-			const lcErr = e.toLowerCase();
-			var val: S['editOpts']['val'] = {
-				msType: lcErr.indexOf(mProps.msType.toLowerCase()) === -1 ? null : 'error',
-				msTypeName: null
-			};
-
-			this.setState((s:S) => {
-				s.editOpts.isNew = isNew;
-				s.editOpts.mProps = mProps;
-				s.editOpts.val = val;
-				this.setPanel(Panel.EDIT, null, s);
+			this.setPanel(Panel.EDIT, s => {
+				for (let k in editState.val) {
+					if (editState.mProps[k] && (e.indexOf(editState.mProps[k]) !== -1 ||
+						e.indexOf(k.toLowerCase()) !== -1))
+					{
+						editState.val[k] = 'error';
+					}
+				}
+				s.editState = editState;
 				return s;
 			});
 		};
 
-		if (isNew) {
-			proxyFactory.getManuscriptProxy().createMsType(mProps, (msType:mst.MsType, e?:string) => {
+		const proxy = proxyFactory.getManuscriptProxy();
+		if (editState.isNew) {
+			proxy.createMsType(editState.mProps, (msType, e?) => {
 				if (e) {
 					onError(e);
 				}
 				else {
-					this.setState((s:S) => {
-						s.editOpts = {};
+					this.setPanel(Panel.TABLE, s => {
+						delete s.editState;
 						s.msTypes.push(msType);
-						s.panel = Panel.TABLE;
 						return s;
-					});
+					})
 				}
 			});
 		}
 		else {
-			proxyFactory.getManuscriptProxy().updateMsType(mProps, (msType:mst.MsType, e?:string) => {
+			proxy.updateMsType(editState.mProps, (msType, e?) => {
 				if (e) {
 					onError(e);
 				}
 				else {
-					this.setState((s:S) => {
-						s.editOpts = {};
-						var i = s.msTypes.findIndex((m:mst.MsType) => {
-							return mProps.msType === m.msType;
-						});
+					this.setPanel(Panel.TABLE, s => {
+						var i = s.msTypes.findIndex(m => editState.mProps.msType === m.msType);
 						s.msTypes[i].destroy();
+						delete s.editState;
 						s.msTypes[i] = msType;
-						s.panel = Panel.TABLE;
 						return s;
 					});
 				}

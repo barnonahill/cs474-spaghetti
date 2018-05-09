@@ -7,60 +7,67 @@ import {
 	Form,
 	FormControl,
 	FormGroup,
+	HelpBlock
 } from 'react-bootstrap';
 
 import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
+import ValState from '@src/components/common/FormValidation.ts';
 
 import * as mst from '@src/models/msType.ts';
 
-interface ValState {
-	msType: null | 'error'
-	msTypeName: null | 'error'
-	[x: string]: any
+export interface Val {
+	msType: ValState
+	msTypeName: ValState
+	[x: string]: ValState
 }
 
 interface P {
-	isNew?: boolean
-	mProps?: mst.Properties
-	val?: ValState
 	onBack: () => void
-	onSubmit: (p:mst.Properties,isNew:boolean) => void
+	onSubmit: (editState: S) => void
+
+	editState: {
+		isNew?: boolean
+		mProps?: mst.Properties
+		val?: Val
+	}
 }
-interface S {
+
+export interface S {
 	isNew: boolean
 	mProps: mst.Properties
-	val: ValState
+	val: Val
 }
 
 export default class MsTypeEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
+		const es = p.editState || {};
 
 		var isNew: boolean;
-		if (typeof this.props.isNew === 'boolean') {
-			isNew = this.props.isNew;
+		if (typeof es.isNew === 'boolean') {
+			isNew = es.isNew;
 		}
 		else {
-			isNew = !Boolean(p.mProps)
+			isNew = !Boolean(es.mProps)
 		}
+
+		var mProps = es.mProps || {
+			msType: '',
+			msTypeName: ''
+		};
 
 		this.state = {
 			isNew: isNew,
+			mProps: mProps,
 
-			mProps: p.mProps || {
-				msType: '',
-				msTypeName: ''
-			},
-
-			val: p.val || {
+			val: es.val || {
 				msType: null,
 				msTypeName: null
 			}
 		};
 
 		this.getMsTypeFormGroup = this.getMsTypeFormGroup.bind(this);
-		this.onChange = this.onChange.bind(this);
 		this.onSubmit = this.onSubmit.bind(this);
 	}
 
@@ -87,15 +94,25 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 				<Col
 					sm={3}
 					componentClass={ControlLabel}
-					className="required"
 				>Name:</Col>
 				<Col sm={4}>
 					<FormControl
 						type="text"
 						value={this.state.mProps.msTypeName}
-						onChange={this.onChange}
+						onChange={e => {
+							var msTypeName = (e.target as HTMLInputElement).value;
+							this.setState((s:S) => {
+								s.mProps.msTypeName = msTypeName;
+								s.val.msTypeName = (msTypeName && msTypeName.length <= mst.MsType.MAX_LENGTHS.msTypeName ?
+									null : 'error');
+								return s;
+							});
+					}}
 					/>
 				</Col>
+				<HelpBlock>
+					{this.state.mProps.msTypeName.length + ' / ' + mst.MsType.MAX_LENGTHS.msTypeName}
+				</HelpBlock>
 			</FormGroup>
 
 			<FormGroup>
@@ -112,7 +129,7 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 	}
 
 	getMsTypeFormGroup() {
-		var label, value: JSX.Element;
+		var label, value: JSX.Element | JSX.Element[];
 		if (this.state.isNew) {
 			label = (<Col
 				sm={3}
@@ -120,13 +137,23 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 				className="required"
 			>Manuscript Type:</Col>);
 
-			value = (<Col sm={4}>
+			value = [<Col sm={4} key="v">
 				<FormControl
 					type="text"
 					value={this.state.mProps.msType}
-					onChange={this.onChange}
+					onChange={e => {
+						var msType:string = (e.target as HTMLInputElement).value;
+						this.setState((s:S) => {
+							s.mProps.msType = msType;
+							s.val.msType = (msType && msType.length <= mst.MsType.MAX_LENGTHS.msType ) ? null : 'error';
+							return s;
+						});
+					}}
 				/>
-			</Col>);
+			</Col>,
+			<HelpBlock key="h">
+				{this.state.mProps.msType.length + ' / ' + mst.MsType.MAX_LENGTHS.msType}
+			</HelpBlock>];
 		}
 		else {
 			label = (<Col
@@ -135,7 +162,7 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 			>Manuscript Type:</Col>);
 
 			value = (<Col sm={4} className="pt7 pl27">
-				{this.props.mProps.msType}
+				{this.state.mProps.msType}
 			</Col>);
 		}
 
@@ -148,40 +175,26 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 		</FormGroup>);
 	}
 
-	onChange(e:React.FormEvent<FormControl>) {
-		const target = e.target as HTMLInputElement;
-		const k = target.id;
-		const v = target.value;
-		this.setState((s:S) => {
-			s.mProps[k] = v;
-			return s;
-		});
-	}
-
 	onSubmit(e:React.FormEvent<Form>) {
 		e.preventDefault();
-		var val: Partial<ValState> = {
-			msTypeName: this.state.mProps.msTypeName ? null : 'error'
-		};
-
-		if (this.state.isNew) {
-			val.msType = this.state.mProps.msType ? null : 'error'
+		var val = this.state.val;
+		if (!this.state.mProps.msType) {
+			val.msType = 'error';
 		}
 
+		this.setState((s:S) => {
+			s.val = val;
+			return s;
+		});
+
 		for (let k in val) {
-			if (val[k] !== null) {
-				return this.setState((s:S) => {
-					s.val = val as ValState;
-					return s;
-				});
+			if (val[k] === 'error') {
+				return;
 			}
 		}
 
-		// Update validation state while submit is processing
 		this.setState((s:S) => {
-			s.val = val as ValState;
-			return s;
+			this.props.onSubmit(s);
 		});
-		this.props.onSubmit(this.state.mProps, this.state.isNew);
 	}
 }

@@ -137,7 +137,7 @@ public abstract class SpgController {
 	}
 
 	/**
-	 * Builds an Inset Query.
+	 * Builds an Insert Query.
 	 * 
 	 * @param tableName
 	 * @param createNames

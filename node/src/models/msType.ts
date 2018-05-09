@@ -20,13 +20,15 @@ export class MsType extends SpgModel implements Properties {
 	public readonly msType: string;
 	public msTypeName: string;
 
+	public static MAX_LENGTHS = {
+		msType: 20,
+		msTypeName: 255
+	};
+
 	constructor(props: Properties) {
 		super();
 		if (!props.msType.length) {
 			throw Error('msType cannot be empty.');
-		}
-		if (!props.msTypeName.length) {
-			throw Error('msTypeName cannot be empty.');
 		}
 		this.msType = props.msType;
 		this.msTypeName = props.msTypeName;
