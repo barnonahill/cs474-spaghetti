@@ -25,19 +25,29 @@ export class MsType extends SpgModel implements Properties {
 		msTypeName: 255
 	};
 
-	constructor(props: Properties) {
+	public constructor(props: Properties) {
 		super();
-		if (!props.msType.length) {
+		if (!props.msType) {
 			throw Error('msType cannot be empty.');
 		}
 		this.msType = props.msType;
 		this.msTypeName = props.msTypeName;
 	}
 
-	toProperties(): Properties {
+	public toProperties(): Properties {
 		return {
 			msType: this.msType,
-			msTypeName: this.msTypeName
+			msTypeName: this.msTypeName || ''
+		};
+	}
+
+	/**
+	 * Creates an empty MsType property set.
+	 */
+	public static createProperties(): Properties {
+		return {
+			msType: '',
+			msTypeName: ''
 		};
 	}
 }

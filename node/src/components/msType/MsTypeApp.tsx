@@ -52,8 +52,8 @@ export default class MsTypeApp extends React.Component<P,S> {
 		this.renderEditPanel = this.renderEditPanel.bind(this);
 
 		// Data manipulators
-		this.deleteMsType = this.deleteMsType.bind(this);
 		this.saveMsType = this.saveMsType.bind(this);
+		this.deleteMsType = this.deleteMsType.bind(this);
 
 		// State utilities
 		this.setPanel = StateUtils.setPanel.bind(this);
@@ -69,7 +69,7 @@ export default class MsTypeApp extends React.Component<P,S> {
 				return this.renderEditPanel();
 
 			case Panel.LOADER:
-				return <PageLoader inner={this.state.loadMessage}/>;
+				return <PageLoader inner={this.state.loadMessage} />;
 			default:
 				return null;
 		}
@@ -102,7 +102,6 @@ export default class MsTypeApp extends React.Component<P,S> {
 		if (!es.mProps) {
 			if (this.state.msType) {
 				es.mProps = this.state.msType.toProperties();
-				es.mProps.msTypeName = es.mProps.msTypeName || '';
 			}
 			else {
 				es.mProps = null;

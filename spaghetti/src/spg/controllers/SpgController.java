@@ -130,9 +130,10 @@ public abstract class SpgController {
 			
 			System.err.println(e.getSQLState());
 			e.printStackTrace();
-			throw new Exception("Could not connect to database");
+			throw new Exception("Database Error");
 		} catch (Exception e) {
-			throw new Exception("Could not connect to database");
+			e.printStackTrace();
+			throw new Exception("Internal Service Error");
 		}
 	}
 

@@ -36912,24 +36912,20 @@ var CenturyApp = (function (_super) {
         _this.state = {
             panel: Panel.TABLE,
             centuries: _this.props.centuries,
-            editOpts: {}
         };
+        _this.renderTablePanel = _this.renderTablePanel.bind(_this);
         _this.renderEditPanel = _this.renderEditPanel.bind(_this);
         _this.openEdit = _this.openEdit.bind(_this);
         _this.saveCentury = _this.saveCentury.bind(_this);
-        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.deleteCentury = _this.deleteCentury.bind(_this);
         _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
         _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         return _this;
     }
     CenturyApp.prototype.render = function () {
-        var _this = this;
         switch (this.state.panel) {
             case Panel.TABLE:
-                return (React.createElement(CenturyTablePanel_tsx_1.default, { centuries: this.props.centuries, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: function () {
-                        _this.setLoader('Loading Centuries...');
-                        _this.props.reloadCenturies();
-                    } }));
+                return this.renderTablePanel();
             case Panel.EDIT:
                 return this.renderEditPanel();
             case Panel.LOADER:
@@ -36938,48 +36934,61 @@ var CenturyApp = (function (_super) {
                 return null;
         }
     };
+    CenturyApp.prototype.renderTablePanel = function () {
+        var _this = this;
+        return (React.createElement(CenturyTablePanel_tsx_1.default, { centuries: this.props.centuries, onBack: this.props.onBack, onRefresh: function () {
+                _this.setLoader('Loading Centuries...');
+                _this.props.reloadCenturies();
+            }, onEdit: function (century) {
+                _this.setPanel(Panel.EDIT, function (s) {
+                    s.century = century;
+                    return s;
+                });
+            }, onDelete: function (century) {
+                var del = confirm('Delete Century ' + century.centuryID + '?');
+                if (del) {
+                    _this.deleteCentury(century);
+                }
+            } }));
+    };
     CenturyApp.prototype.renderEditPanel = function () {
         var _this = this;
-        var edo = this.state.editOpts;
-        var ctProps;
-        if (edo.ctProps) {
-            ctProps = edo.ctProps;
-        }
-        else if (this.state.century) {
-            ctProps = this.state.century.toProperties();
-        }
-        else {
-            ctProps = null;
+        var es = this.state.editState || {};
+        if (!es.ctProps) {
+            if (this.state.century) {
+                es.ctProps = this.state.century.toProperties();
+            }
+            else {
+                es.ctProps = null;
+            }
         }
         return (React.createElement(CenturyEditPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE, function (s) {
-                s.editOpts = {};
+                delete s.editState;
+                s.century = null;
                 return s;
-            }); }, onSubmit: this.saveCentury, ctProps: ctProps, isNew: edo.isNew, val: edo.val }));
+            }); }, onSubmit: this.saveCentury, editState: es }));
     };
-    CenturyApp.prototype.confirmDelete = function (century) {
+    CenturyApp.prototype.deleteCentury = function (century) {
         var _this = this;
-        var del = confirm('Delete century ' + century.centuryID + '?');
-        if (del) {
-            this.setLoader('Deleting ' + century.centuryID + '...');
-            ProxyFactory_ts_1.default.getSectionProxy().deleteCentury(century.centuryID, function (success, e) {
-                if (e) {
-                    alert('Error deleting Century: ' + e);
-                    _this.setPanel(Panel.TABLE);
-                }
-                else if (success) {
-                    _this.setPanel(Panel.TABLE, function (s) {
-                        var i = s.centuries.findIndex(function (c) { return century.centuryID === c.centuryID; });
-                        s.centuries[i].destroy();
-                        s.centuries.splice(i, 1);
-                        return s;
-                    });
-                }
-                else {
-                    _this.setPanel(Panel.TABLE);
-                    alert('Failed to delete century ' + century.centuryName + '.');
-                }
-            });
-        }
+        this.setLoader('Deleting ' + century.centuryID + '...');
+        ProxyFactory_ts_1.default.getSectionProxy().deleteCentury(century.centuryID, function (success, e) {
+            if (e) {
+                alert('Error deleting Century: ' + e);
+                _this.setPanel(Panel.TABLE);
+            }
+            else if (success) {
+                _this.setPanel(Panel.TABLE, function (s) {
+                    var i = s.centuries.findIndex(function (c) { return century.centuryID === c.centuryID; });
+                    s.centuries[i].destroy();
+                    s.centuries.splice(i, 1);
+                    return s;
+                });
+            }
+            else {
+                _this.setPanel(Panel.TABLE);
+                alert('Failed to delete century ' + century.centuryName + '.');
+            }
+        });
     };
     CenturyApp.prototype.openEdit = function (century) {
         this.setPanel(Panel.EDIT, function (s) {
@@ -36987,37 +36996,40 @@ var CenturyApp = (function (_super) {
             return s;
         });
     };
-    CenturyApp.prototype.saveCentury = function (ctProps, isNew) {
+    CenturyApp.prototype.saveCentury = function (editState) {
         var _this = this;
-        this.setLoader('Saving Century ' + ctProps.centuryID + '...');
+        this.setLoader('Saving Century ' + editState.ctProps.centuryID + '...');
         var onError = function (e) {
             alert('Error saving Century: ' + e);
             _this.setPanel(Panel.EDIT, function (s) {
-                s.editOpts = {
-                    isNew: isNew,
-                    ctProps: ctProps,
-                    val: (e.toLowerCase().indexOf(ctProps.centuryID.toLowerCase()) === -1
-                        ? null : 'error')
-                };
+                e = e.toLowerCase();
+                for (var k in editState.val) {
+                    if (editState.ctProps[k] && (e.indexOf(editState.ctProps[k]) !== -1 ||
+                        e.indexOf(k.toLowerCase()) !== -1)) {
+                        editState.val[k] = 'error';
+                    }
+                }
+                s.editState = editState;
                 return s;
             });
         };
-        if (isNew) {
-            ProxyFactory_ts_1.default.getSectionProxy().createCentury(ctProps, function (century, e) {
+        var proxy = ProxyFactory_ts_1.default.getSectionProxy();
+        if (editState.isNew) {
+            proxy.createCentury(editState.ctProps, function (century, e) {
                 if (e) {
                     onError(e);
                 }
                 else {
                     _this.setPanel(Panel.TABLE, function (s) {
                         s.centuries.push(century);
-                        s.editOpts = {};
+                        delete s.editState;
                         return s;
                     });
                 }
             });
         }
         else {
-            ProxyFactory_ts_1.default.getSectionProxy().updateCentury(ctProps, function (century, e) {
+            proxy.updateCentury(editState.ctProps, function (century, e) {
                 if (e) {
                     onError(e);
                 }
@@ -37026,7 +37038,7 @@ var CenturyApp = (function (_super) {
                         var i = s.centuries.findIndex(function (c) { return century.centuryID === c.centuryID; });
                         s.centuries[i].destroy();
                         s.centuries[i] = century;
-                        s.editOpts = {};
+                        delete s.editState;
                         return s;
                     });
                 }
@@ -37064,84 +37076,95 @@ var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
 var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var ct = __webpack_require__(/*! @src/models/century.ts */ "./src/models/century.ts");
 var CenturyEditPanel = (function (_super) {
     __extends(CenturyEditPanel, _super);
     function CenturyEditPanel(p) {
         var _this = _super.call(this, p) || this;
-        var isNew;
-        if (typeof p.isNew === 'boolean') {
-            isNew = p.isNew;
-        }
-        else {
-            isNew = !Boolean(p.ctProps);
-        }
-        var ctProps = p.ctProps || {
-            centuryID: '',
-            centuryName: ''
-        };
-        ctProps.centuryName = ctProps.centuryName || '';
+        var es = p.editState || {};
         _this.state = {
-            isNew: isNew,
-            ctProps: ctProps,
-            val: p.val || null
+            isNew: typeof es.isNew === 'boolean' ? es.isNew : !Boolean(es.ctProps),
+            ctProps: es.ctProps || ct.Century.createProperties(),
+            val: es.val || {
+                centuryID: null,
+                centuryName: null
+            }
         };
-        _this.getCenturyIDFormGroup = _this.getCenturyIDFormGroup.bind(_this);
-        _this.onChange = _this.onChange.bind(_this);
+        _this.renderCenturyIDFormGroup = _this.renderCenturyIDFormGroup.bind(_this);
         _this.onSubmit = _this.onSubmit.bind(_this);
         return _this;
     }
     CenturyEditPanel.prototype.render = function () {
+        var _this = this;
         var x = [];
         x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
             ? 'Create a Century'
-            : 'Edit Century: ' + this.props.ctProps.centuryName));
+            : 'Edit Century: ' + this.state.ctProps.centuryID));
         x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
             React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
         x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
-            this.getCenturyIDFormGroup(),
-            React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryName" },
+            this.renderCenturyIDFormGroup(),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryName", validationState: this.state.val.centuryName },
                 React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Century Name:"),
                 React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.ctProps.centuryName, onChange: this.onChange }))),
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.ctProps.centuryName, onChange: function (e) {
+                            var centuryName = e.target.value;
+                            _this.setState(function (s) {
+                                s.ctProps.centuryName = centuryName;
+                                s.val.centuryName = (centuryName && centuryName.length > ct.Century.MAX_LENGTHS.centuryName
+                                    ? 'error' : null);
+                                return s;
+                            });
+                        } })),
+                React.createElement(react_bootstrap_1.HelpBlock, null, this.state.ctProps.centuryName.length + ' / ' + ct.Century.MAX_LENGTHS.centuryName)),
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
                     React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))));
         return x;
     };
-    CenturyEditPanel.prototype.getCenturyIDFormGroup = function () {
+    CenturyEditPanel.prototype.renderCenturyIDFormGroup = function () {
+        var _this = this;
         var label, value;
         if (this.state.isNew) {
             label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Century ID:"));
-            value = (React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.ctProps.centuryID, onChange: this.onChange })));
+            value = [React.createElement(react_bootstrap_1.Col, { sm: 4, key: "v" },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.ctProps.centuryID, onChange: function (e) {
+                            var centuryID = e.target.value;
+                            _this.setState(function (s) {
+                                s.ctProps.centuryID = centuryID;
+                                s.val.centuryID = (centuryID && centuryID.length <= ct.Century.MAX_LENGTHS.centuryID
+                                    ? null : 'error');
+                                return s;
+                            });
+                        } })),
+                React.createElement(react_bootstrap_1.HelpBlock, { key: "h" }, this.state.ctProps.centuryID.length + ' / ' + ct.Century.MAX_LENGTHS.centuryID)];
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Century ID:"));
-            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.props.ctProps.centuryID));
+            value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.state.ctProps.centuryID));
         }
-        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryID", validationState: this.state.val },
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "centuryID", validationState: this.state.val.centuryID },
             label,
             value));
     };
-    CenturyEditPanel.prototype.onChange = function (e) {
-        var target = e.target;
-        var k = target.id;
-        var v = target.value;
-        this.setState(function (s) {
-            s.ctProps[k] = v;
-            return s;
-        });
-    };
     CenturyEditPanel.prototype.onSubmit = function (e) {
+        var _this = this;
         e.preventDefault();
-        var val = this.state.ctProps.centuryID ? null : 'error';
+        var val = this.state.val;
+        if (!this.state.ctProps.centuryID) {
+            val.centuryID = 'error';
+        }
         this.setState(function (s) {
             s.val = val;
             return s;
         });
-        if (val === null) {
-            this.props.onSubmit(this.state.ctProps, this.state.isNew);
+        for (var k in val) {
+            if (val[k] === 'error')
+                return;
         }
+        this.setState(function (s) {
+            _this.props.onSubmit(s);
+        });
     };
     return CenturyEditPanel;
 }(React.Component));
@@ -39818,8 +39841,8 @@ var MsTypeApp = (function (_super) {
         };
         _this.renderTablePanel = _this.renderTablePanel.bind(_this);
         _this.renderEditPanel = _this.renderEditPanel.bind(_this);
-        _this.deleteMsType = _this.deleteMsType.bind(_this);
         _this.saveMsType = _this.saveMsType.bind(_this);
+        _this.deleteMsType = _this.deleteMsType.bind(_this);
         _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
         _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         return _this;
@@ -39857,7 +39880,6 @@ var MsTypeApp = (function (_super) {
         if (!es.mProps) {
             if (this.state.msType) {
                 es.mProps = this.state.msType.toProperties();
-                es.mProps.msTypeName = es.mProps.msTypeName || '';
             }
             else {
                 es.mProps = null;
@@ -39979,26 +40001,15 @@ var MsTypeEditPanel = (function (_super) {
     function MsTypeEditPanel(p) {
         var _this = _super.call(this, p) || this;
         var es = p.editState || {};
-        var isNew;
-        if (typeof es.isNew === 'boolean') {
-            isNew = es.isNew;
-        }
-        else {
-            isNew = !Boolean(es.mProps);
-        }
-        var mProps = es.mProps || {
-            msType: '',
-            msTypeName: ''
-        };
         _this.state = {
-            isNew: isNew,
-            mProps: mProps,
+            isNew: typeof es.isNew === 'boolean' ? es.isNew : !Boolean(es.mProps),
+            mProps: es.mProps || mst.MsType.createProperties(),
             val: es.val || {
                 msType: null,
                 msTypeName: null
             }
         };
-        _this.getMsTypeFormGroup = _this.getMsTypeFormGroup.bind(_this);
+        _this.renderMsTypeFormGroup = _this.renderMsTypeFormGroup.bind(_this);
         _this.onSubmit = _this.onSubmit.bind(_this);
         return _this;
     }
@@ -40011,7 +40022,7 @@ var MsTypeEditPanel = (function (_super) {
         x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
             React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
         x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
-            this.getMsTypeFormGroup(),
+            this.renderMsTypeFormGroup(),
             React.createElement(react_bootstrap_1.FormGroup, { controlId: "msTypeName", validationState: this.state.val.msTypeName },
                 React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Name:"),
                 React.createElement(react_bootstrap_1.Col, { sm: 4 },
@@ -40030,7 +40041,7 @@ var MsTypeEditPanel = (function (_super) {
                     React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))));
         return x;
     };
-    MsTypeEditPanel.prototype.getMsTypeFormGroup = function () {
+    MsTypeEditPanel.prototype.renderMsTypeFormGroup = function () {
         var _this = this;
         var label, value;
         if (this.state.isNew) {
@@ -43155,6 +43166,9 @@ var Century = (function (_super) {
     __extends(Century, _super);
     function Century(props) {
         var _this = _super.call(this) || this;
+        if (!props.centuryID) {
+            throw Error('centuryID cannot be empty');
+        }
         _this.centuryID = props.centuryID;
         _this.centuryName = props.centuryName || null;
         return _this;
@@ -43162,8 +43176,18 @@ var Century = (function (_super) {
     Century.prototype.toProperties = function () {
         return {
             centuryID: this.centuryID,
-            centuryName: this.centuryName
+            centuryName: this.centuryName || ''
         };
+    };
+    Century.createProperties = function () {
+        return {
+            centuryID: '',
+            centuryName: ''
+        };
+    };
+    Century.MAX_LENGTHS = {
+        centuryID: 20,
+        centuryName: 255
     };
     return Century;
 }(SpgModel_ts_1.default));
@@ -43418,7 +43442,7 @@ var MsType = (function (_super) {
     __extends(MsType, _super);
     function MsType(props) {
         var _this = _super.call(this) || this;
-        if (!props.msType.length) {
+        if (!props.msType) {
             throw Error('msType cannot be empty.');
         }
         _this.msType = props.msType;
@@ -43428,7 +43452,13 @@ var MsType = (function (_super) {
     MsType.prototype.toProperties = function () {
         return {
             msType: this.msType,
-            msTypeName: this.msTypeName
+            msTypeName: this.msTypeName || ''
+        };
+    };
+    MsType.createProperties = function () {
+        return {
+            msType: '',
+            msTypeName: ''
         };
     };
     MsType.MAX_LENGTHS = {

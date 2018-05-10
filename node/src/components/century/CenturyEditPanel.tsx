@@ -7,58 +7,46 @@ import {
 	Form,
 	FormControl,
 	FormGroup,
+	HelpBlock
 } from 'react-bootstrap';
 
 import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
-
+import ValState from '@src/components/common/FormValidation.ts';
 import * as ct from '@src/models/century.ts';
+
+export interface Val {
+	centuryID: ValState
+	centuryName: ValState
+	[x: string]: ValState
+}
 
 interface P {
 	onBack: () => void
-	onSubmit: (ctProps:ct.Properties, isNew:boolean) => void
-
-	isNew?: boolean
-	ctProps?: ct.Properties
-	val?: null | 'error'
+	onSubmit: (editState:S) => void
+	editState: Partial<S>
 }
-interface S {
+export interface S {
 	isNew: boolean
 	ctProps: ct.Properties
-
-	// validationState
-	val: null | 'error'
+	val: Val
 }
 
 export default class CenturyEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
-
-		var isNew: boolean;
-		if (typeof p.isNew === 'boolean') {
-			isNew = p.isNew;
-		}
-		else {
-			isNew = !Boolean(p.ctProps)
-		}
-
-		var ctProps = p.ctProps || {
-			centuryID: '',
-			centuryName: ''
-		};
-		ctProps.centuryName = ctProps.centuryName || '';
+		const es = p.editState || {};
 
 		this.state = {
-			isNew: isNew,
-			ctProps: ctProps,
-			val: p.val || null
+			isNew: typeof es.isNew === 'boolean' ? es.isNew : !Boolean(es.ctProps),
+			ctProps: es.ctProps || ct.Century.createProperties(),
+			val: es.val || {
+				centuryID: null,
+				centuryName: null
+			}
 		};
 
-		// render helper
-		this.getCenturyIDFormGroup = this.getCenturyIDFormGroup.bind(this);
-
-		// event handlers
-		this.onChange = this.onChange.bind(this);
+		this.renderCenturyIDFormGroup = this.renderCenturyIDFormGroup.bind(this);
 		this.onSubmit = this.onSubmit.bind(this);
 	}
 
@@ -66,7 +54,7 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 		var x: JSX.Element[] = [];
 		x.push(<Header key="header" min>{this.state.isNew
 			? 'Create a Century'
-			: 'Edit Century: ' + this.props.ctProps.centuryName}</Header>);
+			: 'Edit Century: ' + this.state.ctProps.centuryID}</Header>);
 
 		x.push(<PanelMenu key="panelMenu">
 			<Button
@@ -79,11 +67,11 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 			horizontal
 			onSubmit={this.onSubmit}
 		>
-			{this.getCenturyIDFormGroup()}
+			{this.renderCenturyIDFormGroup()}
 
 			<FormGroup
 				controlId="centuryName"
-			>
+				validationState={this.state.val.centuryName}>
 				<Col
 					sm={3}
 					componentClass={ControlLabel}
@@ -92,9 +80,20 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 					<FormControl
 						type="text"
 						value={this.state.ctProps.centuryName}
-						onChange={this.onChange}
+						onChange={e => {
+							var centuryName = (e.target as HTMLInputElement).value;
+							this.setState((s:S) => {
+								s.ctProps.centuryName = centuryName;
+								s.val.centuryName = (centuryName && centuryName.length > ct.Century.MAX_LENGTHS.centuryName
+									? 'error' : null);
+								return s;
+							});
+						}}
 					/>
 				</Col>
+				<HelpBlock>
+					{this.state.ctProps.centuryName.length + ' / ' + ct.Century.MAX_LENGTHS.centuryName}
+				</HelpBlock>
 			</FormGroup>
 
 			<FormGroup>
@@ -110,8 +109,8 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 		return x;
 	}
 
-	getCenturyIDFormGroup() {
-		var label, value: JSX.Element;
+	renderCenturyIDFormGroup() {
+		var label, value: JSX.Element | JSX.Element[];
 
 		if (this.state.isNew) {
 			label = (<Col
@@ -120,13 +119,24 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 				className="required"
 			>Century ID:</Col>);
 
-			value = (<Col sm={4}>
+			value = [<Col sm={4} key="v">
 				<FormControl
 					type="text"
 					value={this.state.ctProps.centuryID}
-					onChange={this.onChange}
+					onChange={e => {
+						var centuryID = (e.target as HTMLInputElement).value;
+						this.setState((s:S) => {
+							s.ctProps.centuryID = centuryID;
+							s.val.centuryID = (centuryID && centuryID.length <= ct.Century.MAX_LENGTHS.centuryID
+								? null : 'error');
+							return s;
+						});
+					}}
 				/>
-			</Col>);
+			</Col>,
+			<HelpBlock key="h">
+				{this.state.ctProps.centuryID.length + ' / ' + ct.Century.MAX_LENGTHS.centuryID}
+			</HelpBlock>];
 		}
 
 		else {
@@ -136,41 +146,36 @@ export default class CenturyEditPanel extends React.Component<P,S> {
 			>Century ID:</Col>);
 
 			value = (<Col sm={4} className="pt7 pl27">
-				{this.props.ctProps.centuryID}
+				{this.state.ctProps.centuryID}
 			</Col>);
 		}
 
 		return (<FormGroup
 			controlId="centuryID"
-			validationState={this.state.val}
-		>
+			validationState={this.state.val.centuryID}>
 			{label}
 			{value}
 		</FormGroup>);
 	}
 
-	onChange(e:React.FormEvent<FormControl>) {
-		const target = e.target as HTMLInputElement;
-		const k = target.id;
-		const v = target.value;
-
-		this.setState((s:S) => {
-			s.ctProps[k] = v;
-			return s;
-		});
-	}
-
 	onSubmit(e:React.FormEvent<Form>) {
 		e.preventDefault();
-		var val = this.state.ctProps.centuryID ? null : 'error'
+		var val = this.state.val;
+		if (!this.state.ctProps.centuryID) {
+			val.centuryID = 'error';
+		}
 
 		this.setState((s:S) => {
-			s.val = val as S['val'];
+			s.val = val;
 			return s;
 		});
 
-		if (val === null) {
-			this.props.onSubmit(this.state.ctProps, this.state.isNew);
+		for (let k in val) {
+			if (val[k] === 'error') return;
 		}
+
+		this.setState((s:S) => {
+			this.props.onSubmit(s);
+		});
 	}
 }

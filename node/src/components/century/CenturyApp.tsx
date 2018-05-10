@@ -3,7 +3,10 @@ import * as React from 'react';
 import PageLoader from '@src/components/common/PageLoader.tsx';
 
 import TablePanel from '@src/components/century/CenturyTablePanel.tsx';
-import EditPanel from '@src/components/century/CenturyEditPanel.tsx';
+import {
+	default as EditPanel,
+	S as EditState
+} from '@src/components/century/CenturyEditPanel.tsx';
 
 import StateUtils from '@src/components/StateUtilities.ts'
 
@@ -26,12 +29,7 @@ interface S {
 	centuries: ct.Century[]
 	panel: Panel
 	loadMessage?: string
-
-	editOpts: {
-		isNew?: boolean
-		ctProps?: ct.Properties
-		val?: null | 'error'
-	}
+	editState?: EditState
 }
 
 export default class CenturyApp extends React.Component<P,S> {
@@ -47,10 +45,10 @@ export default class CenturyApp extends React.Component<P,S> {
 		this.state = {
 			panel: Panel.TABLE,
 			centuries: this.props.centuries,
-			editOpts: {}
 		};
 
-		// JSX Render Helper
+		// JSX Render Helpers
+		this.renderTablePanel = this.renderTablePanel.bind(this);
 		this.renderEditPanel = this.renderEditPanel.bind(this);
 
 		// Opener
@@ -58,7 +56,7 @@ export default class CenturyApp extends React.Component<P,S> {
 
 		// Data manipulation operations
 		this.saveCentury = this.saveCentury.bind(this);
-		this.confirmDelete = this.confirmDelete.bind(this);
+		this.deleteCentury = this.deleteCentury.bind(this);
 
 		// State helpers
 		this.setPanel = StateUtils.setPanel.bind(this);
@@ -68,16 +66,7 @@ export default class CenturyApp extends React.Component<P,S> {
 	render() {
 		switch (this.state.panel)  {
 			case Panel.TABLE:
-				return (<TablePanel
-					centuries={this.props.centuries}
-					onBack={this.props.onBack}
-					onEdit={this.openEdit}
-					onDelete={this.confirmDelete}
-					onRefresh={() => {
-						this.setLoader('Loading Centuries...');
-						this.props.reloadCenturies();
-					}}
-				/>);
+				return this.renderTablePanel();
 
 			case Panel.EDIT:
 				return this.renderEditPanel();
@@ -90,29 +79,50 @@ export default class CenturyApp extends React.Component<P,S> {
 		}
 	}
 
-	renderEditPanel() {
-		var edo = this.state.editOpts;
-		var ctProps: ct.Properties;
+	renderTablePanel() {
+		return (<TablePanel
+			centuries={this.props.centuries}
+			onBack={this.props.onBack}
+			onRefresh={() => {
+				this.setLoader('Loading Centuries...');
+				this.props.reloadCenturies();
+			}}
 
-		if (edo.ctProps) {
-			ctProps = edo.ctProps;
-		}
-		else if (this.state.century) {
-			ctProps = this.state.century.toProperties();
-		}
-		else {
-			ctProps = null;
+			onEdit={century => {
+				this.setPanel(Panel.EDIT, s => {
+					s.century = century;
+					return s;
+				});
+			}}
+
+			onDelete={century => {
+				var del = confirm('Delete Century ' + century.centuryID + '?');
+				if (del) {
+					this.deleteCentury(century);
+				}
+			}}
+		/>);
+	}
+
+	renderEditPanel() {
+		var es: Partial<EditState> = this.state.editState || {};
+		if (!es.ctProps) {
+			if (this.state.century) {
+				es.ctProps = this.state.century.toProperties();
+			}
+			else {
+				es.ctProps = null;
+			}
 		}
 
 		return (<EditPanel
 			onBack={() => this.setPanel(Panel.TABLE, s => {
-				s.editOpts = {};
+				delete s.editState;
+				s.century = null;
 				return s;
 			})}
 			onSubmit={this.saveCentury}
-			ctProps={ctProps}
-			isNew={edo.isNew}
-			val={edo.val}
+			editState={es}
 		/>);
 	}
 
@@ -120,31 +130,27 @@ export default class CenturyApp extends React.Component<P,S> {
 	 * Attempts to delete century using the sectionProxy.
 	 * @param century to delete
 	 */
-	confirmDelete(century: ct.Century) {
-		var del = confirm('Delete century ' + century.centuryID + '?');
-		if (del) {
-			this.setLoader('Deleting ' + century.centuryID + '...');
+	deleteCentury(century: ct.Century) {
+		this.setLoader('Deleting ' + century.centuryID + '...');
+		proxyFactory.getSectionProxy().deleteCentury(century.centuryID, (success, e?) => {
+			if (e) {
+				alert('Error deleting Century: ' + e);
+				this.setPanel(Panel.TABLE);
+			}
+			else if (success) {
+				this.setPanel(Panel.TABLE, s => {
+					var i = s.centuries.findIndex(c => century.centuryID === c.centuryID);
+					s.centuries[i].destroy();
+					s.centuries.splice(i, 1);
 
-			proxyFactory.getSectionProxy().deleteCentury(century.centuryID, (success, e?) => {
-				if (e) {
-					alert('Error deleting Century: ' + e);
-					this.setPanel(Panel.TABLE);
-				}
-				else if (success) {
-					this.setPanel(Panel.TABLE, s => {
-						var i = s.centuries.findIndex(c => century.centuryID === c.centuryID);
-						s.centuries[i].destroy();
-						s.centuries.splice(i, 1);
-
-						return s;
-					});
-				}
-				else {
-					this.setPanel(Panel.TABLE);
-					alert('Failed to delete century ' + century.centuryName + '.');
-				}
-			});
-		}
+					return s;
+				});
+			}
+			else {
+				this.setPanel(Panel.TABLE);
+				alert('Failed to delete century ' + century.centuryName + '.');
+			}
+		});
 	}
 
 	/**
@@ -163,33 +169,33 @@ export default class CenturyApp extends React.Component<P,S> {
 	 * @param ctProps properties of the Century.
 	 * @param isNew
 	 */
-	saveCentury(ctProps:ct.Properties, isNew:boolean) {
-		this.setLoader('Saving Century ' + ctProps.centuryID + '...');
+	saveCentury(editState: EditState) {
+		this.setLoader('Saving Century ' + editState.ctProps.centuryID + '...');
 
 		var onError = (e:string) => {
 			alert('Error saving Century: ' + e);
 			this.setPanel(Panel.EDIT, s => {
-
-				s.editOpts = {
-					isNew: isNew,
-					ctProps: ctProps,
-					val: (e.toLowerCase().indexOf(ctProps.centuryID.toLowerCase()) === - 1
-						? null : 'error')
-				};
+				e = e.toLowerCase();
+				for (let k in editState.val) {
+					if (editState.ctProps[k] && (e.indexOf(editState.ctProps[k]) !== -1 ||
+						e.indexOf(k.toLowerCase()) !== -1)) {
+							editState.val[k] = 'error';
+						}
+				}
+				s.editState = editState;
 				return s;
 			});
 		};
-
-		if (isNew) {
-			proxyFactory.getSectionProxy().createCentury(ctProps, (century, e?) => {
+		const proxy = proxyFactory.getSectionProxy();
+		if (editState.isNew) {
+			proxy.createCentury(editState.ctProps, (century, e?) => {
 				if (e) {
 					onError(e);
 				}
-
 				else {
 					this.setPanel(Panel.TABLE, s => {
 						s.centuries.push(century);
-						s.editOpts = {};
+						delete s.editState;
 						return s;
 					});
 				}
@@ -197,18 +203,16 @@ export default class CenturyApp extends React.Component<P,S> {
 		}
 
 		else {
-			proxyFactory.getSectionProxy().updateCentury(ctProps, (century, e?) => {
+			proxy.updateCentury(editState.ctProps, (century, e?) => {
 				if (e) {
 					onError(e);
 				}
-
 				else {
 					this.setPanel(Panel.TABLE, s => {
 						var i = s.centuries.findIndex(c => century.centuryID === c.centuryID);
 						s.centuries[i].destroy();
-
 						s.centuries[i] = century;
-						s.editOpts = {};
+						delete s.editState;
 						return s;
 					});
 				}

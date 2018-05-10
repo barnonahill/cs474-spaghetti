@@ -20,16 +20,34 @@ export class Century extends SpgModel {
 	public readonly centuryID: string;
 	public centuryName: string;
 
-	constructor(props: Properties) {
+	public static MAX_LENGTHS = {
+		centuryID: 20,
+		centuryName: 255
+	};
+
+	public constructor(props: Properties) {
 		super();
+		if (!props.centuryID) {
+			throw Error('centuryID cannot be empty');
+		}
 		this.centuryID = props.centuryID;
 		this.centuryName = props.centuryName || null;
 	}
 
-	toProperties(): Properties {
+	public toProperties(): Properties {
 		return {
 			centuryID: this.centuryID,
-			centuryName: this.centuryName
+			centuryName: this.centuryName || ''
+		};
+	}
+
+	/**
+	 * Creates an empty Century property set.
+	 */
+	public static createProperties(): Properties {
+		return {
+			centuryID: '',
+			centuryName: ''
 		};
 	}
 }

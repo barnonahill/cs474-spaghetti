@@ -25,12 +25,7 @@ export interface Val {
 interface P {
 	onBack: () => void
 	onSubmit: (editState: S) => void
-
-	editState: {
-		isNew?: boolean
-		mProps?: mst.Properties
-		val?: Val
-	}
+	editState: Partial<S>
 }
 
 export interface S {
@@ -44,30 +39,16 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 		super(p);
 		const es = p.editState || {};
 
-		var isNew: boolean;
-		if (typeof es.isNew === 'boolean') {
-			isNew = es.isNew;
-		}
-		else {
-			isNew = !Boolean(es.mProps)
-		}
-
-		var mProps = es.mProps || {
-			msType: '',
-			msTypeName: ''
-		};
-
 		this.state = {
-			isNew: isNew,
-			mProps: mProps,
-
+			isNew: typeof es.isNew === 'boolean' ? es.isNew : !Boolean(es.mProps),
+			mProps: es.mProps || mst.MsType.createProperties(),
 			val: es.val || {
 				msType: null,
 				msTypeName: null
 			}
 		};
 
-		this.getMsTypeFormGroup = this.getMsTypeFormGroup.bind(this);
+		this.renderMsTypeFormGroup = this.renderMsTypeFormGroup.bind(this);
 		this.onSubmit = this.onSubmit.bind(this);
 	}
 
@@ -85,7 +66,7 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 			horizontal
 			onSubmit={this.onSubmit}
 		>
-			{this.getMsTypeFormGroup()}
+			{this.renderMsTypeFormGroup()}
 
 			<FormGroup
 				controlId="msTypeName"
@@ -128,7 +109,7 @@ export default class MsTypeEditPanel extends React.Component<P,S> {
 		return x;
 	}
 
-	getMsTypeFormGroup() {
+	renderMsTypeFormGroup() {
 		var label, value: JSX.Element | JSX.Element[];
 		if (this.state.isNew) {
 			label = (<Col
