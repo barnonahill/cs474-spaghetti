@@ -96,8 +96,7 @@ export default class LibraryTablePanel extends React.Component<Properties, State
 				headerHeight={TABLE_CONSTANTS.HEADER_HEIGHT}
 				rowHeight={TABLE_CONSTANTS.ROW_HEIGHT}
 				rowCount={this.state.libraries.length}
-				rowGetter={this.state.rowGetter}
-			>
+				rowGetter={this.state.rowGetter}>
 				<Column
 					label="Siglum"
 					dataKey="libSiglum"

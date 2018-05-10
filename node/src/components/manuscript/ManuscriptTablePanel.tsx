@@ -19,22 +19,21 @@ import SearchBar from '@src/components/common/SearchBar.tsx';
 import { Country } from '@src/models/country.ts';
 import { Library } from '@src/models/library.ts';
 import { Manuscript } from '@src/models/manuscript.ts';
+import { TABLE_CONSTANTS } from '@src/index.tsx';
 
 interface P {
 	country: Country
 	library: Library
 	manuscripts: Array<Manuscript>
 	onBack: () => void
-	onRefresh: (callback: (manuscripts: Manuscript[]) => void) => void
+	onRefresh: () => void
+	onView: (ms:Manuscript) => void
 	onEdit: (ms:Manuscript) => void
 	onDelete: (ms:Manuscript) => void
-	onView: (ms:Manuscript) => void
 }
 interface S {
 	rowGetter: (i:Index) => Manuscript
 	manuscripts: Array<Manuscript>
-	height: number
-	width: number
 }
 
 export default class ManuscriptTablePanel extends React.Component<P,S> {
@@ -44,13 +43,9 @@ export default class ManuscriptTablePanel extends React.Component<P,S> {
 		this.state = {
 			rowGetter: (i:Index) => this.state.manuscripts[i.index],
 			manuscripts: this.props.manuscripts,
-			height: window.innerHeight * 0.95,
-			width: window.innerWidth - 50
 		};
 
 		this.getHeader = this.getHeader.bind(this);
-		this.refreshManuscripts = this.refreshManuscripts.bind(this);
-
 		this.renderView = this.renderView.bind(this);
 		this.renderEdit = this.renderEdit.bind(this);
 		this.renderDelete = this.renderDelete.bind(this);
@@ -96,23 +91,21 @@ export default class ManuscriptTablePanel extends React.Component<P,S> {
 						<Button
 							bsStyle="primary"
 							className="fr"
-							onClick={() => this.props.onRefresh(this.refreshManuscripts)}
+							onClick={this.props.onRefresh}
 						>Refresh</Button>
 					</Col>
 				</Row>
 			</PanelMenu>),
 
 			(<Table key="table"
-				className="mb10"
-				rowClassName="tr"
-				rowGetter={this.state.rowGetter}
-				height={this.state.height}
-				width={this.state.width}
-				headerHeight={40}
-				rowHeight={50}
+				className={TABLE_CONSTANTS.CLASS}
+				rowClassName={TABLE_CONSTANTS.ROW_CLASS}
+				height={TABLE_CONSTANTS.HEIGHT}
+				width={TABLE_CONSTANTS.WIDTH}
+				headerHeight={TABLE_CONSTANTS.HEADER_HEIGHT}
+				rowHeight={TABLE_CONSTANTS.ROW_HEIGHT}
 				rowCount={this.state.manuscripts.length}
-			>
-
+				rowGetter={this.state.rowGetter}>
 				<Column
 					label="Lib Siglum"
 					dataKey="libSiglum"
@@ -122,7 +115,7 @@ export default class ManuscriptTablePanel extends React.Component<P,S> {
 				<Column
 					label="MS Siglum"
 					dataKey="msSiglum"
-					width={this.state.width - 480}
+					width={TABLE_CONSTANTS.WIDTH - 480}
 				/>
 
 				<Column

@@ -34,7 +34,7 @@ export class Library extends SpgModel implements Properties {
 	public address2: string;
 	public postCode: string;
 
-	public static MAX_LENGTH = {
+	public static MAX_LENGTHS = {
 		libSiglum: 10,
 		countryID: 20,
 		city: 255,
@@ -47,34 +47,47 @@ export class Library extends SpgModel implements Properties {
 	// Index signature to allow iteration over properties in Typescript
 	[x: string]: any;
 
-	constructor(props: Properties) {
+	public constructor(props: Properties) {
 		super();
 
 		for (let k in props) {
 			if (k === 'libSiglum' || k === 'countryID' || k === 'city' || k === 'library') {
-				if (!(props[k] && props[k].length)) {
+				if (!props[k]) {
 					throw Error(k + ' cannot be empty');
 				}
-				this[k] = props[k];
 			}
-			else {
-				this[k] = props[k] || null;
-			}
+			this[k] = props[k];
 		}
 	}
 
 	/**
-	 * Returns the property map of this Library.
+	 * Returns a copy of the property map of this Library.
 	 */
-	toProperties(): Properties {
+	public toProperties(): Properties {
 		return {
 			libSiglum: this.libSiglum,
+			countryID: this.countryID,
 			city: this.city,
 			library: this.library,
-			address1: this.address1,
-			address2: this.address2,
-			postCode: this.postCode,
-			countryID: this.countryID
+			address1: this.address1 || '',
+			address2: this.address2 || '',
+			postCode: this.postCode || '',
+		};
+	}
+
+	/**
+	 * Creates an empty Library property map.
+	 * @return
+	 */
+	public static createProperties(): Properties {
+		return {
+			libSiglum: '',
+			countryID: '',
+			city: '',
+			library: '',
+			address1: '',
+			address2: '',
+			postCode: ''
 		};
 	}
 }

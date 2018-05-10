@@ -119,6 +119,7 @@ export default class LibraryApp extends React.Component<P, S> {
 					}
 				}
 				s.editState = editState;
+
 				var i = s.lProps.libSiglum.indexOf('-');
 				if (i >= 0 && i < s.lProps.libSiglum.length - 2) {
 					s.lProps.libSiglum = s.lProps.libSiglum.slice(i + 1);
@@ -233,20 +234,20 @@ export default class LibraryApp extends React.Component<P, S> {
 				});
 			})}
 
-			onEdit={(l:lib.Library) => this.setPanel(Panel.EDIT, s => {
-				s.library = l;
+			onEdit={library => this.setPanel(Panel.EDIT, s => {
+				s.library = library;
 				return s;
 			})}
 
-			onView={(l:lib.Library) => this.setPanel(Panel.ENTITY, s => {
-				s.library = l;
+			onView={library => this.setPanel(Panel.ENTITY, s => {
+				s.library = library;
 				return s;
 			})}
 
-			onDelete={(l:lib.Library) => {
-				var del = confirm('Delete ' + l.library + '?');
+			onDelete={library => {
+				var del = confirm('Delete ' + library.library + '?');
 				if (del) {
-					this.deleteLibrary(l);
+					this.deleteLibrary(library);
 				}
 			}}
 		/>);
@@ -254,16 +255,8 @@ export default class LibraryApp extends React.Component<P, S> {
 
 	renderEditPanel() {
 		var es: Partial<EditState> = this.state.editState || {};
-		if (!es.lProps) {
-			if (this.state.library) {
-				es.lProps = this.state.library.toProperties();
-				es.lProps.address1 = es.lProps.address1 || '';
-				es.lProps.address2 = es.lProps.address2 || '';
-				es.lProps.postCode = es.lProps.postCode || '';
-			}
-			else {
-				es.lProps = null;
-			}
+		if (!es.lProps && this.state.library) {
+			es.lProps = this.state.library.toProperties();
 		}
 
 		return (<EditPanel

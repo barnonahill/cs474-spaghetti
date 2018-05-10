@@ -62,7 +62,7 @@ export default class CursusTablePanel extends React.Component<P,S> {
 					</Col>
 					<Col sm={4}>
 						<SearchBar
-							placeholder="Filter by countryID and countryName..."
+							placeholder="Filter by cursusID and cursusName..."
 							onSubmit={this.filter}
 						/>
 					</Col>

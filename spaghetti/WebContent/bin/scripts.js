@@ -37497,24 +37497,19 @@ var CursusApp = (function (_super) {
         _this.state = {
             panel: Panel.TABLE,
             cursuses: _this.props.cursuses,
-            editOpts: {}
         };
+        _this.renderTablePanel = _this.renderTablePanel.bind(_this);
         _this.renderEditPanel = _this.renderEditPanel.bind(_this);
-        _this.openEdit = _this.openEdit.bind(_this);
         _this.saveCursus = _this.saveCursus.bind(_this);
-        _this.confirmDelete = _this.confirmDelete.bind(_this);
+        _this.deleteCursus = _this.deleteCursus.bind(_this);
         _this.setPanel = StateUtilities_ts_1.default.setPanel.bind(_this);
         _this.setLoader = StateUtilities_ts_1.default.setLoader.bind(_this, Panel.LOADER);
         return _this;
     }
     CursusApp.prototype.render = function () {
-        var _this = this;
         switch (this.state.panel) {
             case Panel.TABLE:
-                return (React.createElement(CursusTablePanel_tsx_1.default, { cursuses: this.props.cursuses, onBack: this.props.onBack, onEdit: this.openEdit, onDelete: this.confirmDelete, onRefresh: function () {
-                        _this.setLoader('Loading Cursuses...');
-                        _this.props.reloadCursuses();
-                    } }));
+                return this.renderTablePanel();
             case Panel.EDIT:
                 return this.renderEditPanel();
             case Panel.LOADER:
@@ -37523,87 +37518,92 @@ var CursusApp = (function (_super) {
                 return null;
         }
     };
+    CursusApp.prototype.renderTablePanel = function () {
+        var _this = this;
+        return (React.createElement(CursusTablePanel_tsx_1.default, { cursuses: this.props.cursuses, onBack: this.props.onBack, onRefresh: function () {
+                _this.setLoader('Loading Cursuses...');
+                _this.props.reloadCursuses();
+            }, onEdit: function (cursus) {
+                _this.setPanel(Panel.EDIT, function (s) {
+                    s.cursus = cursus;
+                    return s;
+                });
+            }, onDelete: function (cursus) {
+                var del = confirm('Delete Cursus ' + cursus.cursusID + '?');
+                if (del) {
+                    _this.deleteCursus(cursus);
+                }
+            } }));
+    };
     CursusApp.prototype.renderEditPanel = function () {
         var _this = this;
-        var edo = this.state.editOpts;
-        var csProps;
-        if (edo.csProps) {
-            csProps = edo.csProps;
-        }
-        else if (this.state.cursus) {
-            csProps = this.state.cursus.toProperties();
-        }
-        else {
-            csProps = null;
+        var es = this.state.editState || {};
+        if (!es.csProps && this.state.cursus) {
+            es.csProps = this.state.cursus.toProperties();
         }
         return (React.createElement(CursusEditPanel_tsx_1.default, { onBack: function () { return _this.setPanel(Panel.TABLE, function (s) {
-                s.editOpts = {};
+                delete s.editState;
+                s.cursus = null;
                 return s;
-            }); }, onSubmit: this.saveCursus, csProps: csProps, isNew: edo.isNew, val: edo.val }));
+            }); }, onSubmit: this.saveCursus, editState: es }));
     };
-    CursusApp.prototype.confirmDelete = function (cursus) {
+    CursusApp.prototype.deleteCursus = function (cursus) {
         var _this = this;
-        var del = confirm('Delete cursus ' + cursus.cursusID + '?');
-        if (del) {
-            this.setLoader('Deleting ' + cursus.cursusID + '...');
-            ProxyFactory_ts_1.default.getSectionProxy().deleteCursus(cursus.cursusID, function (success, e) {
-                if (e) {
-                    alert('Error deleting Cursus: ' + e);
-                    _this.setPanel(Panel.TABLE);
-                }
-                else if (success) {
-                    _this.setState(function (s) {
-                        var i = s.cursuses.findIndex(function (c) { return cursus.cursusID === c.cursusID; });
-                        s.cursuses[i].destroy();
-                        s.cursuses.splice(i, 1);
-                        _this.setPanel(Panel.TABLE, null, s);
-                        return s;
-                    });
-                }
-                else {
-                    _this.setPanel(Panel.TABLE);
-                    alert('Failed to delete cursus ' + cursus.cursusName + '.');
-                }
-            });
-        }
-    };
-    CursusApp.prototype.openEdit = function (cursus) {
-        this.setPanel(Panel.EDIT, function (s) {
-            s.cursus = cursus;
-            return s;
+        this.setLoader('Deleting Cursus ' + cursus.cursusID + '...');
+        ProxyFactory_ts_1.default.getSectionProxy().deleteCursus(cursus.cursusID, function (success, e) {
+            if (e) {
+                alert('Error deleting Cursus: ' + e);
+                _this.setPanel(Panel.TABLE);
+            }
+            else if (success) {
+                _this.setState(function (s) {
+                    var i = s.cursuses.findIndex(function (c) { return cursus.cursusID === c.cursusID; });
+                    s.cursuses[i].destroy();
+                    s.cursuses.splice(i, 1);
+                    _this.setPanel(Panel.TABLE, null, s);
+                    return s;
+                });
+            }
+            else {
+                _this.setPanel(Panel.TABLE);
+                alert('Failed to delete cursus ' + cursus.cursusName + '.');
+            }
         });
     };
-    CursusApp.prototype.saveCursus = function (csProps, isNew) {
+    CursusApp.prototype.saveCursus = function (editState) {
         var _this = this;
-        this.setLoader('Saving Cursus ' + csProps.cursusID + '...');
+        this.setLoader('Saving Cursus ' + editState.csProps.cursusID + '...');
         var onError = function (e) {
             alert('Error saving Cursus: ' + e);
             _this.setPanel(Panel.EDIT, function (s) {
-                s.editOpts = {
-                    csProps: csProps,
-                    isNew: isNew,
-                    val: (e.toLowerCase().indexOf(csProps.cursusID.toLowerCase()) === -1
-                        ? null : 'error')
-                };
+                e = e.toLowerCase();
+                for (var k in editState.csProps) {
+                    if (editState.csProps[k] && (e.indexOf(editState.csProps[k].toLowerCase()) !== -1 ||
+                        e.indexOf(k.toLowerCase()) !== -1)) {
+                        editState.val[k] = 'error';
+                    }
+                }
+                s.editState = editState;
                 return s;
             });
         };
-        if (isNew) {
-            ProxyFactory_ts_1.default.getSectionProxy().createCursus(csProps, function (cursus, e) {
+        var proxy = ProxyFactory_ts_1.default.getSectionProxy();
+        if (editState.isNew) {
+            proxy.createCursus(editState.csProps, function (cursus, e) {
                 if (e) {
                     onError(e);
                 }
                 else {
                     _this.setPanel(Panel.TABLE, function (s) {
                         s.cursuses.push(cursus);
-                        s.editOpts = {};
+                        delete s.editState;
                         return s;
                     });
                 }
             });
         }
         else {
-            ProxyFactory_ts_1.default.getSectionProxy().updateCursus(csProps, function (cursus, e) {
+            proxy.updateCursus(editState.csProps, function (cursus, e) {
                 if (e) {
                     onError(e);
                 }
@@ -37612,7 +37612,7 @@ var CursusApp = (function (_super) {
                         var i = s.cursuses.findIndex(function (c) { return cursus.cursusID === c.cursusID; });
                         s.cursuses[i].destroy();
                         s.cursuses[i] = cursus;
-                        s.editOpts = {};
+                        delete s.editState;
                         return s;
                     });
                 }
@@ -37650,33 +37650,26 @@ var React = __webpack_require__(/*! react */ "react");
 var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
 var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var cs = __webpack_require__(/*! @src/models/cursus.ts */ "./src/models/cursus.ts");
 var CursusEditPanel = (function (_super) {
     __extends(CursusEditPanel, _super);
     function CursusEditPanel(p) {
         var _this = _super.call(this, p) || this;
-        var isNew;
-        if (typeof p.isNew === 'boolean') {
-            isNew = p.isNew;
-        }
-        else {
-            isNew = !Boolean(p.csProps);
-        }
-        var csProps = p.csProps || {
-            cursusID: '',
-            cursusName: ''
-        };
+        var es = p.editState || {};
         _this.state = {
-            isNew: isNew,
-            csProps: csProps,
-            val: p.val || null
+            isNew: typeof es.isNew === 'boolean' ? es.isNew : !Boolean(es.csProps),
+            csProps: es.csProps || cs.Cursus.createProperties(),
+            val: es.val || {
+                cursusID: null,
+                cursusName: null
+            }
         };
-        csProps.cursusName = csProps.cursusName || '';
-        _this.getCursusIDFormGroup = _this.getCursusIDFormGroup.bind(_this);
-        _this.onChange = _this.onChange.bind(_this);
+        _this.renderCursusIDFormGroup = _this.renderCursusIDFormGroup.bind(_this);
         _this.onSubmit = _this.onSubmit.bind(_this);
         return _this;
     }
     CursusEditPanel.prototype.render = function () {
+        var _this = this;
         var x = [];
         x.push(React.createElement(Header_tsx_1.default, { key: "header", min: true }, this.state.isNew
             ? 'Create a Cursus'
@@ -37684,50 +37677,69 @@ var CursusEditPanel = (function (_super) {
         x.push(React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
             React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back")));
         x.push(React.createElement(react_bootstrap_1.Form, { key: "form", horizontal: true, onSubmit: this.onSubmit },
-            this.getCursusIDFormGroup(),
-            React.createElement(react_bootstrap_1.FormGroup, { controlId: "cursusName" },
+            this.renderCursusIDFormGroup(),
+            React.createElement(react_bootstrap_1.FormGroup, { controlId: "cursusName", validationState: this.state.val.cursusName },
                 React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Cursus Name:"),
                 React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.csProps.cursusName, onChange: this.onChange }))),
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.csProps.cursusName, onChange: function (e) {
+                            var cursusName = e.target.value;
+                            _this.setState(function (s) {
+                                s.csProps.cursusName = cursusName;
+                                s.val.cursusName = (cursusName && cursusName.length > cs.Cursus.MAX_LENGTHS.cursusName
+                                    ? 'error' : null);
+                                return s;
+                            });
+                        } })),
+                React.createElement(react_bootstrap_1.HelpBlock, null, this.state.csProps.cursusName.length + ' / ' + cs.Cursus.MAX_LENGTHS.cursusName)),
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
                     React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))));
         return x;
     };
-    CursusEditPanel.prototype.getCursusIDFormGroup = function () {
+    CursusEditPanel.prototype.renderCursusIDFormGroup = function () {
+        var _this = this;
         var label, value;
         if (this.state.isNew) {
             label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel, className: "required" }, "Cursus ID:"));
-            value = (React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.csProps.cursusID, onChange: this.onChange })));
+            value = [(React.createElement(react_bootstrap_1.Col, { sm: 4, key: "v" },
+                    React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.csProps.cursusID, onChange: function (e) {
+                            var cursusID = e.target.value;
+                            _this.setState(function (s) {
+                                s.csProps.cursusID = cursusID;
+                                s.val.cursusID = (cursusID && cursusID.length <= cs.Cursus.MAX_LENGTHS.cursusID
+                                    ? null : 'error');
+                                return s;
+                            });
+                        } }))),
+                React.createElement(react_bootstrap_1.HelpBlock, { key: "h" }, this.state.csProps.cursusID.length + ' / ' + cs.Cursus.MAX_LENGTHS.cursusID)];
         }
         else {
             label = (React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Cursus ID:"));
             value = (React.createElement(react_bootstrap_1.Col, { sm: 4, className: "pt7 pl27" }, this.state.csProps.cursusID));
         }
-        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "cursusID", validationState: this.state.val },
+        return (React.createElement(react_bootstrap_1.FormGroup, { controlId: "cursusID", validationState: this.state.val.cursusID },
             label,
             value));
     };
-    CursusEditPanel.prototype.onChange = function (e) {
-        var target = e.target;
-        var k = target.id;
-        var v = target.value;
-        this.setState(function (s) {
-            s.csProps[k] = v;
-            return s;
-        });
-    };
     CursusEditPanel.prototype.onSubmit = function (e) {
+        var _this = this;
         e.preventDefault();
-        var val = this.state.csProps.cursusID ? null : 'error';
+        var val = this.state.val;
+        if (!this.state.csProps.cursusID) {
+            val.cursusID = 'error';
+        }
         this.setState(function (s) {
             s.val = val;
             return s;
         });
-        if (val === null) {
-            this.props.onSubmit(this.state.csProps, this.state.isNew);
+        for (var k in val) {
+            if (val[k] === 'error') {
+                return;
+            }
         }
+        this.setState(function (s) {
+            _this.props.onSubmit(s);
+        });
     };
     return CursusEditPanel;
 }(React.Component));
@@ -37786,7 +37798,7 @@ var CursusTablePanel = (function (_super) {
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "success", onClick: function () { return _this.props.onEdit(null); }, className: "ml15" }, "New")),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
-                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by countryID and countryName...", onSubmit: this.filter })),
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by cursusID and cursusName...", onSubmit: this.filter })),
                     React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
             (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.cursuses.length, rowGetter: this.state.rowGetter },
@@ -38007,32 +38019,24 @@ var LibraryApp = (function (_super) {
                     s.libraries = libraries;
                     return s;
                 });
-            }); }, onEdit: function (l) { return _this.setPanel(Panel.EDIT, function (s) {
-                s.library = l;
+            }); }, onEdit: function (library) { return _this.setPanel(Panel.EDIT, function (s) {
+                s.library = library;
                 return s;
-            }); }, onView: function (l) { return _this.setPanel(Panel.ENTITY, function (s) {
-                s.library = l;
+            }); }, onView: function (library) { return _this.setPanel(Panel.ENTITY, function (s) {
+                s.library = library;
                 return s;
-            }); }, onDelete: function (l) {
-                var del = confirm('Delete ' + l.library + '?');
+            }); }, onDelete: function (library) {
+                var del = confirm('Delete ' + library.library + '?');
                 if (del) {
-                    _this.deleteLibrary(l);
+                    _this.deleteLibrary(library);
                 }
             } }));
     };
     LibraryApp.prototype.renderEditPanel = function () {
         var _this = this;
         var es = this.state.editState || {};
-        if (!es.lProps) {
-            if (this.state.library) {
-                es.lProps = this.state.library.toProperties();
-                es.lProps.address1 = es.lProps.address1 || '';
-                es.lProps.address2 = es.lProps.address2 || '';
-                es.lProps.postCode = es.lProps.postCode || '';
-            }
-            else {
-                es.lProps = null;
-            }
+        if (!es.lProps && this.state.library) {
+            es.lProps = this.state.library.toProperties();
         }
         return (React.createElement(LibraryEditPanel_tsx_1.default, { country: this.state.country, onSubmit: this.saveLibrary, onBack: function () { return _this.setPanel(Panel.TABLE, null); }, editState: es }));
     };
@@ -38177,25 +38181,9 @@ var LibraryEditPanel = (function (_super) {
     function LibraryEditPanel(p) {
         var _this = _super.call(this, p) || this;
         var es = p.editState || {};
-        var isNew;
-        if (typeof es.isNew === 'boolean') {
-            isNew = es.isNew;
-        }
-        else {
-            isNew = !Boolean(es.lProps);
-        }
-        var lProps = es.lProps || {
-            countryID: p.country.countryID,
-            libSiglum: '',
-            library: '',
-            city: '',
-            address1: '',
-            address2: '',
-            postCode: ''
-        };
         _this.state = {
-            isNew: isNew,
-            lProps: lProps,
+            isNew: typeof es.isNew === 'boolean' ? es.isNew : !Boolean(es.lProps),
+            lProps: es.lProps || lib.Library.createProperties(),
             val: es.val || {
                 libSiglum: null,
                 library: null,
@@ -38215,12 +38203,7 @@ var LibraryEditPanel = (function (_super) {
         var v = target.value;
         this.setState(function (s) {
             s.lProps[k] = v;
-            if (v) {
-                s.val[k] = (v.length <= lib.Library.MAX_LENGTH[k]) ? null : 'error';
-            }
-            else {
-                s.val[k] = null;
-            }
+            s.val[k] = (v.length && v.length > lib.Library.MAX_LENGTHS[k]) ? 'error' : null;
             return s;
         });
     };
@@ -38276,7 +38259,7 @@ var LibraryEditPanel = (function (_super) {
                                             s.lProps.libSiglum = libSiglum;
                                             if (libSiglum) {
                                                 s.val.libSiglum = (libSiglum.length +
-                                                    _this.props.country.countryID.length + 1 <= lib.Library.MAX_LENGTH.libSiglum) ? null :
+                                                    _this.props.country.countryID.length + 1 <= lib.Library.MAX_LENGTHS.libSiglum) ? null :
                                                     'error';
                                             }
                                             return s;
@@ -38296,7 +38279,7 @@ var LibraryEditPanel = (function (_super) {
                                 var library = e.target.value;
                                 _this.setState(function (s) {
                                     s.lProps.library = library;
-                                    s.val.library = (library && library.length <= lib.Library.MAX_LENGTH.library) ?
+                                    s.val.library = (library && library.length <= lib.Library.MAX_LENGTHS.library) ?
                                         null : 'error';
                                     return s;
                                 });
@@ -38309,26 +38292,26 @@ var LibraryEditPanel = (function (_super) {
                                 var city = e.target.value;
                                 _this.setState(function (s) {
                                     s.lProps.city = city;
-                                    s.val.city = (city && city.length <= lib.Library.MAX_LENGTH.city) ? null : 'error';
+                                    s.val.city = (city && city.length <= lib.Library.MAX_LENGTHS.city) ? null : 'error';
                                     return s;
                                 });
                             } })),
-                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.city.length + ' / ' + lib.Library.MAX_LENGTH.city)),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.city.length + ' / ' + lib.Library.MAX_LENGTHS.city)),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "address1", validationState: this.state.val.address1 },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
                         React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.address1, onChange: (this.onInputChange) })),
-                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.address1.length + ' / ' + lib.Library.MAX_LENGTH.address1)),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.address1.length + ' / ' + lib.Library.MAX_LENGTHS.address1)),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "address2", validationState: this.state.val.address2 },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Address 2:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
                         React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.address2, onChange: this.onInputChange })),
-                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.address2.length + ' / ' + lib.Library.MAX_LENGTH.address2)),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.address2.length + ' / ' + lib.Library.MAX_LENGTHS.address2)),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "postCode", validationState: this.state.val.postCode },
                     React.createElement(react_bootstrap_1.Col, { sm: 3, componentClass: react_bootstrap_1.ControlLabel }, "Post Code:"),
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
                         React.createElement(react_bootstrap_1.FormControl, { type: "text", value: this.state.lProps.postCode, onChange: this.onInputChange })),
-                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.postCode.length + ' / ' + lib.Library.MAX_LENGTH.postCode)),
+                    React.createElement(react_bootstrap_1.HelpBlock, null, this.state.lProps.postCode.length + ' / ' + lib.Library.MAX_LENGTHS.postCode)),
                 React.createElement(react_bootstrap_1.FormGroup, { controlId: "submit" },
                     React.createElement(react_bootstrap_1.Col, { smOffset: 3, sm: 4 },
                         React.createElement(react_bootstrap_1.Button, { bsStyle: "success", type: "submit" }, "Save")))))
@@ -39702,6 +39685,7 @@ var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ 
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
 var SearchBar_tsx_1 = __webpack_require__(/*! @src/components/common/SearchBar.tsx */ "./src/components/common/SearchBar.tsx");
 var manuscript_ts_1 = __webpack_require__(/*! @src/models/manuscript.ts */ "./src/models/manuscript.ts");
+var index_tsx_1 = __webpack_require__(/*! @src/index.tsx */ "./src/index.tsx");
 var ManuscriptTablePanel = (function (_super) {
     __extends(ManuscriptTablePanel, _super);
     function ManuscriptTablePanel(p) {
@@ -39709,11 +39693,8 @@ var ManuscriptTablePanel = (function (_super) {
         _this.state = {
             rowGetter: function (i) { return _this.state.manuscripts[i.index]; },
             manuscripts: _this.props.manuscripts,
-            height: window.innerHeight * 0.95,
-            width: window.innerWidth - 50
         };
         _this.getHeader = _this.getHeader.bind(_this);
-        _this.refreshManuscripts = _this.refreshManuscripts.bind(_this);
         _this.renderView = _this.renderView.bind(_this);
         _this.renderEdit = _this.renderEdit.bind(_this);
         _this.renderDelete = _this.renderDelete.bind(_this);
@@ -39744,10 +39725,10 @@ var ManuscriptTablePanel = (function (_super) {
                     React.createElement(react_bootstrap_1.Col, { sm: 4 },
                         React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by libSiglum, msSiglum, and msType...", onSubmit: this.filter })),
                     React.createElement(react_bootstrap_1.Col, { sm: 2, smOffset: 2 },
-                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: function () { return _this.props.onRefresh(_this.refreshManuscripts); } }, "Refresh"))))),
-            (React.createElement(react_virtualized_1.Table, { key: "table", className: "mb10", rowClassName: "tr", rowGetter: this.state.rowGetter, height: this.state.height, width: this.state.width, headerHeight: 40, rowHeight: 50, rowCount: this.state.manuscripts.length },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.manuscripts.length, rowGetter: this.state.rowGetter },
                 React.createElement(react_virtualized_1.Column, { label: "Lib Siglum", dataKey: "libSiglum", width: 100 }),
-                React.createElement(react_virtualized_1.Column, { label: "MS Siglum", dataKey: "msSiglum", width: this.state.width - 480 }),
+                React.createElement(react_virtualized_1.Column, { label: "MS Siglum", dataKey: "msSiglum", width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 480 }),
                 React.createElement(react_virtualized_1.Column, { label: "Type", dataKey: "msType", width: 200 }),
                 React.createElement(react_virtualized_1.Column, { dataKey: "", width: 60, cellRenderer: this.renderView }),
                 React.createElement(react_virtualized_1.Column, { dataKey: "", width: 60, cellRenderer: this.renderEdit }),
@@ -40117,16 +40098,19 @@ var react_bootstrap_1 = __webpack_require__(/*! react-bootstrap */ "./node_modul
 var react_virtualized_1 = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
 var Header_tsx_1 = __webpack_require__(/*! @src/components/common/Header.tsx */ "./src/components/common/Header.tsx");
 var PanelMenu_tsx_1 = __webpack_require__(/*! @src/components/common/PanelMenu.tsx */ "./src/components/common/PanelMenu.tsx");
+var SearchBar_tsx_1 = __webpack_require__(/*! @src/components/common/SearchBar.tsx */ "./src/components/common/SearchBar.tsx");
+var index_tsx_1 = __webpack_require__(/*! @src/index.tsx */ "./src/index.tsx");
 var MsTypeTablePanel = (function (_super) {
     __extends(MsTypeTablePanel, _super);
     function MsTypeTablePanel(p) {
         var _this = _super.call(this, p) || this;
         _this.state = {
-            rowGetter: function (i) { return _this.props.msTypes[i.index]; },
-            width: window.innerWidth - 50
+            msTypes: p.msTypes,
+            rowGetter: function (i) { return _this.state.msTypes[i.index]; }
         };
         _this.renderDelete = _this.renderDelete.bind(_this);
         _this.renderEdit = _this.renderEdit.bind(_this);
+        _this.filter = _this.filter.bind(_this);
         return _this;
     }
     MsTypeTablePanel.prototype.render = function () {
@@ -40134,12 +40118,17 @@ var MsTypeTablePanel = (function (_super) {
         return [
             React.createElement(Header_tsx_1.default, { min: true, key: "header" }, "Manuscript Types"),
             (React.createElement(PanelMenu_tsx_1.default, { key: "panelMenu" },
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "success", className: "ml15", onClick: function () { return _this.props.onEdit(null); } }, "New"),
-                React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))),
-            (React.createElement(react_virtualized_1.Table, { key: "table", rowClassName: "tr", height: window.innerHeight, width: this.state.width, headerHeight: 40, rowHeight: 50, rowCount: this.props.msTypes.length, rowGetter: this.state.rowGetter },
+                React.createElement(react_bootstrap_1.Row, null,
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "default", onClick: this.props.onBack }, "Back"),
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "success", className: "ml15", onClick: function () { return _this.props.onEdit(null); } }, "New")),
+                    React.createElement(react_bootstrap_1.Col, { sm: 4 },
+                        React.createElement(SearchBar_tsx_1.default, { placeholder: "Filter by msType and msTypeName...", onSubmit: this.filter })),
+                    React.createElement(react_bootstrap_1.Col, { smOffset: 2, sm: 2 },
+                        React.createElement(react_bootstrap_1.Button, { bsStyle: "primary", className: "fr", onClick: this.props.onRefresh }, "Refresh"))))),
+            (React.createElement(react_virtualized_1.Table, { key: "table", className: index_tsx_1.TABLE_CONSTANTS.CLASS, rowClassName: index_tsx_1.TABLE_CONSTANTS.ROW_CLASS, height: index_tsx_1.TABLE_CONSTANTS.HEIGHT, width: index_tsx_1.TABLE_CONSTANTS.WIDTH, headerHeight: index_tsx_1.TABLE_CONSTANTS.HEADER_HEIGHT, rowHeight: index_tsx_1.TABLE_CONSTANTS.ROW_HEIGHT, rowCount: this.state.msTypes.length, rowGetter: this.state.rowGetter },
                 React.createElement(react_virtualized_1.Column, { width: 200, label: "Manuscript Type", dataKey: "msType" }),
-                React.createElement(react_virtualized_1.Column, { width: this.state.width - 330, label: "Name", dataKey: "msTypeName" }),
+                React.createElement(react_virtualized_1.Column, { width: index_tsx_1.TABLE_CONSTANTS.WIDTH - 330, label: "Name", dataKey: "msTypeName" }),
                 React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderEdit }),
                 React.createElement(react_virtualized_1.Column, { width: 60, label: "", dataKey: "", cellRenderer: this.renderDelete })))
         ];
@@ -40153,6 +40142,21 @@ var MsTypeTablePanel = (function (_super) {
         var _this = this;
         var mst = p.rowData;
         return (React.createElement(react_bootstrap_1.Button, { bsStyle: "success", bsSize: "small", className: "w100p", onClick: function () { return _this.props.onEdit(mst); } }, "Edit"));
+    };
+    MsTypeTablePanel.prototype.filter = function (v) {
+        var _this = this;
+        this.setState(function (s) {
+            if (v) {
+                s.msTypes = _this.props.msTypes.filter(function (mst) {
+                    return (mst.msType.toLowerCase().indexOf(v) !== -1 ||
+                        mst.msTypeName.toLowerCase().indexOf(v) !== -1);
+                });
+            }
+            else {
+                s.msTypes = _this.props.msTypes;
+            }
+            return s;
+        });
     };
     return MsTypeTablePanel;
 }(React.Component));
@@ -43273,14 +43277,24 @@ var Cursus = (function (_super) {
             throw Error('cursusID cannot be empty.');
         }
         _this.cursusID = props.cursusID;
-        _this.cursusName = props.cursusName || null;
+        _this.cursusName = props.cursusName;
         return _this;
     }
     Cursus.prototype.toProperties = function () {
         return {
             cursusID: this.cursusID,
-            cursusName: this.cursusName
+            cursusName: this.cursusName || ''
         };
+    };
+    Cursus.createProperties = function () {
+        return {
+            cursusID: '',
+            cursusName: ''
+        };
+    };
+    Cursus.MAX_LENGTHS = {
+        cursusID: 20,
+        cursusName: 255
     };
     return Cursus;
 }(SpgModel_ts_1.default));
@@ -43316,29 +43330,37 @@ var Library = (function (_super) {
         var _this = _super.call(this) || this;
         for (var k in props) {
             if (k === 'libSiglum' || k === 'countryID' || k === 'city' || k === 'library') {
-                if (!(props[k] && props[k].length)) {
+                if (!props[k]) {
                     throw Error(k + ' cannot be empty');
                 }
-                _this[k] = props[k];
             }
-            else {
-                _this[k] = props[k] || null;
-            }
+            _this[k] = props[k];
         }
         return _this;
     }
     Library.prototype.toProperties = function () {
         return {
             libSiglum: this.libSiglum,
+            countryID: this.countryID,
             city: this.city,
             library: this.library,
-            address1: this.address1,
-            address2: this.address2,
-            postCode: this.postCode,
-            countryID: this.countryID
+            address1: this.address1 || '',
+            address2: this.address2 || '',
+            postCode: this.postCode || '',
         };
     };
-    Library.MAX_LENGTH = {
+    Library.createProperties = function () {
+        return {
+            libSiglum: '',
+            countryID: '',
+            city: '',
+            library: '',
+            address1: '',
+            address2: '',
+            postCode: ''
+        };
+    };
+    Library.MAX_LENGTHS = {
         libSiglum: 10,
         countryID: 20,
         city: 255,

@@ -20,20 +20,38 @@ export class Cursus extends SpgModel {
 	public readonly cursusID: string;
 	public cursusName: string;
 
-	constructor(props: Properties) {
+	public static readonly MAX_LENGTHS = {
+		cursusID: 20,
+		cursusName: 255
+	};
+
+	public constructor(props: Properties) {
 		super();
 		if (!props.cursusID.length) {
 			throw Error('cursusID cannot be empty.');
 		}
 
 		this.cursusID = props.cursusID;
-		this.cursusName = props.cursusName || null;
+		this.cursusName = props.cursusName;
 	}
 
-	toProperties(): Properties {
+	/**
+	 * Gets a copy of the property map of this Cursus.
+	 */
+	public toProperties(): Properties {
 		return {
 			cursusID: this.cursusID,
-			cursusName: this.cursusName
+			cursusName: this.cursusName || ''
+		};
+	}
+
+	/**
+	 * Creates an empty property map for a Cursus.
+	 */
+	public static createProperties(): Properties {
+		return {
+			cursusID: '',
+			cursusName: ''
 		};
 	}
 }

@@ -7,57 +7,47 @@ import {
 	Form,
 	FormControl,
 	FormGroup,
+	HelpBlock
 } from 'react-bootstrap';
 
 import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
+import ValState from '@src/components/common/FormValidation.ts';
 
 import * as cs from '@src/models/cursus.ts';
 
+interface Val {
+	cursusID: ValState,
+	cursusName: ValState
+	[x: string]: ValState
+}
+
 interface P {
 	onBack: () => void
-	onSubmit: (csProps:cs.Properties, isNew:boolean) => void
-	csProps?: cs.Properties
-
-	isNew?: boolean
-	val?: null | 'error'
+	onSubmit: (editState:S) => void
+	editState?: Partial<S>
 }
-interface S {
+export interface S {
 	isNew: boolean
 	csProps: cs.Properties
-
-	// validationState
-	val: any
+	val: Val
 }
 
 export default class CursusEditPanel extends React.Component<P,S> {
 	constructor(p:P) {
 		super(p);
-
-		var isNew: boolean;
-		if (typeof p.isNew === 'boolean') {
-			isNew = p.isNew;
-		}
-		else {
-			isNew = !Boolean(p.csProps)
-		}
-		var csProps = p.csProps || {
-			cursusID: '',
-			cursusName: ''
-		};
+		const es = p.editState || {};
 
 		this.state = {
-			isNew: isNew,
-			csProps: csProps,
-			val: p.val || null
+			isNew: typeof es.isNew === 'boolean' ? es.isNew : !Boolean(es.csProps),
+			csProps: es.csProps || cs.Cursus.createProperties(),
+			val: es.val || {
+				cursusID: null,
+				cursusName: null
+			}
 		};
-		csProps.cursusName = csProps.cursusName || '';
 
-		// render helper
-		this.getCursusIDFormGroup = this.getCursusIDFormGroup.bind(this);
-
-		// event handlers
-		this.onChange = this.onChange.bind(this);
+		this.renderCursusIDFormGroup = this.renderCursusIDFormGroup.bind(this);
 		this.onSubmit = this.onSubmit.bind(this);
 	}
 
@@ -78,11 +68,11 @@ export default class CursusEditPanel extends React.Component<P,S> {
 			horizontal
 			onSubmit={this.onSubmit}
 		>
-			{this.getCursusIDFormGroup()}
+			{this.renderCursusIDFormGroup()}
 
 			<FormGroup
 				controlId="cursusName"
-			>
+				validationState={this.state.val.cursusName}>
 				<Col
 					sm={3}
 					componentClass={ControlLabel}
@@ -91,9 +81,20 @@ export default class CursusEditPanel extends React.Component<P,S> {
 					<FormControl
 						type="text"
 						value={this.state.csProps.cursusName}
-						onChange={this.onChange}
+						onChange={e => {
+							var cursusName = (e.target as HTMLInputElement).value;
+							this.setState((s:S) => {
+								s.csProps.cursusName = cursusName;
+								s.val.cursusName = (cursusName && cursusName.length > cs.Cursus.MAX_LENGTHS.cursusName
+									? 'error' : null);
+								return s;
+							});
+						}}
 					/>
 				</Col>
+				<HelpBlock>
+					{this.state.csProps.cursusName.length + ' / ' + cs.Cursus.MAX_LENGTHS.cursusName}
+				</HelpBlock>
 			</FormGroup>
 
 			<FormGroup>
@@ -109,8 +110,8 @@ export default class CursusEditPanel extends React.Component<P,S> {
 		return x;
 	}
 
-	getCursusIDFormGroup() {
-		var label, value: JSX.Element;
+	renderCursusIDFormGroup() {
+		var label, value: JSX.Element | JSX.Element[];
 
 		if (this.state.isNew) {
 			label = (<Col
@@ -119,13 +120,24 @@ export default class CursusEditPanel extends React.Component<P,S> {
 				className="required"
 			>Cursus ID:</Col>);
 
-			value = (<Col sm={4}>
+			value = [(<Col sm={4} key="v">
 				<FormControl
 					type="text"
 					value={this.state.csProps.cursusID}
-					onChange={this.onChange}
+					onChange={e => {
+						var cursusID = (e.target as HTMLInputElement).value;
+						this.setState((s:S) => {
+							s.csProps.cursusID = cursusID;
+							s.val.cursusID = (cursusID && cursusID.length <= cs.Cursus.MAX_LENGTHS.cursusID
+								? null : 'error');
+							return s;
+						});
+					}}
 				/>
-			</Col>);
+			</Col>),
+			<HelpBlock key="h">
+				{this.state.csProps.cursusID.length + ' / ' + cs.Cursus.MAX_LENGTHS.cursusID}
+			</HelpBlock>];
 		}
 
 		else {
@@ -141,36 +153,33 @@ export default class CursusEditPanel extends React.Component<P,S> {
 
 		return (<FormGroup
 			controlId="cursusID"
-			validationState={this.state.val}
+			validationState={this.state.val.cursusID}
 		>
 			{label}
 			{value}
 		</FormGroup>);
 	}
 
-	onChange(e:React.FormEvent<FormControl>) {
-		const target = e.target as HTMLInputElement;
-		const k = target.id;
-		const v = target.value;
-
-		this.setState((s:S) => {
-			s.csProps[k] = v;
-			return s;
-		});
-	}
-
 	onSubmit(e:React.FormEvent<Form>) {
 		e.preventDefault();
-
-		var val = this.state.csProps.cursusID ? null : 'error';
+		var val = this.state.val;
+		if (!this.state.csProps.cursusID) {
+			val.cursusID = 'error';
+		}
 
 		this.setState((s:S) => {
-			s.val = val as S['val'];
+			s.val = val;
 			return s;
 		});
 
-		if (val === null) {
-			this.props.onSubmit(this.state.csProps, this.state.isNew);
+		for (let k in val) {
+			if (val[k] === 'error') {
+				return;
+			}
 		}
+
+		this.setState((s:S) => {
+			this.props.onSubmit(s);
+		});
 	}
 }

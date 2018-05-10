@@ -49,27 +49,9 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 		super(p);
 		const es = p.editState || {};
 
-		var isNew: boolean;
-		if (typeof es.isNew === 'boolean') {
-			isNew = es.isNew;
-		}
-		else {
-			isNew = !Boolean(es.lProps);
-		}
-
-		var lProps = es.lProps || {
-			countryID: p.country.countryID,
-			libSiglum: '',
-			library: '',
-			city: '',
-			address1: '',
-			address2: '',
-			postCode: ''
-		};
-
 		this.state = {
-			isNew: isNew,
-			lProps: lProps,
+			isNew: typeof es.isNew === 'boolean' ? es.isNew : !Boolean(es.lProps),
+			lProps: es.lProps || lib.Library.createProperties(),
 			val: es.val || {
 				libSiglum: null,
 				library: null,
@@ -90,13 +72,8 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 		const v = target.value;
 		this.setState((s:S) => {
 			s.lProps[k] = v;
-			if (v) {
-				/// @ts-ignore we don't care if MAX_LENGTH is implicitly an any.
-				s.val[k] = (v.length <= lib.Library.MAX_LENGTH[k]) ? null : 'error';
-			}
-			else {
-				s.val[k] = null;
-			}
+			/// @ts-ignore we don't care if MAX_LENGTHS is implicitly an any.
+			s.val[k] = (v.length && v.length > lib.Library.MAX_LENGTHS[k]) ? 'error' : null;
 			return s;
 		});
 	}
@@ -166,7 +143,7 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 												s.lProps.libSiglum = libSiglum;
 												if (libSiglum) {
 													s.val.libSiglum = (libSiglum.length +
-														this.props.country.countryID.length + 1 <= lib.Library.MAX_LENGTH.libSiglum) ? null :
+														this.props.country.countryID.length + 1 <= lib.Library.MAX_LENGTHS.libSiglum) ? null :
 														'error';
 												}
 												return s;
@@ -208,7 +185,7 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 								var library: string = (e.target as HTMLInputElement).value;
 								this.setState((s:S) => {
 									s.lProps.library = library;
-									s.val.library = (library && library.length <= lib.Library.MAX_LENGTH.library) ?
+									s.val.library = (library && library.length <= lib.Library.MAX_LENGTHS.library) ?
 										null : 'error';
 									return s;
 								});
@@ -231,13 +208,13 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 								var city = (e.target as HTMLInputElement).value;
 								this.setState((s:S) => {
 									s.lProps.city = city;
-									s.val.city = (city && city.length <= lib.Library.MAX_LENGTH.city) ? null : 'error';
+									s.val.city = (city && city.length <= lib.Library.MAX_LENGTHS.city) ? null : 'error';
 									return s;
 								});
 							}}
 						/>
 					</Col>
-					<HelpBlock>{this.state.lProps.city.length + ' / ' + lib.Library.MAX_LENGTH.city}</HelpBlock>
+					<HelpBlock>{this.state.lProps.city.length + ' / ' + lib.Library.MAX_LENGTHS.city}</HelpBlock>
 				</FormGroup>
 
 				<FormGroup
@@ -252,7 +229,7 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 						/>
 					</Col>
 					<HelpBlock>
-						{this.state.lProps.address1.length + ' / ' + lib.Library.MAX_LENGTH.address1}
+						{this.state.lProps.address1.length + ' / ' + lib.Library.MAX_LENGTHS.address1}
 					</HelpBlock>
 				</FormGroup>
 
@@ -268,7 +245,7 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 						/>
 					</Col>
 					<HelpBlock>
-						{this.state.lProps.address2.length + ' / ' + lib.Library.MAX_LENGTH.address2}
+						{this.state.lProps.address2.length + ' / ' + lib.Library.MAX_LENGTHS.address2}
 					</HelpBlock>
 				</FormGroup>
 
@@ -284,7 +261,7 @@ export default class LibraryEditPanel extends React.Component<P,S> {
 						/>
 					</Col>
 					<HelpBlock>
-						{this.state.lProps.postCode.length + ' / ' + lib.Library.MAX_LENGTH.postCode}
+						{this.state.lProps.postCode.length + ' / ' + lib.Library.MAX_LENGTHS.postCode}
 					</HelpBlock>
 				</FormGroup>
 

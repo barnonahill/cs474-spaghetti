@@ -1,29 +1,33 @@
 import * as React from 'react';
 import {
-	Button
+	Button,
+	Col,
+	Row
 } from 'react-bootstrap';
 import {
 	Column,
 	Index,
 	Table,
-	TableCellProps
+	TableCellProps,
 } from 'react-virtualized';
 
 import Header from '@src/components/common/Header.tsx';
 import PanelMenu from '@src/components/common/PanelMenu.tsx';
+import SearchBar from '@src/components/common/SearchBar.tsx';
 
 import { MsType } from '@src/models/msType.ts';
+import { TABLE_CONSTANTS } from '@src/index.tsx';
 
 interface P {
-	msTypes: Array<MsType>
+	msTypes: MsType[]
 	onEdit: (mst:MsType) => void
 	onDelete: (mst:MsType) => void
 	onRefresh: () => void
 	onBack: () => void
 }
 interface S {
+	msTypes: MsType[]
 	rowGetter: (i:Index) => MsType
-	width: number
 }
 
 export default class MsTypeTablePanel extends React.Component<P,S> {
@@ -31,43 +35,58 @@ export default class MsTypeTablePanel extends React.Component<P,S> {
 		super(p);
 
 		this.state = {
-			rowGetter: (i:Index) => this.props.msTypes[i.index],
-			width: window.innerWidth - 50
+			msTypes: p.msTypes,
+			rowGetter: (i:Index) => this.state.msTypes[i.index]
 		};
 
 		this.renderDelete = this.renderDelete.bind(this);
 		this.renderEdit = this.renderEdit.bind(this);
+		this.filter = this.filter.bind(this);
 	}
 
 	render() {
 		return [
 			<Header min key="header">Manuscript Types</Header>,
 			(<PanelMenu key="panelMenu">
-				<Button
-					bsStyle="default"
-					onClick={this.props.onBack}
-				>Back</Button>
-				<Button
-					bsStyle="success"
-					className="ml15"
-					onClick={() => this.props.onEdit(null)}
-				>New</Button>
-				<Button
-					bsStyle="primary"
-					className="fr"
-					onClick={this.props.onRefresh}
-				>Refresh</Button>
+				<Row>
+					<Col sm={4}>
+						<Button
+							bsStyle="default"
+							onClick={this.props.onBack}
+						>Back</Button>
+						<Button
+							bsStyle="success"
+							className="ml15"
+							onClick={() => this.props.onEdit(null)}
+						>New</Button>
+					</Col>
+
+					<Col sm={4}>
+						<SearchBar
+							placeholder="Filter by msType and msTypeName..."
+							onSubmit={this.filter}
+						/>
+					</Col>
+
+					<Col smOffset={2} sm={2}>
+						<Button
+							bsStyle="primary"
+							className="fr"
+							onClick={this.props.onRefresh}
+						>Refresh</Button>
+					</Col>
+				</Row>
 			</PanelMenu>),
 
 			(<Table key="table"
-				rowClassName="tr"
-				height={window.innerHeight}
-				width={this.state.width}
-				headerHeight={40}
-				rowHeight={50}
-				rowCount={this.props.msTypes.length}
-				rowGetter={this.state.rowGetter}
-			>
+				className={TABLE_CONSTANTS.CLASS}
+				rowClassName={TABLE_CONSTANTS.ROW_CLASS}
+				height={TABLE_CONSTANTS.HEIGHT}
+				width={TABLE_CONSTANTS.WIDTH}
+				headerHeight={TABLE_CONSTANTS.HEADER_HEIGHT}
+				rowHeight={TABLE_CONSTANTS.ROW_HEIGHT}
+				rowCount={this.state.msTypes.length}
+				rowGetter={this.state.rowGetter}>
 
 				<Column
 					width={200}
@@ -76,7 +95,7 @@ export default class MsTypeTablePanel extends React.Component<P,S> {
 				/>
 
 				<Column
-					width={this.state.width - 330}
+					width={TABLE_CONSTANTS.WIDTH - 330}
 					label="Name"
 					dataKey="msTypeName"
 				/>
@@ -116,5 +135,20 @@ export default class MsTypeTablePanel extends React.Component<P,S> {
 			className="w100p"
 			onClick={() => this.props.onEdit(mst)}
 		>Edit</Button>);
+	}
+
+	filter(v: string) {
+		this.setState((s:S) => {
+			if (v) {
+				s.msTypes = this.props.msTypes.filter(mst => {
+					return (mst.msType.toLowerCase().indexOf(v) !== -1 ||
+						mst.msTypeName.toLowerCase().indexOf(v) !== -1);
+				});
+			}
+			else {
+				s.msTypes = this.props.msTypes;
+			}
+			return s;
+		});
 	}
 }

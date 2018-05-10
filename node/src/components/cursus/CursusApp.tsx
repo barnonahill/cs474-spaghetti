@@ -3,7 +3,10 @@ import * as React from 'react';
 import PageLoader from '@src/components/common/PageLoader.tsx';
 
 import TablePanel from '@src/components/cursus/CursusTablePanel.tsx';
-import EditPanel from '@src/components/cursus/CursusEditPanel.tsx';
+import {
+	default as EditPanel,
+	S as EditState
+} from '@src/components/cursus/CursusEditPanel.tsx';
 
 import StateUtils from '@src/components/StateUtilities.ts'
 
@@ -26,12 +29,7 @@ interface S {
 	cursuses: cs.Cursus[]
 	panel: Panel
 	loadMessage?: string
-
-	editOpts: {
-		isNew?: boolean
-		val?: null | 'error'
-		csProps?: cs.Properties
-	}
+	editState?: EditState
 }
 
 export default class CursusApp extends React.Component<P,S> {
@@ -47,18 +45,15 @@ export default class CursusApp extends React.Component<P,S> {
 		this.state = {
 			panel: Panel.TABLE,
 			cursuses: this.props.cursuses,
-			editOpts: {}
 		};
 
-		// Render helper
+		// Render helpers
+		this.renderTablePanel = this.renderTablePanel.bind(this);
 		this.renderEditPanel = this.renderEditPanel.bind(this);
 
-		// Opener
-		this.openEdit = this.openEdit.bind(this);
-
-		// Data manipulation operations
+		// Data manipulators
 		this.saveCursus = this.saveCursus.bind(this);
-		this.confirmDelete = this.confirmDelete.bind(this);
+		this.deleteCursus = this.deleteCursus.bind(this);
 
 		// State helpers
 		this.setPanel = StateUtils.setPanel.bind(this);
@@ -68,16 +63,7 @@ export default class CursusApp extends React.Component<P,S> {
 	render() {
 		switch (this.state.panel)  {
 			case Panel.TABLE:
-				return (<TablePanel
-					cursuses={this.props.cursuses}
-					onBack={this.props.onBack}
-					onEdit={this.openEdit}
-					onDelete={this.confirmDelete}
-					onRefresh={() => {
-						this.setLoader('Loading Cursuses...');
-						this.props.reloadCursuses();
-					}}
-				/>);
+				return this.renderTablePanel();
 
 			case Panel.EDIT:
 				return this.renderEditPanel();
@@ -90,29 +76,45 @@ export default class CursusApp extends React.Component<P,S> {
 		}
 	}
 
-	renderEditPanel() {
-		var edo = this.state.editOpts;
-		var csProps: cs.Properties;
+	renderTablePanel() {
+		return (<TablePanel
+			cursuses={this.props.cursuses}
+			onBack={this.props.onBack}
+			onRefresh={() => {
+				this.setLoader('Loading Cursuses...');
+				this.props.reloadCursuses();
+			}}
 
-		if (edo.csProps) {
-			csProps = edo.csProps;
-		}
-		else if (this.state.cursus) {
-			csProps = this.state.cursus.toProperties();
-		}
-		else {
-			csProps = null;
+			onEdit={cursus => {
+				this.setPanel(Panel.EDIT, s => {
+					s.cursus = cursus;
+					return s;
+				});
+			}}
+
+			onDelete={cursus => {
+				var del = confirm('Delete Cursus ' + cursus.cursusID + '?');
+				if (del) {
+					this.deleteCursus(cursus);
+				}
+			}}
+		/>);
+	}
+
+	renderEditPanel() {
+		var es: Partial<EditState> = this.state.editState || {};
+		if (!es.csProps && this.state.cursus) {
+			es.csProps = this.state.cursus.toProperties();
 		}
 
 		return (<EditPanel
 			onBack={() => this.setPanel(Panel.TABLE, s => {
-				s.editOpts = {};
+				delete s.editState;
+				s.cursus = null;
 				return s;
 			})}
 			onSubmit={this.saveCursus}
-			csProps={csProps}
-			isNew={edo.isNew}
-			val={edo.val}
+			editState={es}
 		/>);
 	}
 
@@ -120,77 +122,62 @@ export default class CursusApp extends React.Component<P,S> {
 	 * Attempts to delete cursus using the sectionProxy.
 	 * @param cursus to delete
 	 */
-	confirmDelete(cursus: cs.Cursus) {
-		var del = confirm('Delete cursus ' + cursus.cursusID + '?');
-		if (del) {
-			this.setLoader('Deleting ' + cursus.cursusID + '...');
+	deleteCursus(cursus: cs.Cursus) {
+		this.setLoader('Deleting Cursus ' + cursus.cursusID + '...');
+		proxyFactory.getSectionProxy().deleteCursus(cursus.cursusID, (success, e?) => {
+			if (e) {
+				alert('Error deleting Cursus: ' + e);
+				this.setPanel(Panel.TABLE);
+			}
+			else if (success) {
+				this.setState((s:S) => {
+					var i = s.cursuses.findIndex(c => cursus.cursusID === c.cursusID);
+					s.cursuses[i].destroy();
+					s.cursuses.splice(i, 1);
 
-			proxyFactory.getSectionProxy().deleteCursus(cursus.cursusID, (success, e?) => {
-				if (e) {
-					alert('Error deleting Cursus: ' + e);
-					this.setPanel(Panel.TABLE);
-				}
-				else if (success) {
-					this.setState((s:S) => {
-						var i = s.cursuses.findIndex(c => cursus.cursusID === c.cursusID);
-						s.cursuses[i].destroy();
-						s.cursuses.splice(i, 1);
-
-						this.setPanel(Panel.TABLE, null, s);
-						return s;
-					});
-				}
-				else {
-					this.setPanel(Panel.TABLE);
-					alert('Failed to delete cursus ' + cursus.cursusName + '.');
-				}
-			});
-		}
-	}
-
-	/**
-	 * Opens the edit panel for a Cursus.
-	 * @param cursus to edit
-	 */
-	openEdit(cursus: cs.Cursus) {
-		this.setPanel(Panel.EDIT, s => {
-			s.cursus = cursus;
-			return s;
+					this.setPanel(Panel.TABLE, null, s);
+					return s;
+				});
+			}
+			else {
+				this.setPanel(Panel.TABLE);
+				alert('Failed to delete cursus ' + cursus.cursusName + '.');
+			}
 		});
 	}
 
 	/**
 	 * Utilizes the sectionProxy to create or update a Cursus.
-	 * @param csProps properties of the Cursus.
-	 * @param isNew
 	 */
-	saveCursus(csProps:cs.Properties, isNew:boolean) {
-		this.setLoader('Saving Cursus ' + csProps.cursusID + '...');
+	saveCursus(editState: EditState) {
+		this.setLoader('Saving Cursus ' + editState.csProps.cursusID + '...');
 
 		var onError = (e:string) => {
 			alert('Error saving Cursus: ' + e);
 			this.setPanel(Panel.EDIT, s => {
-
-				s.editOpts = {
-					csProps: csProps,
-					isNew: isNew,
-					val: (e.toLowerCase().indexOf(csProps.cursusID.toLowerCase()) === -1
-						? null : 'error')
-				};
+				e = e.toLowerCase();
+				for (let k in editState.csProps) {
+					if (editState.csProps[k] && (e.indexOf(editState.csProps[k].toLowerCase()) !== -1 ||
+						e.indexOf(k.toLowerCase()) !== -1))
+					{
+						editState.val[k] = 'error';
+					}
+				}
+				s.editState = editState;
 				return s;
 			});
 		};
 
-		if (isNew) {
-			proxyFactory.getSectionProxy().createCursus(csProps, (cursus, e?) => {
+		const proxy = proxyFactory.getSectionProxy();
+		if (editState.isNew) {
+			proxy.createCursus(editState.csProps, (cursus, e?) => {
 				if (e) {
 					onError(e);
 				}
-
 				else {
 					this.setPanel(Panel.TABLE, s => {
 						s.cursuses.push(cursus);
-						s.editOpts = {};
+						delete s.editState;
 						return s;
 					});
 				}
@@ -198,18 +185,16 @@ export default class CursusApp extends React.Component<P,S> {
 		}
 
 		else {
-			proxyFactory.getSectionProxy().updateCursus(csProps, (cursus, e?) => {
+			proxy.updateCursus(editState.csProps, (cursus, e?) => {
 				if (e) {
 					onError(e);
 				}
-
 				else {
 					this.setPanel(Panel.TABLE, s => {
 						var i = s.cursuses.findIndex(c => cursus.cursusID === c.cursusID);
 						s.cursuses[i].destroy();
 						s.cursuses[i] = cursus;
-
-						s.editOpts = {};
+						delete s.editState;
 						return s;
 					});
 				}
